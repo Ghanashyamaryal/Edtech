@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { supabaseAdmin } from '../config';
 
-export type UserRole = 'student' | 'mentor' | 'admin';
+export type UserRole = 'student' | 'mentor' | 'admin' | 'instructor';
 
 export interface AuthUser {
   id: string;

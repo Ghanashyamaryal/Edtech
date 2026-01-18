@@ -3,7 +3,8 @@ export {
   requireAuth,
   requireRole,
   extractToken,
-  verifyToken,
+  verifySupabaseToken,
   type AuthUser,
   type AuthenticatedRequest,
+  type UserRole,
 } from './auth';

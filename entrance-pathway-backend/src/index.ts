@@ -10,7 +10,7 @@ import http from 'http';
 import { env } from './config';
 import { typeDefs } from './schema';
 import { resolvers } from './resolvers';
-import { authMiddleware, extractToken, verifyToken, AuthenticatedRequest } from './middleware';
+import { authMiddleware, extractToken, AuthenticatedRequest } from './middleware';
 import { Context } from './resolvers/types';
 import { startKeepAlive } from './utils';
 

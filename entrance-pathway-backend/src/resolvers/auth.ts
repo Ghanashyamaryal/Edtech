@@ -3,26 +3,26 @@ import { Context } from './types';
 import { formatResponse } from '../utils/helpers';
 import { AuthenticationError, ForbiddenError, ValidationError, DatabaseError } from '../utils/errors';
 
-interface SignUpInput {
+export interface SignUpInput {
   email: string;
   password: string;
   fullName: string;
-  role: 'student' | 'mentor' | 'admin';
+  role: 'student' | 'mentor' | 'admin' | 'instructor';
   phone?: string;
 }
 
-interface SignInInput {
+export interface SignInInput {
   email: string;
   password: string;
 }
 
-interface UpdateProfileInput {
+export interface UpdateProfileInput {
   fullName?: string;
   avatarUrl?: string;
   phone?: string;
 }
 
-interface ChangePasswordInput {
+export interface ChangePasswordInput {
   currentPassword: string;
   newPassword: string;
 }
