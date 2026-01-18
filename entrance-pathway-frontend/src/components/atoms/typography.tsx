@@ -36,7 +36,7 @@ const defaultElementMap: Record<NonNullable<TypographyProps['variant']>, Typogra
 
 const Typography = React.forwardRef<HTMLElement, TypographyProps>(
   ({ className, variant = 'paragraph', as, children, ...props }, ref) => {
-    const Component = as || defaultElementMap[variant];
+    const Component = as || defaultElementMap[variant ?? 'paragraph'];
 
     return React.createElement(
       Component,
@@ -64,10 +64,10 @@ const Title = React.forwardRef<HTMLHeadingElement, Omit<TypographyProps, 'varian
 );
 Title.displayName = 'Title';
 
-const Subtitle = React.forwardRef<HTMLHeadingElement, Omit<TypographyProps, 'variant'>>(
+const Subtitle = React.forwardRef<HTMLElement, Omit<TypographyProps, 'variant'>>(
   ({ className, as = 'h2', ...props }, ref) => (
     <Typography
-      ref={ref as React.Ref<HTMLElement>}
+      ref={ref}
       variant="subtitle"
       as={as}
       className={className}
@@ -90,10 +90,10 @@ const Paragraph = React.forwardRef<HTMLParagraphElement, Omit<TypographyProps, '
 );
 Paragraph.displayName = 'Paragraph';
 
-const Small = React.forwardRef<HTMLSpanElement, Omit<TypographyProps, 'variant'>>(
+const Small = React.forwardRef<HTMLElement, Omit<TypographyProps, 'variant'>>(
   ({ className, as = 'span', ...props }, ref) => (
     <Typography
-      ref={ref as React.Ref<HTMLElement>}
+      ref={ref}
       variant="small"
       as={as}
       className={className}

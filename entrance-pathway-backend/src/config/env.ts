@@ -13,6 +13,7 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
   ZOOM_SDK_KEY: z.string().optional(),
   ZOOM_SDK_SECRET: z.string().optional(),
+  RENDER_EXTERNAL_URL: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

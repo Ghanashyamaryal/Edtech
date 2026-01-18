@@ -23,10 +23,10 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 );
 CardHeader.displayName = 'CardHeader';
 
-const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
+const CardTitle = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, children, ...props }, ref) => (
     <Subtitle
-      ref={ref as React.Ref<HTMLElement>}
+      ref={ref}
       as="h3"
       className={cn('text-2xl leading-none tracking-tight', className)}
       {...props}
@@ -38,11 +38,11 @@ const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTML
 CardTitle.displayName = 'CardTitle';
 
 const CardDescription = React.forwardRef<
-  HTMLSpanElement,
+  HTMLElement,
   React.HTMLAttributes<HTMLSpanElement>
 >(({ className, children, ...props }, ref) => (
   <Small
-    ref={ref as React.Ref<HTMLElement>}
+    ref={ref}
     className={cn('text-sm', className)}
     {...props}
   >

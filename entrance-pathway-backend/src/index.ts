@@ -12,6 +12,7 @@ import { typeDefs } from './schema';
 import { resolvers } from './resolvers';
 import { authMiddleware, extractToken, verifyToken, AuthenticatedRequest } from './middleware';
 import { Context } from './resolvers/types';
+import { startKeepAlive } from './utils';
 
 async function startServer() {
   const app = express();
@@ -83,6 +84,11 @@ async function startServer() {
 
   Environment: ${env.NODE_ENV}
   `);
+
+  // Start keep-alive ping for Render free tier
+  if (env.NODE_ENV === 'production') {
+    startKeepAlive();
+  }
 }
 
 startServer().catch((error) => {
