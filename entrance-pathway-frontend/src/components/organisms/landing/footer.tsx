@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import Link from 'next/link';
+import * as React from "react";
+import Link from "next/link";
 import {
   GraduationCap,
   Facebook,
@@ -11,66 +11,78 @@ import {
   Phone,
   MapPin,
   ArrowRight,
-} from 'lucide-react';
-import { Button, Input } from '@/components/ui';
-import { Subtitle, Paragraph, Small } from '@/components/atoms';
+} from "lucide-react";
+import { Button, Input } from "@/components/ui";
+import { Subtitle, Paragraph, Small } from "@/components/atoms";
 
 const footerLinks = {
   courses: {
-    title: 'Courses',
+    title: "Courses",
     links: [
-      { name: 'BSc CSIT', href: '/courses/bsc-csit' },
-      { name: 'BIT', href: '/courses/bit' },
-      { name: 'BCA', href: '/courses/bca' },
-      { name: 'BIM', href: '/courses/bim' },
-      { name: 'All Courses', href: '/courses' },
+      { name: "BSc CSIT", href: "/courses/bsc-csit" },
+      { name: "BIT", href: "/courses/bit" },
+      { name: "BCA", href: "/courses/bca" },
+      { name: "BIM", href: "/courses/bim" },
+      { name: "All Courses", href: "/courses" },
     ],
   },
   resources: {
-    title: 'Resources',
+    title: "Resources",
     links: [
-      { name: 'Study Notes', href: '/notes' },
-      { name: 'Mock Tests', href: '/mock-tests' },
-      { name: 'Online Classes', href: '/online-classes' },
-      { name: 'Results', href: '/results' },
-      { name: 'Blog', href: '/blog' },
+      { name: "Study Notes", href: "/notes" },
+      { name: "Mock Tests", href: "/mock-tests" },
+      { name: "Online Classes", href: "/online-classes" },
+      { name: "Results", href: "/results" },
+      { name: "Blog", href: "/blog" },
     ],
   },
   company: {
-    title: 'Company',
+    title: "Company",
     links: [
-      { name: 'About Us', href: '/about' },
-      { name: 'Careers', href: '/careers' },
-      { name: 'Contact', href: '/contact' },
-      { name: 'Privacy Policy', href: '/privacy' },
-      { name: 'Terms of Service', href: '/terms' },
+      { name: "About Us", href: "/about" },
+      { name: "Careers", href: "/careers" },
+      { name: "Contact", href: "/contact" },
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Terms of Service", href: "/terms" },
     ],
   },
   support: {
-    title: 'Support',
+    title: "Support",
     links: [
-      { name: 'Help Center', href: '/help' },
-      { name: 'FAQs', href: '/faqs' },
-      { name: 'Student Guide', href: '/guide' },
-      { name: 'Technical Support', href: '/support' },
+      { name: "Help Center", href: "/help" },
+      { name: "FAQs", href: "/faqs" },
+      { name: "Student Guide", href: "/guide" },
+      { name: "Technical Support", href: "/support" },
     ],
   },
 };
 
 const socialLinks = [
-  { name: 'Facebook', icon: Facebook, href: 'https://facebook.com/entrancepathway' },
-  { name: 'Instagram', icon: Instagram, href: 'https://instagram.com/entrancepathway' },
-  { name: 'YouTube', icon: Youtube, href: 'https://youtube.com/@entrancepathway' },
+  {
+    name: "Facebook",
+    icon: Facebook,
+    href: "https://facebook.com/entrancepathway",
+  },
+  {
+    name: "Instagram",
+    icon: Instagram,
+    href: "https://instagram.com/entrancepathway",
+  },
+  {
+    name: "YouTube",
+    icon: Youtube,
+    href: "https://youtube.com/@entrancepathway",
+  },
 ];
 
 export function LandingFooter() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-foreground text-background">
+    <footer className="bg-foreground bottom-0 text-background">
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-8">
           {/* Brand Section */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" className="flex items-center gap-2 mb-4">
@@ -87,8 +99,9 @@ export function LandingFooter() {
               </div>
             </Link>
             <Paragraph className="mb-6 max-w-sm">
-              Nepal's leading platform for IT entrance exam preparation. Join thousands
-              of students on their journey from preparation to celebration.
+              Nepal's leading platform for IT entrance exam preparation. Join
+              thousands of students on their journey from preparation to
+              celebration.
             </Paragraph>
 
             {/* Contact Info */}
@@ -156,7 +169,7 @@ export function LandingFooter() {
         </div>
 
         {/* Newsletter Section */}
-        <div className="mt-12 pt-8 border-t border-muted/20">
+        <div className="mt-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <Subtitle as="h4" className="font-display text-background mb-1">
@@ -182,8 +195,8 @@ export function LandingFooter() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-muted/20">
-        <div className="container mx-auto px-4 py-6">
+      <div>
+        <div className=" mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <Small className="text-sm">
               &copy; {currentYear} Entrance Pathway. All rights reserved.
