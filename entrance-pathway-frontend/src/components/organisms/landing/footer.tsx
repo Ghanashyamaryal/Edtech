@@ -81,7 +81,7 @@ export function LandingFooter() {
   return (
     <footer className="bg-foreground bottom-0 text-background">
       {/* Main Footer */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-8">
           {/* Brand Section */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
@@ -105,7 +105,7 @@ export function LandingFooter() {
             </Paragraph>
 
             {/* Contact Info */}
-            <div className="space-y-3 mb-6">
+            <div className="space-y-3 mb-4">
               <a
                 href="mailto:info@entrancepathway.com"
                 className="flex items-center gap-3 text-muted-foreground hover:text-background transition-colors"
@@ -196,7 +196,7 @@ export function LandingFooter() {
 
       {/* Bottom Bar */}
       <div>
-        <div className=" mx-auto px-4">
+        <div className="container  mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <Small className="text-sm">
               &copy; {currentYear} Entrance Pathway. All rights reserved.
