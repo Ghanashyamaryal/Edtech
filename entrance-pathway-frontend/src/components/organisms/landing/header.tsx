@@ -311,6 +311,12 @@ export function LandingHeader() {
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(
     null,
   );
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  // Ensure consistent client-side rendering to avoid hydration mismatch
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Check if we're on dashboard pages
   const isDashboard = pathname.startsWith("/dashboard");
@@ -455,7 +461,7 @@ export function LandingHeader() {
 
           {/* Right side - Auth state dependent */}
           <div className="hidden lg:flex items-center gap-3">
-            {isLoading ? (
+            {!isMounted || isLoading ? (
               <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
             ) : isAuthenticated ? (
               <>
@@ -567,7 +573,9 @@ export function LandingHeader() {
                 transition={{ delay: 0.3 }}
                 className="mt-8 space-y-3"
               >
-                {isAuthenticated ? (
+                {!isMounted || isLoading ? (
+                  <div className="w-full h-12 rounded-lg bg-muted animate-pulse" />
+                ) : isAuthenticated ? (
                   <>
                     <Link href="/dashboard" className="block">
                       <Button variant="default" className="w-full" size="lg">
