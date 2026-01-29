@@ -27,8 +27,8 @@ const contactInfo = [
   {
     icon: Phone,
     title: "Phone",
-    value: "+977 980-0000-000",
-    href: "tel:+9779800000000",
+    value: "+977 9860120739",
+    href: "tel:+9779860120739",
   },
   {
     icon: MapPin,
@@ -79,18 +79,12 @@ export default function ContactPage() {
               <CardContent className="pt-6">
                 <Subtitle className="mb-6">Send us a Message</Subtitle>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <RHFInput
-                    name="name"
-                    control={control}
-                    label="Your Name"
-                    placeholder="John Doe"
-                  />
+                  <RHFInput name="name" control={control} label="Your Name" />
                   <RHFInput
                     name="email"
                     control={control}
                     label="Email Address"
                     type="email"
-                    placeholder="you@example.com"
                   />
                   <RHFInput
                     name="subject"

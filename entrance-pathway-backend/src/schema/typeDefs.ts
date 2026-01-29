@@ -216,6 +216,18 @@ export const typeDefs = `#graphql
   }
 
   # Input Types
+  input CreateSubjectInput {
+    name: String!
+    description: String
+    icon: String
+  }
+
+  input CreateTopicInput {
+    subjectId: ID!
+    name: String!
+    description: String
+  }
+
   input CreateCourseInput {
     title: String!
     description: String!
@@ -340,6 +352,16 @@ export const typeDefs = `#graphql
     # Enrollment mutations
     enrollInCourse(courseId: ID!): Enrollment!
     updateLessonProgress(lessonId: ID!, watchedDuration: Int!, isCompleted: Boolean): LessonProgress!
+
+    # Subject mutations
+    createSubject(input: CreateSubjectInput!): Subject!
+    updateSubject(id: ID!, name: String, description: String, icon: String): Subject!
+    deleteSubject(id: ID!): Boolean!
+
+    # Topic mutations
+    createTopic(input: CreateTopicInput!): Topic!
+    updateTopic(id: ID!, name: String, description: String): Topic!
+    deleteTopic(id: ID!): Boolean!
 
     # Question mutations
     createQuestion(input: CreateQuestionInput!): Question!

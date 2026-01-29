@@ -591,7 +591,7 @@ export default function HomePage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="border-white/30 text-primary-foreground hover:bg-white/10 gap-2"
+                  className="border-primary/30 text-primary hover:bg-primary/10 gap-2"
                 >
                   Talk to Us
                 </Button>
