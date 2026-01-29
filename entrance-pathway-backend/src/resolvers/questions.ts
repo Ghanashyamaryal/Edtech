@@ -88,6 +88,128 @@ export const questionResolvers = {
   },
 
   Mutation: {
+    // Subject mutations
+    createSubject: async (_: any, { input }: { input: any }, context: Context) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'admin') {
+        throw new ForbiddenError('Only admins can create subjects');
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from('subjects')
+        .insert({
+          name: input.name,
+          description: input.description,
+          icon: input.icon,
+        })
+        .select()
+        .single();
+
+      if (error) throw new DatabaseError(error.message);
+      return formatResponse(data);
+    },
+
+    updateSubject: async (
+      _: any,
+      { id, name, description, icon }: { id: string; name?: string; description?: string; icon?: string },
+      context: Context
+    ) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'admin') {
+        throw new ForbiddenError('Only admins can update subjects');
+      }
+
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (description !== undefined) updateData.description = description;
+      if (icon !== undefined) updateData.icon = icon;
+
+      const { data, error } = await supabaseAdmin
+        .from('subjects')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') throw new NotFoundError('Subject');
+        throw new DatabaseError(error.message);
+      }
+      return formatResponse(data);
+    },
+
+    deleteSubject: async (_: any, { id }: { id: string }, context: Context) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'admin') {
+        throw new ForbiddenError('Only admins can delete subjects');
+      }
+
+      const { error } = await supabaseAdmin.from('subjects').delete().eq('id', id);
+      if (error) throw new DatabaseError(error.message);
+      return true;
+    },
+
+    // Topic mutations
+    createTopic: async (_: any, { input }: { input: any }, context: Context) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'admin') {
+        throw new ForbiddenError('Only admins can create topics');
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from('topics')
+        .insert({
+          subject_id: input.subjectId,
+          name: input.name,
+          description: input.description,
+        })
+        .select()
+        .single();
+
+      if (error) throw new DatabaseError(error.message);
+      return formatResponse(data);
+    },
+
+    updateTopic: async (
+      _: any,
+      { id, name, description }: { id: string; name?: string; description?: string },
+      context: Context
+    ) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'admin') {
+        throw new ForbiddenError('Only admins can update topics');
+      }
+
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (description !== undefined) updateData.description = description;
+
+      const { data, error } = await supabaseAdmin
+        .from('topics')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') throw new NotFoundError('Topic');
+        throw new DatabaseError(error.message);
+      }
+      return formatResponse(data);
+    },
+
+    deleteTopic: async (_: any, { id }: { id: string }, context: Context) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'admin') {
+        throw new ForbiddenError('Only admins can delete topics');
+      }
+
+      const { error } = await supabaseAdmin.from('topics').delete().eq('id', id);
+      if (error) throw new DatabaseError(error.message);
+      return true;
+    },
+
+    // Question mutations
     createQuestion: async (_: any, { input }: { input: any }, context: Context) => {
       if (!context.user) throw new AuthenticationError();
       if (context.user.role !== 'instructor' && context.user.role !== 'admin') {

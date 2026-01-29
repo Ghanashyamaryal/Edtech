@@ -411,7 +411,7 @@ export default function CoursesPage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="border-white/30 text-primary-foreground hover:bg-white/10"
+                  className="border-primary/30 text-primary hover:bg-primary/10"
                 >
                   Compare Courses
                 </Button>
