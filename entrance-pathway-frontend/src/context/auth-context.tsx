@@ -396,7 +396,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       supabaseUser,
       session,
       isLoading,
-      isAuthenticated: !!session && !!user,
+      // User is authenticated if they have a valid Supabase session
+      // The user profile may still be loading or missing, but they're still logged in
+      isAuthenticated: !!session,
       signIn,
       signUp,
       signOut,

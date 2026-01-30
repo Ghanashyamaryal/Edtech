@@ -50,19 +50,19 @@ export function AdminHeader({ onMenuClick, className }: AdminHeaderProps) {
       {/* Right section */}
       <div className="flex items-center gap-3">
         <div className="text-right hidden sm:block">
-          <p className="text-sm font-medium text-foreground">{user?.fullName}</p>
+          <p className="text-sm font-medium text-foreground">{user?.full_name}</p>
           <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
         </div>
-        {user?.avatarUrl ? (
+        {user?.avatar_url ? (
           <img
-            src={user.avatarUrl}
-            alt={user.fullName || "User"}
+            src={user.avatar_url}
+            alt={user.full_name || "User"}
             className="w-9 h-9 rounded-full object-cover border border-border"
           />
         ) : (
           <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
             <span className="text-sm font-medium text-muted-foreground">
-              {user?.fullName?.charAt(0) || "A"}
+              {user?.full_name?.charAt(0) || "A"}
             </span>
           </div>
         )}

@@ -19,6 +19,11 @@ export const CREATE_COURSE = gql`
       id
       title
       slug
+      fullName
+      discountedPrice
+      durationHours
+      features
+      isBestseller
     }
   }
 `;
@@ -28,9 +33,14 @@ export const UPDATE_COURSE = gql`
     updateCourse(id: $id, input: $input) {
       id
       title
+      fullName
       description
       thumbnailUrl
       price
+      discountedPrice
+      durationHours
+      features
+      isBestseller
       isPublished
     }
   }
@@ -263,5 +273,33 @@ export const ADD_QUESTION_TO_EXAM = gql`
 export const REMOVE_QUESTION_FROM_EXAM = gql`
   mutation RemoveQuestionFromExam($examId: ID!, $questionId: ID!) {
     removeQuestionFromExam(examId: $examId, questionId: $questionId)
+  }
+`;
+
+// Course-Exam linking mutations
+export const LINK_EXAM_TO_COURSE = gql`
+  mutation LinkExamToCourse($examId: ID!, $courseId: ID!, $displayOrder: Int, $isRequired: Boolean) {
+    linkExamToCourse(examId: $examId, courseId: $courseId, displayOrder: $displayOrder, isRequired: $isRequired) {
+      id
+      courseId
+      examId
+      displayOrder
+      isRequired
+    }
+  }
+`;
+
+export const UNLINK_EXAM_FROM_COURSE = gql`
+  mutation UnlinkExamFromCourse($examId: ID!, $courseId: ID!) {
+    unlinkExamFromCourse(examId: $examId, courseId: $courseId)
+  }
+`;
+
+export const REORDER_COURSE_EXAMS = gql`
+  mutation ReorderCourseExams($courseId: ID!, $examIds: [ID!]!) {
+    reorderCourseExams(courseId: $courseId, examIds: $examIds) {
+      id
+      displayOrder
+    }
   }
 `;

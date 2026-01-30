@@ -1,7 +1,8 @@
 'use client';
 
+import { useQuery } from '@apollo/client';
 import { motion } from 'framer-motion';
-import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
+import { Button, Card, CardContent } from '@/components/ui';
 import { Title, Subtitle, Paragraph, Small } from '@/components/atoms';
 import {
   FileText,
@@ -12,7 +13,6 @@ import {
   BarChart3,
   Award,
   Zap,
-  CheckCircle2,
   Users,
   Star,
   TrendingUp,
@@ -22,100 +22,56 @@ import {
   Play,
 } from 'lucide-react';
 import Link from 'next/link';
+import { GET_LANDING_EXAMS } from '@/graphql/queries/exams';
 
-// Test categories
-const testCategories = [
-  {
-    id: 1,
+// Exam type from API
+interface Exam {
+  id: string;
+  title: string;
+  description: string | null;
+  durationMinutes: number;
+  totalMarks: number;
+  examType: string | null;
+  setNumber: number | null;
+  questionsCount: number;
+  courses: { id: string; title: string; slug: string }[];
+}
+
+// Test category config
+const testCategoryConfig: Record<string, { name: string; description: string; icon: any; color: string }> = {
+  full_model: {
     name: 'Full Model Tests',
     description: 'Complete entrance exam simulations',
-    tests: 25,
     icon: FileText,
     color: 'primary',
   },
-  {
-    id: 2,
+  subject: {
     name: 'Subject Tests',
     description: 'Focused tests for each subject',
-    tests: 120,
     icon: BookOpen,
     color: 'secondary',
   },
-  {
-    id: 3,
+  chapter: {
     name: 'Chapter Tests',
     description: 'Topic-wise practice tests',
-    tests: 350,
     icon: Target,
     color: 'gold',
   },
-  {
-    id: 4,
-    name: 'Quick Quizzes',
-    description: '15-minute revision tests',
-    tests: 200,
+  practice: {
+    name: 'Practice Quizzes',
+    description: 'Quick revision tests',
     icon: Zap,
     color: 'primary',
   },
-];
+  previous_year: {
+    name: 'Previous Year Questions',
+    description: 'Past exam papers with solutions',
+    icon: Clock,
+    color: 'secondary',
+  },
+};
 
-// Featured tests
-const featuredTests = [
-  {
-    id: 1,
-    title: 'BSc CSIT Full Model Test - Set A',
-    type: 'Full Test',
-    questions: 150,
-    duration: '3 hours',
-    difficulty: 'Hard',
-    attempts: 4520,
-    avgScore: 72,
-    isFree: true,
-  },
-  {
-    id: 2,
-    title: 'Mathematics: Calculus Complete',
-    type: 'Subject Test',
-    questions: 50,
-    duration: '60 min',
-    difficulty: 'Medium',
-    attempts: 3200,
-    avgScore: 68,
-    isFree: true,
-  },
-  {
-    id: 3,
-    title: 'Computer Science Fundamentals',
-    type: 'Subject Test',
-    questions: 60,
-    duration: '75 min',
-    difficulty: 'Medium',
-    attempts: 2890,
-    avgScore: 74,
-    isFree: false,
-  },
-  {
-    id: 4,
-    title: 'Logical Reasoning Quick Quiz',
-    type: 'Quick Quiz',
-    questions: 25,
-    duration: '15 min',
-    difficulty: 'Easy',
-    attempts: 5600,
-    avgScore: 78,
-    isFree: true,
-  },
-];
-
-// Statistics
-const stats = [
-  { icon: FileText, value: '500+', label: 'Practice Tests', color: 'primary' },
-  { icon: Users, value: '50,000+', label: 'Tests Taken', color: 'secondary' },
-  { icon: Target, value: '95%', label: 'Accuracy Rate', color: 'gold' },
-  { icon: Trophy, value: '10,000+', label: 'Top Rankers', color: 'primary' },
-];
-
-// Features
+// Features (static)
 const features = [
   {
     icon: Timer,
@@ -139,20 +95,51 @@ const features = [
   },
 ];
 
-function getDifficultyColor(difficulty: string) {
-  switch (difficulty.toLowerCase()) {
-    case 'easy':
-      return 'bg-secondary/10 text-secondary';
-    case 'medium':
-      return 'bg-gold/10 text-gold';
-    case 'hard':
-      return 'bg-destructive/10 text-destructive';
-    default:
-      return 'bg-muted text-muted-foreground';
+function formatDuration(minutes: number): string {
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours} hour${hours > 1 ? 's' : ''}`;
   }
+  return `${minutes} min`;
+}
+
+function getExamTypeLabel(examType: string | null): string {
+  if (!examType) return 'Practice Test';
+  return testCategoryConfig[examType]?.name || 'Practice Test';
 }
 
 export default function MockTestsPage() {
+  const { data, loading } = useQuery(GET_LANDING_EXAMS);
+  const exams: Exam[] = data?.exams || [];
+
+  // Group exams by type for categories
+  const examsByType = exams.reduce((acc, exam) => {
+    const type = exam.examType || 'practice';
+    if (!acc[type]) acc[type] = [];
+    acc[type].push(exam);
+    return acc;
+  }, {} as Record<string, Exam[]>);
+
+  // Create test categories from grouped exams
+  const testCategories = Object.entries(testCategoryConfig)
+    .filter(([type]) => examsByType[type]?.length > 0)
+    .map(([type, config]) => ({
+      id: type,
+      name: config.name,
+      description: config.description,
+      tests: examsByType[type]?.length || 0,
+      icon: config.icon,
+      color: config.color,
+    }));
+
+  // Get featured exams (first 4 exams)
+  const featuredExams = exams.slice(0, 4);
+
+  // Calculate stats
+  const totalTests = exams.length;
+  const totalQuestions = exams.reduce((sum, exam) => sum + (exam.questionsCount || 0), 0);
+
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
@@ -197,7 +184,12 @@ export default function MockTestsPage() {
       <section className="py-12 border-b border-border">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => {
+            {[
+              { icon: FileText, value: totalTests > 0 ? `${totalTests}+` : '0', label: 'Practice Tests', color: 'primary' },
+              { icon: Users, value: '50,000+', label: 'Tests Taken', color: 'secondary' },
+              { icon: Target, value: totalQuestions > 0 ? `${totalQuestions}+` : '0', label: 'Questions', color: 'gold' },
+              { icon: Trophy, value: '10,000+', label: 'Top Rankers', color: 'primary' },
+            ].map((stat, index) => {
               const Icon = stat.icon;
               return (
                 <motion.div
@@ -240,40 +232,61 @@ export default function MockTestsPage() {
             </Paragraph>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {testCategories.map((category, index) => {
-              const Icon = category.icon;
-              return (
-                <motion.div
-                  key={category.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="h-full hover:shadow-strong transition-all hover:-translate-y-1 cursor-pointer group">
-                    <CardContent className="pt-6 text-center">
-                      <div
-                        className={`w-16 h-16 rounded-2xl bg-${category.color}/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}
-                      >
-                        <Icon className={`w-8 h-8 text-${category.color}`} />
-                      </div>
-                      <Subtitle as="h3" className="font-display text-lg mb-2">
-                        {category.name}
-                      </Subtitle>
-                      <Small className="text-sm mb-4 block">
-                        {category.description}
-                      </Small>
-                      <span className="inline-flex items-center gap-1 text-primary font-medium">
-                        {category.tests} Tests
-                        <ChevronRight className="w-4 h-4" />
-                      </span>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
+          {loading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, index) => (
+                <Card key={index} className="h-full">
+                  <CardContent className="pt-6 text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-muted animate-pulse mx-auto mb-4" />
+                    <div className="h-5 w-32 bg-muted rounded animate-pulse mx-auto mb-2" />
+                    <div className="h-4 w-40 bg-muted rounded animate-pulse mx-auto mb-4" />
+                    <div className="h-4 w-20 bg-muted rounded animate-pulse mx-auto" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : testCategories.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {testCategories.map((category, index) => {
+                const Icon = category.icon;
+                return (
+                  <motion.div
+                    key={category.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="h-full hover:shadow-strong transition-all hover:-translate-y-1 cursor-pointer group">
+                      <CardContent className="pt-6 text-center">
+                        <div
+                          className={`w-16 h-16 rounded-2xl bg-${category.color}/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}
+                        >
+                          <Icon className={`w-8 h-8 text-${category.color}`} />
+                        </div>
+                        <Subtitle as="h3" className="font-display text-lg mb-2">
+                          {category.name}
+                        </Subtitle>
+                        <Small className="text-sm mb-4 block">
+                          {category.description}
+                        </Small>
+                        <span className="inline-flex items-center gap-1 text-primary font-medium">
+                          {category.tests} Tests
+                          <ChevronRight className="w-4 h-4" />
+                        </span>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Paragraph className="text-muted-foreground">
+                No tests available yet. Check back soon!
+              </Paragraph>
+            </div>
+          )}
         </div>
       </section>
 
@@ -298,87 +311,124 @@ export default function MockTestsPage() {
             </Link>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {featuredTests.map((test, index) => (
-              <motion.div
-                key={test.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="hover:shadow-strong transition-all">
+          {loading ? (
+            <div className="grid md:grid-cols-2 gap-6">
+              {[...Array(4)].map((_, index) => (
+                <Card key={index}>
                   <CardContent className="pt-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-start gap-4">
-                        <div className="p-3 rounded-xl bg-primary/10">
-                          <FileText className="w-6 h-6 text-primary" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-medium">
-                              {test.type}
-                            </span>
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(
-                                test.difficulty
-                              )}`}
-                            >
-                              {test.difficulty}
-                            </span>
-                            {test.isFree && (
-                              <span className="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary text-xs font-medium">
-                                Free
-                              </span>
-                            )}
-                          </div>
-                          <Subtitle as="h3" className="font-display text-lg">
-                            {test.title}
-                          </Subtitle>
-                        </div>
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className="p-3 rounded-xl bg-muted animate-pulse w-12 h-12" />
+                      <div className="flex-1">
+                        <div className="h-4 w-32 bg-muted rounded animate-pulse mb-2" />
+                        <div className="h-5 w-48 bg-muted rounded animate-pulse" />
                       </div>
                     </div>
-
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
-                      <span className="flex items-center gap-1">
-                        <FileText className="w-4 h-4" />
-                        {test.questions} questions
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        {test.duration}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        {test.attempts.toLocaleString()} attempts
-                      </span>
+                    <div className="flex gap-4 mb-4">
+                      <div className="h-4 w-24 bg-muted rounded animate-pulse" />
+                      <div className="h-4 w-20 bg-muted rounded animate-pulse" />
                     </div>
-
-                    <div className="flex items-center justify-between pt-4 border-t border-border">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">Avg Score:</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-secondary rounded-full"
-                              style={{ width: `${test.avgScore}%` }}
-                            />
-                          </div>
-                          <span className="text-sm font-medium text-secondary">
-                            {test.avgScore}%
-                          </span>
-                        </div>
-                      </div>
-                      <Button className="gap-2">
-                        <Play className="w-4 h-4" />
-                        Start Test
-                      </Button>
-                    </div>
+                    <div className="h-10 w-full bg-muted rounded animate-pulse" />
                   </CardContent>
                 </Card>
-              </motion.div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : featuredExams.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-6">
+              {featuredExams.map((exam, index) => (
+                <motion.div
+                  key={exam.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="hover:shadow-strong transition-all">
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 rounded-xl bg-primary/10">
+                            <FileText className="w-6 h-6 text-primary" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="px-2 py-0.5 rounded-full bg-muted text-muted-foreground text-xs font-medium">
+                                {getExamTypeLabel(exam.examType)}
+                              </span>
+                              {exam.setNumber && (
+                                <span className="px-2 py-0.5 rounded-full bg-secondary/10 text-secondary text-xs font-medium">
+                                  Set {exam.setNumber}
+                                </span>
+                              )}
+                            </div>
+                            <Subtitle as="h3" className="font-display text-lg">
+                              {exam.title}
+                            </Subtitle>
+                          </div>
+                        </div>
+                      </div>
+
+                      {exam.description && (
+                        <Paragraph className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                          {exam.description}
+                        </Paragraph>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
+                        <span className="flex items-center gap-1">
+                          <FileText className="w-4 h-4" />
+                          {exam.questionsCount} questions
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          {formatDuration(exam.durationMinutes)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Target className="w-4 h-4" />
+                          {exam.totalMarks} marks
+                        </span>
+                      </div>
+
+                      {exam.courses.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {exam.courses.slice(0, 2).map((course) => (
+                            <span
+                              key={course.id}
+                              className="px-2 py-1 rounded-md bg-gold/10 text-gold text-xs font-medium"
+                            >
+                              {course.title}
+                            </span>
+                          ))}
+                          {exam.courses.length > 2 && (
+                            <span className="px-2 py-1 rounded-md bg-muted text-muted-foreground text-xs">
+                              +{exam.courses.length - 2} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between pt-4 border-t border-border">
+                        <div className="text-sm text-muted-foreground">
+                          Duration: {formatDuration(exam.durationMinutes)}
+                        </div>
+                        <Link href={`/dashboard/mock-tests/${exam.id}`}>
+                          <Button className="gap-2">
+                            <Play className="w-4 h-4" />
+                            Start Test
+                          </Button>
+                        </Link>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Paragraph className="text-muted-foreground">
+                No tests available yet. Check back soon!
+              </Paragraph>
+            </div>
+          )}
         </div>
       </section>
 
@@ -494,7 +544,7 @@ export default function MockTestsPage() {
       {/* CTA Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <Card className="bg-gradient-to-r from-primary to-primary/80 border-0">
+          <Card className="bg-linear-to-r from-primary to-primary/80 border-0">
             <CardContent className="py-12">
               <div className="text-center max-w-2xl mx-auto">
                 <Trophy className="w-16 h-16 text-primary-foreground/80 mx-auto mb-6" />

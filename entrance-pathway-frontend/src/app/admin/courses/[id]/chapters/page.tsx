@@ -21,6 +21,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
   Switch,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { ConfirmDialog } from "@/components/molecules/admin";
@@ -35,8 +40,10 @@ import {
   ChevronRight,
   Video,
   GripVertical,
+  ClipboardList,
+  X,
 } from "lucide-react";
-import { GET_ADMIN_COURSE } from "@/graphql/queries/admin";
+import { GET_ADMIN_COURSE, GET_COURSE_EXAMS, GET_ADMIN_EXAMS } from "@/graphql/queries/admin";
 import {
   CREATE_CHAPTER,
   UPDATE_CHAPTER,
@@ -44,9 +51,19 @@ import {
   CREATE_LESSON,
   UPDATE_LESSON,
   DELETE_LESSON,
+  LINK_EXAM_TO_COURSE,
+  UNLINK_EXAM_FROM_COURSE,
 } from "@/graphql/mutations/admin";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
+
+const EXAM_TYPE_LABELS: Record<string, string> = {
+  full_model: "Full Model",
+  subject: "Subject",
+  chapter: "Chapter",
+  practice: "Practice",
+  previous_year: "Previous Year",
+};
 
 interface Lesson {
   id: string;
@@ -68,6 +85,26 @@ interface Chapter {
   lessons: Lesson[];
 }
 
+interface Exam {
+  id: string;
+  title: string;
+  examType: string | null;
+  setNumber: number | null;
+  durationMinutes: number;
+  totalMarks: number;
+  isPublished: boolean;
+  questionsCount: number;
+}
+
+interface CourseExam {
+  id: string;
+  courseId: string;
+  examId: string;
+  displayOrder: number;
+  isRequired: boolean;
+  exam: Exam;
+}
+
 export default function ChaptersPage() {
   const params = useParams();
   const { toast } = useToast();
@@ -80,6 +117,7 @@ export default function ChaptersPage() {
   const [editingLesson, setEditingLesson] = React.useState<Lesson | null>(null);
   const [selectedChapterId, setSelectedChapterId] = React.useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = React.useState<{ type: "chapter" | "lesson"; id: string; name: string } | null>(null);
+  const [selectedExamToAdd, setSelectedExamToAdd] = React.useState("");
 
   // Chapter form state
   const [chapterTitle, setChapterTitle] = React.useState("");
@@ -94,6 +132,15 @@ export default function ChaptersPage() {
   const { data, loading, refetch } = useQuery(GET_ADMIN_COURSE, {
     variables: { id: courseId },
     skip: !courseId,
+  });
+
+  const { data: courseExamsData, loading: loadingExams, refetch: refetchExams } = useQuery(GET_COURSE_EXAMS, {
+    variables: { courseId },
+    skip: !courseId,
+  });
+
+  const { data: allExamsData } = useQuery(GET_ADMIN_EXAMS, {
+    variables: { limit: 100 },
   });
 
   const [createChapter, { loading: creatingChapter }] = useMutation(CREATE_CHAPTER, {
@@ -150,6 +197,23 @@ export default function ChaptersPage() {
       toast({ title: "Lesson deleted" });
       setDeleteTarget(null);
       refetch();
+    },
+    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
+  });
+
+  const [linkExamToCourse, { loading: linkingExam }] = useMutation(LINK_EXAM_TO_COURSE, {
+    onCompleted: () => {
+      toast({ title: "Exam linked", description: "The exam has been added to this course." });
+      setSelectedExamToAdd("");
+      refetchExams();
+    },
+    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
+  });
+
+  const [unlinkExamFromCourse, { loading: unlinkingExam }] = useMutation(UNLINK_EXAM_FROM_COURSE, {
+    onCompleted: () => {
+      toast({ title: "Exam unlinked", description: "The exam has been removed from this course." });
+      refetchExams();
     },
     onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
   });
@@ -257,6 +321,26 @@ export default function ChaptersPage() {
     setExpandedChapters(newExpanded);
   };
 
+  const handleLinkExam = () => {
+    if (!selectedExamToAdd) return;
+    linkExamToCourse({
+      variables: {
+        examId: selectedExamToAdd,
+        courseId,
+        isRequired: false,
+      },
+    });
+  };
+
+  const handleUnlinkExam = (examId: string) => {
+    unlinkExamFromCourse({
+      variables: {
+        examId,
+        courseId,
+      },
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -267,6 +351,10 @@ export default function ChaptersPage() {
 
   const course = data?.course;
   const chapters: Chapter[] = course?.chapters || [];
+  const linkedExams: CourseExam[] = courseExamsData?.courseExams || [];
+  const allExams: Exam[] = allExamsData?.exams || [];
+  const linkedExamIds = linkedExams.map((ce) => ce.examId);
+  const availableExams = allExams.filter((exam) => !linkedExamIds.includes(exam.id));
 
   return (
     <div className="space-y-6">
@@ -412,6 +500,124 @@ export default function ChaptersPage() {
             ))
         )}
       </div>
+
+      {/* Exams Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ClipboardList className="w-5 h-5" />
+            Course Exams
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Add Exam */}
+          {availableExams.length > 0 && (
+            <div className="flex gap-2">
+              <Select
+                value={selectedExamToAdd}
+                onValueChange={setSelectedExamToAdd}
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select an exam to add" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableExams.map((exam) => (
+                    <SelectItem key={exam.id} value={exam.id}>
+                      {exam.title}
+                      {exam.examType && ` (${EXAM_TYPE_LABELS[exam.examType] || exam.examType})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleLinkExam}
+                disabled={!selectedExamToAdd || linkingExam}
+                className="gap-2"
+              >
+                {linkingExam ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
+                Add
+              </Button>
+            </div>
+          )}
+
+          {/* Linked Exams List */}
+          {loadingExams ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : linkedExams.length === 0 ? (
+            <div className="py-8 text-center">
+              <ClipboardList className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-2">No exams linked to this course</p>
+              <p className="text-sm text-muted-foreground">
+                Add exams above or{" "}
+                <Link href="/admin/exams/new" className="text-primary hover:underline">
+                  create a new exam
+                </Link>
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {linkedExams
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .map((courseExam) => (
+                  <div
+                    key={courseExam.id}
+                    className="flex items-center justify-between p-3 rounded-lg border bg-muted/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <GripVertical className="w-4 h-4 text-muted-foreground" />
+                      <ClipboardList className="w-4 h-4 text-primary" />
+                      <div>
+                        <p className="font-medium">{courseExam.exam.title}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          {courseExam.exam.examType && (
+                            <span className="bg-muted px-1.5 py-0.5 rounded">
+                              {EXAM_TYPE_LABELS[courseExam.exam.examType] || courseExam.exam.examType}
+                              {courseExam.exam.setNumber && courseExam.exam.setNumber > 1 && ` Set ${courseExam.exam.setNumber}`}
+                            </span>
+                          )}
+                          <span>{courseExam.exam.durationMinutes} min</span>
+                          <span>{courseExam.exam.totalMarks} marks</span>
+                          <span>{courseExam.exam.questionsCount || 0} questions</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/admin/exams/${courseExam.examId}`}>
+                        <Button variant="ghost" size="icon">
+                          <Pencil className="w-4 h-4" />
+                        </Button>
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleUnlinkExam(courseExam.examId)}
+                        disabled={unlinkingExam}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {availableExams.length === 0 && linkedExams.length > 0 && (
+            <p className="text-xs text-muted-foreground text-center">
+              All available exams have been linked.{" "}
+              <Link href="/admin/exams/new" className="text-primary hover:underline">
+                Create a new exam
+              </Link>
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Chapter Dialog */}
       <Dialog open={showChapterDialog} onOpenChange={(open) => { setShowChapterDialog(open); if (!open) resetChapterForm(); }}>

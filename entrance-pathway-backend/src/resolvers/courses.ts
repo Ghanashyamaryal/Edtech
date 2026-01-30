@@ -280,6 +280,28 @@ export const courseResolvers = {
 
       return count || 0;
     },
+
+    exams: async (course: any) => {
+      const { data } = await supabaseAdmin
+        .from('course_exams')
+        .select('exam:exams(*)')
+        .eq('course_id', course.id)
+        .order('display_order');
+
+      return (data || [])
+        .map((ce: any) => ce.exam)
+        .filter((e: any) => e !== null)
+        .map((e: any) => formatResponse(e));
+    },
+
+    examsCount: async (course: any) => {
+      const { count } = await supabaseAdmin
+        .from('course_exams')
+        .select('*', { count: 'exact', head: true })
+        .eq('course_id', course.id);
+
+      return count || 0;
+    },
   },
 
   Chapter: {

@@ -59,10 +59,15 @@ export const GET_ADMIN_COURSE = gql`
     course(id: $id, slug: $slug) {
       id
       title
+      fullName
       description
       slug
       thumbnailUrl
       price
+      discountedPrice
+      durationHours
+      features
+      isBestseller
       isPublished
       instructorId
       chapters {
@@ -196,16 +201,22 @@ export const GET_ADMIN_QUESTION = gql`
 
 // Exam queries
 export const GET_ADMIN_EXAMS = gql`
-  query GetAdminExams($isPublished: Boolean, $limit: Int, $offset: Int) {
-    exams(isPublished: $isPublished, limit: $limit, offset: $offset) {
+  query GetAdminExams($isPublished: Boolean, $courseId: ID, $examType: ExamType, $limit: Int, $offset: Int) {
+    exams(isPublished: $isPublished, courseId: $courseId, examType: $examType, limit: $limit, offset: $offset) {
       id
       title
       description
       durationMinutes
       totalMarks
       passingMarks
+      examType
+      setNumber
       isPublished
       questionsCount
+      courses {
+        id
+        title
+      }
       createdAt
     }
   }
@@ -220,6 +231,8 @@ export const GET_ADMIN_EXAM = gql`
       durationMinutes
       totalMarks
       passingMarks
+      examType
+      setNumber
       isPublished
       questions {
         id
@@ -234,7 +247,46 @@ export const GET_ADMIN_EXAM = gql`
         }
       }
       questionsCount
+      courses {
+        id
+        title
+        slug
+      }
       createdAt
+    }
+  }
+`;
+
+// Course exams query
+export const GET_COURSE_EXAMS = gql`
+  query GetCourseExams($courseId: ID!) {
+    courseExams(courseId: $courseId) {
+      id
+      courseId
+      examId
+      displayOrder
+      isRequired
+      exam {
+        id
+        title
+        examType
+        setNumber
+        durationMinutes
+        totalMarks
+        isPublished
+        questionsCount
+      }
+    }
+  }
+`;
+
+// Simple courses list for dropdowns
+export const GET_COURSES_FOR_SELECT = gql`
+  query GetCoursesForSelect {
+    courses(limit: 100) {
+      id
+      title
+      slug
     }
   }
 `;
