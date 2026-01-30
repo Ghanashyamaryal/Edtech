@@ -3,21 +3,19 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useQuery } from "@apollo/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
 import { Subtitle, Paragraph, Small } from "@/components/atoms";
 import { useAuth } from "@/context/auth-context";
+import { GET_LANDING_COURSES } from "@/graphql/queries/courses";
 import {
   GraduationCap,
   Menu,
   X,
   ChevronDown,
   BookOpen,
-  Laptop,
-  Calculator,
-  Code,
-  Brain,
   Bell,
   Calendar,
   LogOut,
@@ -27,33 +25,14 @@ import {
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Avatar from "@radix-ui/react-avatar";
 
-// Course categories for dropdown
-const courseCategories = [
-  {
-    name: "BSc CSIT",
-    href: "/courses/bsc-csit",
-    icon: Code,
-    description: "Computer Science & IT preparation",
-  },
-  {
-    name: "BIT",
-    href: "/courses/bit",
-    icon: Laptop,
-    description: "Bachelor in Information Technology",
-  },
-  {
-    name: "BCA",
-    href: "/courses/bca",
-    icon: Brain,
-    description: "Bachelor in Computer Application",
-  },
-  {
-    name: "BIM",
-    href: "/courses/bim",
-    icon: Calculator,
-    description: "Business Information Management",
-  },
-];
+// Course type from API
+interface Course {
+  id: string;
+  title: string;
+  fullName: string | null;
+  slug: string;
+  description: string | null;
+}
 
 // Main navigation items for landing pages
 const landingNavItems = [
@@ -62,7 +41,6 @@ const landingNavItems = [
     name: "Courses",
     href: "/courses",
     hasDropdown: true,
-    dropdownItems: courseCategories,
   },
   { name: "Results", href: "/results" },
   { name: "Notes", href: "/notes" },
@@ -193,9 +171,7 @@ function NotificationsDropdown() {
                 <Subtitle as="span" className="text-sm">
                   {notification.title}
                 </Subtitle>
-                <Small className="text-xs">
-                  {notification.message}
-                </Small>
+                <Small className="text-xs">{notification.message}</Small>
               </DropdownMenu.Item>
             ))}
           </div>
@@ -263,9 +239,7 @@ function ProfileDropdown() {
             <Subtitle as="p" className="text-sm truncate">
               {displayName}
             </Subtitle>
-            <Small className="text-xs truncate block">
-              {user?.email}
-            </Small>
+            <Small className="text-xs truncate block">{user?.email}</Small>
           </div>
 
           <DropdownMenu.Item asChild>
@@ -312,6 +286,10 @@ export function LandingHeader() {
     null,
   );
   const [isMounted, setIsMounted] = React.useState(false);
+
+  // Fetch courses for dropdown
+  const { data: coursesData } = useQuery(GET_LANDING_COURSES);
+  const courses: Course[] = coursesData?.courses?.slice(0, 6) || [];
 
   // Ensure consistent client-side rendering to avoid hydration mismatch
   React.useEffect(() => {
@@ -420,28 +398,30 @@ export function LandingHeader() {
                         transition={{ duration: 0.2 }}
                         className="absolute top-full left-0 mt-2 w-72 bg-card rounded-xl border border-border shadow-strong p-2"
                       >
-                        {item.dropdownItems?.map((dropItem) => {
-                          const Icon = dropItem.icon;
-                          return (
+                        {courses.length > 0 ? (
+                          courses.map((course) => (
                             <Link
-                              key={dropItem.name}
-                              href={dropItem.href}
+                              key={course.id}
+                              href={`/courses/${course.slug}`}
                               className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors group"
                             >
-                              <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                                <Icon className="w-5 h-5 text-primary" />
-                              </div>
-                              <div>
+                              <div className="flex-1 min-w-0">
                                 <Subtitle as="p" className="text-base">
-                                  {dropItem.name}
+                                  {course.title}
                                 </Subtitle>
-                                <Paragraph className="text-sm">
-                                  {dropItem.description}
+                                <Paragraph className="text-sm truncate">
+                                  {course.fullName ||
+                                    course.description ||
+                                    course.title}
                                 </Paragraph>
                               </div>
                             </Link>
-                          );
-                        })}
+                          ))
+                        ) : (
+                          <div className="p-3 text-center text-muted-foreground text-sm">
+                            Loading courses...
+                          </div>
+                        )}
                         <div className="border-t border-border mt-2 pt-2">
                           <Link
                             href="/courses"
@@ -534,19 +514,16 @@ export function LandingHeader() {
                           {item.name}
                         </Link>
                         <div className="ml-4 space-y-1 border-l-2 border-border pl-4">
-                          {item.dropdownItems?.map((dropItem) => {
-                            const Icon = dropItem.icon;
-                            return (
-                              <Link
-                                key={dropItem.name}
-                                href={dropItem.href}
-                                className="flex items-center gap-3 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
-                              >
-                                <Icon className="w-4 h-4" />
-                                {dropItem.name}
-                              </Link>
-                            );
-                          })}
+                          {courses.map((course) => (
+                            <Link
+                              key={course.id}
+                              href={`/courses/${course.slug}`}
+                              className="flex items-center gap-3 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                            >
+                              <BookOpen className="w-4 h-4" />
+                              {course.title}
+                            </Link>
+                          ))}
                         </div>
                       </div>
                     ) : (

@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@apollo/client';
 import { motion } from 'framer-motion';
 import { Button, Card, CardContent } from '@/components/ui';
 import { Title, Subtitle, Paragraph, Small } from '@/components/atoms';
@@ -13,7 +14,6 @@ import {
   CheckCircle2,
   Sparkles,
   Target,
-  Clock,
   Award,
   Video,
   FileText,
@@ -22,6 +22,17 @@ import {
   Quote,
 } from 'lucide-react';
 import Link from 'next/link';
+import { GET_LANDING_COURSES } from '@/graphql/queries/courses';
+
+// Course type from API
+interface Course {
+  id: string;
+  title: string;
+  fullName: string | null;
+  slug: string;
+  studentCount: number | null;
+  rating: number | null;
+}
 
 // Stats data
 const stats = [
@@ -70,41 +81,8 @@ const features = [
   },
 ];
 
-// Courses data
-const courses = [
-  {
-    id: 1,
-    name: 'BSc CSIT',
-    fullName: 'Bachelor in Computer Science & IT',
-    students: 4500,
-    rating: 4.9,
-    color: 'primary',
-  },
-  {
-    id: 2,
-    name: 'BIT',
-    fullName: 'Bachelor in Information Technology',
-    students: 2800,
-    rating: 4.8,
-    color: 'secondary',
-  },
-  {
-    id: 3,
-    name: 'BCA',
-    fullName: 'Bachelor in Computer Application',
-    students: 2100,
-    rating: 4.8,
-    color: 'gold',
-  },
-  {
-    id: 4,
-    name: 'BIM',
-    fullName: 'Business Information Management',
-    students: 1200,
-    rating: 4.7,
-    color: 'primary',
-  },
-];
+// Color palette for courses
+const courseColors = ['primary', 'secondary', 'gold', 'primary'];
 
 // Success stories
 const testimonials = [
@@ -149,6 +127,9 @@ const celebrations = [
 ];
 
 export default function HomePage() {
+  const { data: coursesData, loading: loadingCourses } = useQuery(GET_LANDING_COURSES);
+  const courses: Course[] = coursesData?.courses?.slice(0, 4) || [];
+
   return (
     <>
       {/* Hero Section */}
@@ -398,45 +379,72 @@ export default function HomePage() {
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {courses.map((course, index) => (
-              <motion.div
-                key={course.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link href={`/courses/${course.name.toLowerCase().replace(' ', '-')}`}>
-                  <Card className="h-full hover:shadow-strong transition-all hover:-translate-y-1 cursor-pointer group">
-                    <CardContent className="pt-6">
-                      <div
-                        className={`w-14 h-14 rounded-2xl bg-${course.color}/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
-                      >
-                        <span className={`font-display font-bold text-xl text-${course.color}`}>
-                          {course.name.charAt(0)}
-                        </span>
-                      </div>
-                      <Subtitle as="h3" className="font-display text-xl mb-1">
-                        {course.name}
-                      </Subtitle>
-                      <Small className="text-sm mb-4 block">
-                        {course.fullName}
-                      </Small>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-1 text-muted-foreground">
-                          <Users className="w-4 h-4" />
-                          {course.students.toLocaleString()}
-                        </span>
-                        <span className="flex items-center gap-1 text-gold">
-                          <Star className="w-4 h-4 fill-gold" />
-                          {course.rating}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </motion.div>
-            ))}
+            {loadingCourses ? (
+              // Loading skeleton
+              [...Array(4)].map((_, index) => (
+                <Card key={index} className="h-full">
+                  <CardContent className="pt-6">
+                    <div className="w-14 h-14 rounded-2xl mb-4 bg-muted animate-pulse" />
+                    <div className="h-6 w-24 mb-1 bg-muted rounded animate-pulse" />
+                    <div className="h-4 w-40 mb-4 bg-muted rounded animate-pulse" />
+                    <div className="flex items-center justify-between">
+                      <div className="h-4 w-16 bg-muted rounded animate-pulse" />
+                      <div className="h-4 w-12 bg-muted rounded animate-pulse" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            ) : courses.length > 0 ? (
+              courses.map((course, index) => {
+                const color = courseColors[index % courseColors.length];
+                return (
+                  <motion.div
+                    key={course.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Link href={`/courses/${course.slug}`}>
+                      <Card className="h-full hover:shadow-strong transition-all hover:-translate-y-1 cursor-pointer group">
+                        <CardContent className="pt-6">
+                          <div
+                            className={`w-14 h-14 rounded-2xl bg-${color}/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+                          >
+                            <span className={`font-display font-bold text-xl text-${color}`}>
+                              {course.title.charAt(0)}
+                            </span>
+                          </div>
+                          <Subtitle as="h3" className="font-display text-xl mb-1">
+                            {course.title}
+                          </Subtitle>
+                          <Small className="text-sm mb-4 block">
+                            {course.fullName || course.title}
+                          </Small>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="flex items-center gap-1 text-muted-foreground">
+                              <Users className="w-4 h-4" />
+                              {(course.studentCount || 0).toLocaleString()}
+                            </span>
+                            <span className="flex items-center gap-1 text-gold">
+                              <Star className="w-4 h-4 fill-gold" />
+                              {course.rating?.toFixed(1) || '4.8'}
+                            </span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  </motion.div>
+                );
+              })
+            ) : (
+              // No courses fallback
+              <div className="col-span-4 text-center py-8">
+                <Paragraph className="text-muted-foreground">
+                  No courses available yet. Check back soon!
+                </Paragraph>
+              </div>
+            )}
           </div>
 
           <div className="text-center mt-10">

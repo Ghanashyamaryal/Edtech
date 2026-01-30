@@ -5,10 +5,18 @@ export const GET_COURSES = gql`
     courses(limit: $limit, offset: $offset, isPublished: $isPublished) {
       id
       title
+      fullName
       description
       slug
       thumbnailUrl
       price
+      discountedPrice
+      durationHours
+      studentCount
+      rating
+      reviewsCount
+      features
+      isBestseller
       isPublished
       instructor {
         id
@@ -23,21 +31,57 @@ export const GET_COURSES = gql`
   }
 `;
 
+// Query for landing page courses list
+export const GET_LANDING_COURSES = gql`
+  query GetLandingCourses {
+    courses(isPublished: true) {
+      id
+      title
+      fullName
+      description
+      slug
+      thumbnailUrl
+      price
+      discountedPrice
+      durationHours
+      studentCount
+      rating
+      reviewsCount
+      features
+      isBestseller
+      instructor {
+        id
+        fullName
+        avatarUrl
+      }
+      chaptersCount
+      lessonsCount
+    }
+  }
+`;
+
 export const GET_COURSE = gql`
   query GetCourse($id: ID, $slug: String) {
     course(id: $id, slug: $slug) {
       id
       title
+      fullName
       description
       slug
       thumbnailUrl
       price
+      discountedPrice
+      durationHours
+      studentCount
+      rating
+      reviewsCount
+      features
+      isBestseller
       isPublished
       instructor {
         id
         fullName
         avatarUrl
-        email
       }
       chapters {
         id

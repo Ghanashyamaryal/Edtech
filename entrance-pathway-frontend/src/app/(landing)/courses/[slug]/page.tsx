@@ -1,268 +1,203 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { Title, Subtitle, Paragraph, Small } from "@/components/atoms";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+'use client';
+
+import { useQuery } from '@apollo/client';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import { Title, Subtitle, Paragraph, Small } from '@/components/atoms';
+import { Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import {
   Clock,
   Users,
   BookOpen,
-  Video,
-  FileText,
   CheckCircle,
   Star,
-  Calendar,
-} from "lucide-react";
+  AlertCircle,
+  ArrowLeft,
+} from 'lucide-react';
+import { GET_COURSE } from '@/graphql/queries/courses';
 
-const coursesData: Record<
-  string,
-  {
-    title: string;
-    fullName: string;
-    description: string;
-    duration: string;
-    students: string;
-    lectures: number;
-    price: number;
-    originalPrice: number;
-    rating: number;
-    reviews: number;
-    syllabus: { module: string; topics: string[] }[];
-    features: string[];
-    instructors: { name: string; role: string }[];
-  }
-> = {
-  "bsc-csit": {
-    title: "BSc CSIT",
-    fullName: "Bachelor of Science in Computer Science and Information Technology",
-    description:
-      "Comprehensive preparation course for BSc CSIT entrance examination. Covers all subjects including Mathematics, English, Physics, Chemistry, and Computer Science.",
-    duration: "3 months",
-    students: "5,000+",
-    lectures: 120,
-    price: 4999,
-    originalPrice: 7999,
-    rating: 4.8,
-    reviews: 2340,
-    syllabus: [
-      {
-        module: "Mathematics",
-        topics: [
-          "Algebra & Trigonometry",
-          "Calculus",
-          "Coordinate Geometry",
-          "Probability & Statistics",
-        ],
-      },
-      {
-        module: "Physics",
-        topics: [
-          "Mechanics",
-          "Heat & Thermodynamics",
-          "Waves & Optics",
-          "Electricity & Magnetism",
-        ],
-      },
-      {
-        module: "Chemistry",
-        topics: [
-          "Physical Chemistry",
-          "Organic Chemistry",
-          "Inorganic Chemistry",
-        ],
-      },
-      {
-        module: "English",
-        topics: [
-          "Grammar",
-          "Vocabulary",
-          "Reading Comprehension",
-          "Writing Skills",
-        ],
-      },
-      {
-        module: "Computer Science",
-        topics: [
-          "Computer Fundamentals",
-          "Number Systems",
-          "Basic Programming",
-          "Data Representation",
-        ],
-      },
-    ],
-    features: [
-      "120+ Video Lectures",
-      "Comprehensive Study Notes",
-      "10 Full-length Mock Tests",
-      "Live Doubt Clearing Sessions",
-      "Previous Year Questions",
-      "Performance Analytics",
-    ],
-    instructors: [
-      { name: "Dr. Ram Sharma", role: "Mathematics Expert" },
-      { name: "Prof. Sita Adhikari", role: "Physics & Chemistry" },
-    ],
-  },
-  bit: {
-    title: "BIT",
-    fullName: "Bachelor of Information Technology",
-    description:
-      "Complete preparation course for BIT entrance examination covering all required subjects with expert guidance and comprehensive study materials.",
-    duration: "3 months",
-    students: "3,000+",
-    lectures: 100,
-    price: 4499,
-    originalPrice: 6999,
-    rating: 4.7,
-    reviews: 1560,
-    syllabus: [
-      {
-        module: "Mathematics",
-        topics: ["Algebra", "Calculus", "Statistics", "Discrete Mathematics"],
-      },
-      {
-        module: "English",
-        topics: ["Grammar", "Comprehension", "Vocabulary", "Writing"],
-      },
-      {
-        module: "General Knowledge",
-        topics: ["Current Affairs", "Computer Awareness", "Logical Reasoning"],
-      },
-      {
-        module: "Computer Basics",
-        topics: [
-          "Computer Fundamentals",
-          "Operating Systems",
-          "Internet Basics",
-        ],
-      },
-    ],
-    features: [
-      "100+ Video Lectures",
-      "Detailed Study Notes",
-      "8 Full-length Mock Tests",
-      "Weekly Live Classes",
-      "PYQ Solutions",
-      "24/7 Doubt Support",
-    ],
-    instructors: [
-      { name: "Anil Thapa", role: "IT Expert" },
-      { name: "Priya Gurung", role: "Math & English" },
-    ],
-  },
-  bca: {
-    title: "BCA",
-    fullName: "Bachelor of Computer Applications",
-    description:
-      "Targeted preparation for BCA entrance exams with focus on Mathematics, English, and Computer fundamentals.",
-    duration: "2.5 months",
-    students: "4,000+",
-    lectures: 90,
-    price: 3999,
-    originalPrice: 5999,
-    rating: 4.6,
-    reviews: 1890,
-    syllabus: [
-      {
-        module: "Mathematics",
-        topics: ["Basic Algebra", "Sets & Relations", "Probability", "Matrices"],
-      },
-      {
-        module: "English",
-        topics: ["Grammar Basics", "Vocabulary", "Comprehension"],
-      },
-      {
-        module: "Computer Fundamentals",
-        topics: [
-          "Hardware & Software",
-          "Number Systems",
-          "Basic Programming Logic",
-        ],
-      },
-      {
-        module: "Logical Reasoning",
-        topics: ["Pattern Recognition", "Puzzles", "Data Interpretation"],
-      },
-    ],
-    features: [
-      "90+ Video Lectures",
-      "Concise Study Notes",
-      "6 Mock Tests",
-      "Doubt Sessions",
-      "Quick Revision Materials",
-      "Mobile App Access",
-    ],
-    instructors: [
-      { name: "Bijay KC", role: "Computer Science" },
-      { name: "Sunita Sharma", role: "Mathematics" },
-    ],
-  },
-  bim: {
-    title: "BIM",
-    fullName: "Bachelor of Information Management",
-    description:
-      "Specialized preparation for BIM entrance focusing on Management concepts along with IT fundamentals.",
-    duration: "2.5 months",
-    students: "2,500+",
-    lectures: 85,
-    price: 3999,
-    originalPrice: 5999,
-    rating: 4.7,
-    reviews: 1230,
-    syllabus: [
-      {
-        module: "Mathematics",
-        topics: ["Business Mathematics", "Statistics", "Quantitative Aptitude"],
-      },
-      {
-        module: "English",
-        topics: ["Business English", "Communication Skills", "Comprehension"],
-      },
-      {
-        module: "Management",
-        topics: [
-          "Principles of Management",
-          "Business Studies",
-          "Organizational Behavior",
-        ],
-      },
-      {
-        module: "IT Fundamentals",
-        topics: ["Computer Basics", "MIS Concepts", "Database Basics"],
-      },
-    ],
-    features: [
-      "85+ Video Lectures",
-      "Management Case Studies",
-      "6 Mock Tests",
-      "GD/PI Preparation",
-      "Industry Insights",
-      "Career Guidance",
-    ],
-    instructors: [
-      { name: "Dr. Prakash Joshi", role: "Management Expert" },
-      { name: "Rajan Shrestha", role: "IT & Business" },
-    ],
-  },
-};
-
-export function generateStaticParams() {
-  return Object.keys(coursesData).map((slug) => ({ slug }));
+// Types
+interface Lesson {
+  id: string;
+  title: string;
+  description: string | null;
+  videoUrl: string | null;
+  duration: number | null;
+  position: number;
+  isPublished: boolean;
+  isFree: boolean;
 }
 
-export default async function CourseDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const course = coursesData[slug];
+interface Chapter {
+  id: string;
+  title: string;
+  description: string | null;
+  position: number;
+  isPublished: boolean;
+  lessons: Lesson[];
+}
 
-  if (!course) {
-    notFound();
+interface Course {
+  id: string;
+  title: string;
+  fullName: string | null;
+  description: string;
+  slug: string;
+  thumbnailUrl: string | null;
+  price: number;
+  discountedPrice: number | null;
+  durationHours: number | null;
+  studentCount: number | null;
+  rating: number | null;
+  reviewsCount: number | null;
+  features: string[] | null;
+  isBestseller: boolean | null;
+  isPublished: boolean;
+  instructor: {
+    id: string;
+    fullName: string;
+    avatarUrl: string | null;
+  } | null;
+  chapters: Chapter[];
+}
+
+// Loading skeleton
+function CourseDetailSkeleton() {
+  return (
+    <div className="min-h-screen">
+      <section className="bg-gradient-to-br from-primary/10 to-primary/5 py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <div className="h-4 w-32 bg-muted rounded animate-pulse mb-2" />
+              <div className="h-10 w-3/4 bg-muted rounded animate-pulse mb-4" />
+              <div className="space-y-2 mb-6">
+                <div className="h-4 w-full bg-muted rounded animate-pulse" />
+                <div className="h-4 w-5/6 bg-muted rounded animate-pulse" />
+              </div>
+              <div className="flex gap-6 mb-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-6 w-24 bg-muted rounded animate-pulse" />
+                ))}
+              </div>
+            </div>
+            <Card>
+              <CardContent className="pt-6">
+                <div className="h-8 w-32 bg-muted rounded animate-pulse mb-4" />
+                <div className="h-12 w-full bg-muted rounded animate-pulse mb-3" />
+                <div className="h-12 w-full bg-muted rounded animate-pulse" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// Error component
+function CourseNotFound() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Card className="max-w-md mx-auto p-8">
+        <div className="flex flex-col items-center text-center">
+          <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+          <h2 className="font-display font-semibold text-xl text-foreground mb-2">
+            Course Not Found
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            The course you&apos;re looking for doesn&apos;t exist or has been removed.
+          </p>
+          <Link href="/courses">
+            <Button className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Courses
+            </Button>
+          </Link>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// Error component for API errors
+function CourseError({ message }: { message: string }) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <Card className="max-w-md mx-auto p-8">
+        <div className="flex flex-col items-center text-center">
+          <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+          <h2 className="font-display font-semibold text-xl text-foreground mb-2">
+            Failed to Load Course
+          </h2>
+          <p className="text-muted-foreground mb-6">{message}</p>
+          <div className="flex gap-4">
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
+            <Link href="/courses">
+              <Button variant="outline" className="gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                All Courses
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+export default function CourseDetailPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+
+  const { data, loading, error } = useQuery(GET_COURSE, {
+    variables: { slug },
+    skip: !slug,
+  });
+
+  if (loading) {
+    return <CourseDetailSkeleton />;
   }
 
-  const discount = Math.round(
-    ((course.originalPrice - course.price) / course.originalPrice) * 100
+  if (error) {
+    return <CourseError message={error.message} />;
+  }
+
+  const course: Course | null = data?.course;
+
+  if (!course) {
+    return <CourseNotFound />;
+  }
+
+  const originalPrice = course.price;
+  const discountedPrice = course.discountedPrice ?? course.price;
+  const hasDiscount = course.discountedPrice && course.discountedPrice < course.price;
+  const discountPercent = hasDiscount
+    ? Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)
+    : 0;
+
+  // Filter published chapters and lessons
+  const publishedChapters = course.chapters
+    ?.filter((chapter) => chapter.isPublished)
+    .sort((a, b) => a.position - b.position)
+    .map((chapter) => ({
+      ...chapter,
+      lessons: chapter.lessons
+        ?.filter((lesson) => lesson.isPublished)
+        .sort((a, b) => a.position - b.position) || [],
+    })) || [];
+
+  // Calculate total lessons
+  const totalLessons = publishedChapters.reduce(
+    (acc, chapter) => acc + chapter.lessons.length,
+    0
+  );
+
+  // Calculate total duration
+  const totalDurationMinutes = publishedChapters.reduce(
+    (acc, chapter) =>
+      acc + chapter.lessons.reduce((lessonAcc, lesson) => lessonAcc + (lesson.duration || 0), 0),
+    0
   );
 
   return (
@@ -272,54 +207,65 @@ export default async function CourseDetailPage({
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <Small className="text-primary mb-2">{course.title} Entrance Preparation</Small>
-              <Title className="mb-4">{course.fullName}</Title>
+              <Small className="text-primary mb-2">
+                {course.title} Entrance Preparation
+              </Small>
+              <Title className="mb-4">
+                {course.fullName || course.title}
+              </Title>
               <Paragraph className="text-lg text-muted-foreground mb-6">
                 {course.description}
               </Paragraph>
 
               {/* Stats */}
               <div className="flex flex-wrap gap-6 mb-6">
-                <div className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                  <span className="font-semibold">{course.rating}</span>
-                  <span className="text-muted-foreground">
-                    ({course.reviews} reviews)
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Users className="w-5 h-5" />
-                  <span>{course.students} students</span>
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="w-5 h-5" />
-                  <span>{course.duration}</span>
-                </div>
+                {course.rating && (
+                  <div className="flex items-center gap-2">
+                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                    <span className="font-semibold">{course.rating.toFixed(1)}</span>
+                    {course.reviewsCount && (
+                      <span className="text-muted-foreground">
+                        ({course.reviewsCount.toLocaleString()} reviews)
+                      </span>
+                    )}
+                  </div>
+                )}
+                {course.studentCount && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Users className="w-5 h-5" />
+                    <span>{course.studentCount.toLocaleString()}+ students</span>
+                  </div>
+                )}
+                {(course.durationHours || totalDurationMinutes > 0) && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Clock className="w-5 h-5" />
+                    <span>
+                      {course.durationHours
+                        ? `${course.durationHours} hours`
+                        : `${Math.round(totalDurationMinutes / 60)} hours`}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {/* Instructors */}
-              <div className="flex flex-wrap gap-4">
-                {course.instructors.map((instructor) => (
-                  <div
-                    key={instructor.name}
-                    className="flex items-center gap-2"
-                  >
+              {/* Instructor */}
+              {course.instructor && (
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                       <span className="text-sm font-semibold text-primary">
-                        {instructor.name.charAt(0)}
+                        {course.instructor.fullName.charAt(0)}
                       </span>
                     </div>
                     <div>
                       <Paragraph className="text-sm font-medium">
-                        {instructor.name}
+                        {course.instructor.fullName}
                       </Paragraph>
-                      <Small className="text-muted-foreground">
-                        {instructor.role}
-                      </Small>
+                      <Small className="text-muted-foreground">Instructor</Small>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Pricing Card */}
@@ -328,15 +274,19 @@ export default async function CourseDetailPage({
                 <div className="mb-4">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-3xl font-bold">
-                      Rs. {course.price.toLocaleString()}
+                      Rs. {discountedPrice.toLocaleString()}
                     </span>
-                    <span className="text-lg text-muted-foreground line-through">
-                      Rs. {course.originalPrice.toLocaleString()}
-                    </span>
+                    {hasDiscount && (
+                      <span className="text-lg text-muted-foreground line-through">
+                        Rs. {originalPrice.toLocaleString()}
+                      </span>
+                    )}
                   </div>
-                  <span className="text-sm text-green-600 font-medium">
-                    {discount}% off
-                  </span>
+                  {hasDiscount && (
+                    <span className="text-sm text-green-600 font-medium">
+                      {discountPercent}% off
+                    </span>
+                  )}
                 </div>
 
                 <Button className="w-full mb-3" size="lg">
@@ -346,19 +296,38 @@ export default async function CourseDetailPage({
                   Try Free Demo
                 </Button>
 
-                <div className="mt-6 space-y-3">
-                  <Subtitle as="h4" className="text-sm">
-                    This course includes:
-                  </Subtitle>
-                  {course.features.map((feature) => (
-                    <div
-                      key={feature}
-                      className="flex items-center gap-2 text-sm"
-                    >
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>{feature}</span>
+                {course.features && course.features.length > 0 && (
+                  <div className="mt-6 space-y-3">
+                    <Subtitle as="h4" className="text-sm">
+                      This course includes:
+                    </Subtitle>
+                    {course.features.map((feature, index) => (
+                      <div key={index} className="flex items-center gap-2 text-sm">
+                        <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+                        <span>{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Course Stats */}
+                <div className="mt-6 pt-6 border-t space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Chapters</span>
+                    <span className="font-medium">{publishedChapters.length}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Lessons</span>
+                    <span className="font-medium">{totalLessons}</span>
+                  </div>
+                  {totalDurationMinutes > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Total Duration</span>
+                      <span className="font-medium">
+                        {Math.floor(totalDurationMinutes / 60)}h {totalDurationMinutes % 60}m
+                      </span>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -367,40 +336,59 @@ export default async function CourseDetailPage({
       </section>
 
       {/* Course Content */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="lg:w-2/3">
-            <Subtitle className="mb-6">Course Syllabus</Subtitle>
-            <div className="space-y-4">
-              {course.syllabus.map((module, index) => (
-                <Card key={module.module}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center gap-3">
-                      <span className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-sm font-semibold text-primary">
-                        {index + 1}
-                      </span>
-                      {module.module}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-2 pl-11">
-                      {module.topics.map((topic) => (
-                        <div
-                          key={topic}
-                          className="flex items-center gap-2 text-sm text-muted-foreground"
-                        >
-                          <BookOpen className="w-4 h-4" />
-                          {topic}
+      {publishedChapters.length > 0 && (
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            <div className="lg:w-2/3">
+              <Subtitle className="mb-6">Course Syllabus</Subtitle>
+              <div className="space-y-4">
+                {publishedChapters.map((chapter, index) => (
+                  <Card key={chapter.id}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center gap-3">
+                        <span className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-sm font-semibold text-primary">
+                          {index + 1}
+                        </span>
+                        {chapter.title}
+                      </CardTitle>
+                      {chapter.description && (
+                        <p className="text-sm text-muted-foreground pl-11">
+                          {chapter.description}
+                        </p>
+                      )}
+                    </CardHeader>
+                    {chapter.lessons.length > 0 && (
+                      <CardContent>
+                        <div className="grid md:grid-cols-2 gap-2 pl-11">
+                          {chapter.lessons.map((lesson) => (
+                            <div
+                              key={lesson.id}
+                              className="flex items-center gap-2 text-sm text-muted-foreground"
+                            >
+                              <BookOpen className="w-4 h-4 shrink-0" />
+                              <span className="truncate">{lesson.title}</span>
+                              {lesson.isFree && (
+                                <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                                  Free
+                                </span>
+                              )}
+                              {lesson.duration && (
+                                <span className="text-xs text-muted-foreground ml-auto">
+                                  {lesson.duration}m
+                                </span>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </CardContent>
+                    )}
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-16 bg-primary/5">
@@ -408,8 +396,8 @@ export default async function CourseDetailPage({
           <div className="max-w-2xl mx-auto text-center">
             <Subtitle className="mb-4">Ready to Start Your Preparation?</Subtitle>
             <Paragraph className="text-muted-foreground mb-6">
-              Join thousands of students who have successfully prepared with us
-              and secured admissions in top colleges.
+              Join thousands of students who have successfully prepared with us and
+              secured admissions in top colleges.
             </Paragraph>
             <div className="flex flex-wrap gap-4 justify-center">
               <Button size="lg">Enroll Now</Button>

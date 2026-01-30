@@ -67,7 +67,7 @@ export function AdminLayout({ children, className }: AdminLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 flex flex-col">
+    <div className="min-h-screen top-0 bg-muted/30 flex flex-col">
       {/* Header */}
       <AdminHeader onMenuClick={handleMenuClick} />
 
@@ -77,7 +77,9 @@ export function AdminLayout({ children, className }: AdminLayoutProps) {
         <AdminSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
 
         {/* Main content area */}
-        <main className={cn("flex-1 p-4 md:p-6 lg:p-8 w-full lg:w-[calc(100%-288px)]", className)}>
+        <main
+          className={cn("flex-1  w-full lg:w-[calc(100%-288px)]", className)}
+        >
           {children}
         </main>
       </div>

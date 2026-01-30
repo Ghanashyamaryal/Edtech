@@ -15,10 +15,23 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { DataTable, Column, StatusBadge, ConfirmDialog } from "@/components/molecules/admin";
-import { ClipboardList, Plus, MoreHorizontal, Pencil, Trash2, ListChecks, Eye } from "lucide-react";
+import { ClipboardList, Plus, MoreHorizontal, Pencil, Trash2, ListChecks, BookOpen } from "lucide-react";
 import { GET_ADMIN_EXAMS } from "@/graphql/queries/admin";
 import { DELETE_EXAM } from "@/graphql/mutations/admin";
 import { useToast } from "@/hooks/use-toast";
+
+const EXAM_TYPE_LABELS: Record<string, string> = {
+  full_model: "Full Model",
+  subject: "Subject",
+  chapter: "Chapter",
+  practice: "Practice",
+  previous_year: "Previous Year",
+};
+
+interface Course {
+  id: string;
+  title: string;
+}
 
 interface Exam {
   id: string;
@@ -27,8 +40,11 @@ interface Exam {
   durationMinutes: number;
   totalMarks: number;
   passingMarks: number;
+  examType: string | null;
+  setNumber: number | null;
   isPublished: boolean;
   questionsCount: number;
+  courses: Course[];
   createdAt: string;
 }
 
@@ -87,6 +103,38 @@ export default function AdminExamsPage() {
           <p className="text-sm text-muted-foreground line-clamp-1">
             {exam.description || "No description"}
           </p>
+        </div>
+      ),
+    },
+    {
+      key: "type",
+      header: "Type",
+      cell: (exam) => (
+        <div className="text-sm">
+          {exam.examType ? (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted">
+              {EXAM_TYPE_LABELS[exam.examType] || exam.examType}
+              {exam.setNumber && exam.setNumber > 1 && ` (Set ${exam.setNumber})`}
+            </span>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "courses",
+      header: "Courses",
+      cell: (exam) => (
+        <div className="flex items-center gap-1">
+          {exam.courses && exam.courses.length > 0 ? (
+            <div className="flex items-center gap-1">
+              <BookOpen className="w-3 h-3 text-muted-foreground" />
+              <span className="text-sm">{exam.courses.length}</span>
+            </div>
+          ) : (
+            <span className="text-sm text-muted-foreground">-</span>
+          )}
         </div>
       ),
     },

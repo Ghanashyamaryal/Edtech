@@ -18,10 +18,18 @@ export interface UserRow {
 export interface CourseRow {
   id: string;
   title: string;
+  full_name?: string;
   description: string;
   slug: string;
   thumbnail_url?: string;
   price: number;
+  discounted_price?: number;
+  duration_hours?: number;
+  student_count?: number;
+  rating?: number;
+  reviews_count?: number;
+  features?: string[];
+  is_bestseller?: boolean;
   is_published: boolean;
   instructor_id: string;
   created_at: string;
@@ -91,6 +99,8 @@ export interface QuestionOptionRow {
   is_correct: boolean;
 }
 
+export type ExamType = 'full_model' | 'subject' | 'chapter' | 'practice' | 'previous_year';
+
 export interface ExamRow {
   id: string;
   title: string;
@@ -98,9 +108,20 @@ export interface ExamRow {
   duration_minutes: number;
   total_marks: number;
   passing_marks: number;
+  exam_type?: ExamType;
+  set_number?: number;
   is_published: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface CourseExamRow {
+  id: string;
+  course_id: string;
+  exam_id: string;
+  display_order: number;
+  is_required: boolean;
+  created_at: string;
 }
 
 export interface ExamQuestionRow {
@@ -160,4 +181,36 @@ export interface LiveClassRow {
   is_completed: boolean;
   created_at: string;
   updated_at: string;
+}
+
+// Note types
+export type NoteType = 'notes' | 'question_paper' | 'solution' | 'syllabus' | 'formula_sheet';
+
+export interface NoteRow {
+  id: string;
+  title: string;
+  description?: string;
+  file_url: string;
+  file_name: string;
+  file_size: number;
+  file_type: string;
+  note_type: NoteType;
+  subject_id: string;
+  topic_id?: string;
+  year?: number;
+  is_premium: boolean;
+  is_published: boolean;
+  download_count: number;
+  uploaded_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Course-Subject linking (for curriculum mapping)
+export interface CourseSubjectRow {
+  id: string;
+  course_id: string;
+  subject_id: string;
+  display_order: number;
+  created_at: string;
 }

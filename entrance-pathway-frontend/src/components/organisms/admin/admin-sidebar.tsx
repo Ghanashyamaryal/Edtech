@@ -11,6 +11,7 @@ import {
   HelpCircle,
   Layers,
   ClipboardList,
+  FileText,
   X,
   ArrowLeft,
 } from "lucide-react";
@@ -52,6 +53,11 @@ const adminNavigationItems: AdminNavItem[] = [
     label: "Exams",
     href: "/admin/exams",
     icon: ClipboardList,
+  },
+  {
+    label: "Notes & Materials",
+    href: "/admin/notes",
+    icon: FileText,
   },
 ];
 

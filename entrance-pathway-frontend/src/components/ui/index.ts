@@ -14,3 +14,5 @@ export { AlertDialog, AlertDialogPortal, AlertDialogOverlay, AlertDialogTrigger,
 export { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuGroup, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuRadioGroup } from '../atoms';
 export { Collapsible, CollapsibleTrigger, CollapsibleContent } from '../atoms';
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from '../molecules';
+export { Badge, badgeVariants } from '../atoms';
+export type { BadgeProps } from '../atoms';

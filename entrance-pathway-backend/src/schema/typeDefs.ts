@@ -18,6 +18,22 @@ export const typeDefs = `#graphql
     hard
   }
 
+  enum ExamType {
+    full_model
+    subject
+    chapter
+    practice
+    previous_year
+  }
+
+  enum NoteType {
+    notes
+    question_paper
+    solution
+    syllabus
+    formula_sheet
+  }
+
   # Auth Types
   type AuthPayload {
     user: User!
@@ -65,10 +81,18 @@ export const typeDefs = `#graphql
   type Course {
     id: ID!
     title: String!
+    fullName: String
     description: String!
     slug: String!
     thumbnailUrl: String
     price: Float!
+    discountedPrice: Float
+    durationHours: Int
+    studentCount: Int
+    rating: Float
+    reviewsCount: Int
+    features: [String!]
+    isBestseller: Boolean
     isPublished: Boolean!
     instructorId: ID!
     instructor: User
@@ -76,6 +100,8 @@ export const typeDefs = `#graphql
     chaptersCount: Int
     lessonsCount: Int
     enrollmentsCount: Int
+    exams: [Exam!]
+    examsCount: Int
     createdAt: String!
     updatedAt: String!
   }
@@ -110,6 +136,8 @@ export const typeDefs = `#graphql
     topics: [Topic!]
     topicsCount: Int
     questionsCount: Int
+    notesCount: Int
+    notes: [Note!]
   }
 
   type Topic {
@@ -148,10 +176,23 @@ export const typeDefs = `#graphql
     durationMinutes: Int!
     totalMarks: Int!
     passingMarks: Int!
+    examType: ExamType
+    setNumber: Int
     isPublished: Boolean!
     questions: [ExamQuestion!]
     questionsCount: Int
+    courses: [Course!]
     createdAt: String!
+  }
+
+  type CourseExam {
+    id: ID!
+    courseId: ID!
+    examId: ID!
+    course: Course
+    exam: Exam
+    displayOrder: Int
+    isRequired: Boolean
   }
 
   type ExamQuestion {
@@ -215,6 +256,38 @@ export const typeDefs = `#graphql
     isCompleted: Boolean!
   }
 
+  type Note {
+    id: ID!
+    title: String!
+    description: String
+    fileUrl: String!
+    fileName: String!
+    fileSize: Int!
+    fileType: String!
+    noteType: NoteType!
+    subjectId: ID!
+    topicId: ID
+    subject: Subject
+    topic: Topic
+    year: Int
+    isPremium: Boolean!
+    isPublished: Boolean!
+    downloadCount: Int!
+    uploadedBy: ID!
+    uploader: User
+    createdAt: String!
+    updatedAt: String!
+  }
+
+  type CourseSubject {
+    id: ID!
+    courseId: ID!
+    subjectId: ID!
+    course: Course
+    subject: Subject
+    displayOrder: Int!
+  }
+
   # Input Types
   input CreateSubjectInput {
     name: String!
@@ -230,16 +303,26 @@ export const typeDefs = `#graphql
 
   input CreateCourseInput {
     title: String!
+    fullName: String
     description: String!
     thumbnailUrl: String
     price: Float!
+    discountedPrice: Float
+    durationHours: Int
+    features: [String!]
+    isBestseller: Boolean
   }
 
   input UpdateCourseInput {
     title: String
+    fullName: String
     description: String
     thumbnailUrl: String
     price: Float
+    discountedPrice: Float
+    durationHours: Int
+    features: [String!]
+    isBestseller: Boolean
     isPublished: Boolean
   }
 
@@ -278,6 +361,38 @@ export const typeDefs = `#graphql
     durationMinutes: Int!
     totalMarks: Int!
     passingMarks: Int!
+    examType: ExamType
+    setNumber: Int
+    courseId: ID
+  }
+
+  input CreateNoteInput {
+    title: String!
+    description: String
+    fileUrl: String!
+    fileName: String!
+    fileSize: Int!
+    fileType: String!
+    noteType: NoteType!
+    subjectId: ID!
+    topicId: ID
+    year: Int
+    isPremium: Boolean
+  }
+
+  input UpdateNoteInput {
+    title: String
+    description: String
+    fileUrl: String
+    fileName: String
+    fileSize: Int
+    fileType: String
+    noteType: NoteType
+    subjectId: ID
+    topicId: ID
+    year: Int
+    isPremium: Boolean
+    isPublished: Boolean
   }
 
   # Queries
@@ -312,14 +427,31 @@ export const typeDefs = `#graphql
     question(id: ID!): Question
 
     # Exam queries
-    exams(isPublished: Boolean, limit: Int, offset: Int): [Exam!]!
+    exams(isPublished: Boolean, courseId: ID, examType: ExamType, limit: Int, offset: Int): [Exam!]!
     exam(id: ID!): Exam
+    courseExams(courseId: ID!): [CourseExam!]!
     examAttempt(id: ID!): ExamAttempt
     userExamAttempts(userId: ID!, examId: ID): [ExamAttempt!]!
 
     # Live class queries
     liveClasses(courseId: ID, upcoming: Boolean): [LiveClass!]!
     liveClass(id: ID!): LiveClass
+
+    # Note queries
+    notes(
+      subjectId: ID
+      topicId: ID
+      noteType: NoteType
+      isPublished: Boolean
+      isPremium: Boolean
+      limit: Int
+      offset: Int
+    ): [Note!]!
+    note(id: ID!): Note
+    notesBySubject(subjectId: ID!): [Note!]!
+
+    # Course-Subject queries
+    courseSubjects(courseId: ID!): [CourseSubject!]!
   }
 
   # Mutations
@@ -375,9 +507,26 @@ export const typeDefs = `#graphql
     addQuestionToExam(examId: ID!, questionId: ID!, marks: Int!): ExamQuestion!
     removeQuestionFromExam(examId: ID!, questionId: ID!): Boolean!
 
+    # Course-Exam linking mutations
+    linkExamToCourse(examId: ID!, courseId: ID!, displayOrder: Int, isRequired: Boolean): CourseExam!
+    unlinkExamFromCourse(examId: ID!, courseId: ID!): Boolean!
+    reorderCourseExams(courseId: ID!, examIds: [ID!]!): [CourseExam!]!
+
     # Exam attempt mutations
     startExamAttempt(examId: ID!): ExamAttempt!
     submitExamAnswer(attemptId: ID!, questionId: ID!, selectedAnswer: String!): ExamAnswer!
     completeExamAttempt(attemptId: ID!): ExamAttempt!
+
+    # Note mutations
+    createNote(input: CreateNoteInput!): Note!
+    updateNote(id: ID!, input: UpdateNoteInput!): Note!
+    deleteNote(id: ID!): Boolean!
+    publishNote(id: ID!): Note!
+    incrementNoteDownload(id: ID!): Note!
+
+    # Course-Subject mutations
+    linkSubjectToCourse(courseId: ID!, subjectId: ID!, displayOrder: Int): CourseSubject!
+    unlinkSubjectFromCourse(courseId: ID!, subjectId: ID!): Boolean!
+    reorderCourseSubjects(courseId: ID!, subjectIds: [ID!]!): [CourseSubject!]!
   }
 `;

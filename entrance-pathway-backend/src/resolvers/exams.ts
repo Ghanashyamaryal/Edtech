@@ -7,8 +7,43 @@ export const examResolvers = {
   Query: {
     exams: async (
       _: any,
-      { isPublished, limit = 10, offset = 0 }: PaginationArgs & { isPublished?: boolean }
+      {
+        isPublished,
+        courseId,
+        examType,
+        limit = 10,
+        offset = 0,
+      }: PaginationArgs & { isPublished?: boolean; courseId?: string; examType?: string }
     ) => {
+      // If filtering by courseId, we need to join with course_exams
+      if (courseId) {
+        let query = supabaseAdmin
+          .from('course_exams')
+          .select('exam:exams(*)')
+          .eq('course_id', courseId)
+          .order('display_order');
+
+        const { data, error } = await query;
+
+        if (error) throw new DatabaseError(error.message);
+
+        // Extract exams from the join and filter
+        let exams = (data || [])
+          .map((ce: any) => ce.exam)
+          .filter((exam: any) => exam !== null);
+
+        // Apply additional filters
+        if (isPublished !== undefined) {
+          exams = exams.filter((e: any) => e.is_published === isPublished);
+        }
+        if (examType) {
+          exams = exams.filter((e: any) => e.exam_type === examType);
+        }
+
+        return formatResponseArray(exams);
+      }
+
+      // Standard query without courseId filter
       let query = supabaseAdmin
         .from('exams')
         .select('*')
@@ -17,6 +52,10 @@ export const examResolvers = {
 
       if (isPublished !== undefined) {
         query = query.eq('is_published', isPublished);
+      }
+
+      if (examType) {
+        query = query.eq('exam_type', examType);
       }
 
       const { data, error } = await query;
@@ -38,6 +77,17 @@ export const examResolvers = {
       }
 
       return formatResponse(data);
+    },
+
+    courseExams: async (_: any, { courseId }: { courseId: string }) => {
+      const { data, error } = await supabaseAdmin
+        .from('course_exams')
+        .select('*')
+        .eq('course_id', courseId)
+        .order('display_order');
+
+      if (error) throw new DatabaseError(error.message);
+      return formatResponseArray(data || []);
     },
 
     examAttempt: async (_: any, { id }: { id: string }, context: Context) => {
@@ -98,17 +148,169 @@ export const examResolvers = {
         throw new ForbiddenError('Only instructors can create exams');
       }
 
+      const { courseId, ...examInput } = input;
+
       const { data, error } = await supabaseAdmin
         .from('exams')
         .insert({
-          ...toSnakeCase(input),
+          ...toSnakeCase(examInput),
           is_published: false,
         })
         .select()
         .single();
 
       if (error) throw new DatabaseError(error.message);
+
+      // If courseId is provided, link the exam to the course
+      if (courseId && data) {
+        // Get max display order
+        const { data: existing } = await supabaseAdmin
+          .from('course_exams')
+          .select('display_order')
+          .eq('course_id', courseId)
+          .order('display_order', { ascending: false })
+          .limit(1);
+
+        const displayOrder = existing?.length ? existing[0].display_order + 1 : 1;
+
+        await supabaseAdmin.from('course_exams').insert({
+          course_id: courseId,
+          exam_id: data.id,
+          display_order: displayOrder,
+          is_required: false,
+        });
+      }
+
       return formatResponse(data);
+    },
+
+    updateExam: async (_: any, { id, input }: { id: string; input: any }, context: Context) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+        throw new ForbiddenError();
+      }
+
+      const { courseId, ...examInput } = input;
+
+      const { data, error } = await supabaseAdmin
+        .from('exams')
+        .update(toSnakeCase(examInput))
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw new DatabaseError(error.message);
+      return formatResponse(data);
+    },
+
+    deleteExam: async (_: any, { id }: { id: string }, context: Context) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'admin') {
+        throw new ForbiddenError();
+      }
+
+      const { error } = await supabaseAdmin.from('exams').delete().eq('id', id);
+
+      if (error) throw new DatabaseError(error.message);
+      return true;
+    },
+
+    linkExamToCourse: async (
+      _: any,
+      {
+        examId,
+        courseId,
+        displayOrder,
+        isRequired,
+      }: { examId: string; courseId: string; displayOrder?: number; isRequired?: boolean },
+      context: Context
+    ) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+        throw new ForbiddenError();
+      }
+
+      // Get max display order if not provided
+      let order = displayOrder;
+      if (order === undefined) {
+        const { data: existing } = await supabaseAdmin
+          .from('course_exams')
+          .select('display_order')
+          .eq('course_id', courseId)
+          .order('display_order', { ascending: false })
+          .limit(1);
+
+        order = existing?.length ? existing[0].display_order + 1 : 1;
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from('course_exams')
+        .upsert(
+          {
+            course_id: courseId,
+            exam_id: examId,
+            display_order: order,
+            is_required: isRequired ?? false,
+          },
+          { onConflict: 'course_id,exam_id' }
+        )
+        .select()
+        .single();
+
+      if (error) throw new DatabaseError(error.message);
+      return formatResponse(data);
+    },
+
+    unlinkExamFromCourse: async (
+      _: any,
+      { examId, courseId }: { examId: string; courseId: string },
+      context: Context
+    ) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+        throw new ForbiddenError();
+      }
+
+      const { error } = await supabaseAdmin
+        .from('course_exams')
+        .delete()
+        .eq('course_id', courseId)
+        .eq('exam_id', examId);
+
+      if (error) throw new DatabaseError(error.message);
+      return true;
+    },
+
+    reorderCourseExams: async (
+      _: any,
+      { courseId, examIds }: { courseId: string; examIds: string[] },
+      context: Context
+    ) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+        throw new ForbiddenError();
+      }
+
+      // Update each exam's display order
+      const updates = examIds.map((examId, index) =>
+        supabaseAdmin
+          .from('course_exams')
+          .update({ display_order: index + 1 })
+          .eq('course_id', courseId)
+          .eq('exam_id', examId)
+      );
+
+      await Promise.all(updates);
+
+      // Fetch updated list
+      const { data, error } = await supabaseAdmin
+        .from('course_exams')
+        .select('*')
+        .eq('course_id', courseId)
+        .order('display_order');
+
+      if (error) throw new DatabaseError(error.message);
+      return formatResponseArray(data || []);
     },
 
     addQuestionToExam: async (
@@ -144,6 +346,26 @@ export const examResolvers = {
 
       if (error) throw new DatabaseError(error.message);
       return formatResponse(data);
+    },
+
+    removeQuestionFromExam: async (
+      _: any,
+      { examId, questionId }: { examId: string; questionId: string },
+      context: Context
+    ) => {
+      if (!context.user) throw new AuthenticationError();
+      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+        throw new ForbiddenError();
+      }
+
+      const { error } = await supabaseAdmin
+        .from('exam_questions')
+        .delete()
+        .eq('exam_id', examId)
+        .eq('question_id', questionId);
+
+      if (error) throw new DatabaseError(error.message);
+      return true;
     },
 
     startExamAttempt: async (_: any, { examId }: { examId: string }, context: Context) => {
@@ -318,6 +540,40 @@ export const examResolvers = {
         .eq('exam_id', exam.id);
 
       return count || 0;
+    },
+
+    courses: async (exam: any) => {
+      const { data } = await supabaseAdmin
+        .from('course_exams')
+        .select('course:courses(*)')
+        .eq('exam_id', exam.id);
+
+      return (data || [])
+        .map((ce: any) => ce.course)
+        .filter((c: any) => c !== null)
+        .map((c: any) => formatResponse(c));
+    },
+  },
+
+  CourseExam: {
+    course: async (courseExam: any) => {
+      const { data } = await supabaseAdmin
+        .from('courses')
+        .select('*')
+        .eq('id', courseExam.courseId)
+        .single();
+
+      return formatResponse(data);
+    },
+
+    exam: async (courseExam: any) => {
+      const { data } = await supabaseAdmin
+        .from('exams')
+        .select('*')
+        .eq('id', courseExam.examId)
+        .single();
+
+      return formatResponse(data);
     },
   },
 

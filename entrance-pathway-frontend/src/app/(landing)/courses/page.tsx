@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@apollo/client';
 import { motion } from 'framer-motion';
 import { Button, Card, CardContent, Input } from '@/components/ui';
 import {
@@ -14,116 +15,36 @@ import {
   Award,
   Filter,
   CheckCircle2,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import Link from 'next/link';
+import { GET_LANDING_COURSES } from '@/graphql/queries/courses';
 
-// Course data
-const courses = [
-  {
-    id: 1,
-    slug: 'bsc-csit',
-    name: 'BSc CSIT',
-    fullName: 'Bachelor in Computer Science & Information Technology',
-    description:
-      'Complete preparation for TU BSc CSIT entrance examination with comprehensive coverage of all subjects.',
-    students: 4500,
-    rating: 4.9,
-    reviews: 1245,
-    duration: '6 months',
-    lectures: 250,
-    tests: 50,
-    color: 'primary',
-    features: [
-      'Mathematics (Calculus, Algebra, Statistics)',
-      'Computer Science Fundamentals',
-      'English & Communication',
-      'Logical Reasoning',
-    ],
-    price: {
-      original: 15000,
-      discounted: 9999,
-    },
-    isBestseller: true,
-  },
-  {
-    id: 2,
-    slug: 'bit',
-    name: 'BIT',
-    fullName: 'Bachelor in Information Technology',
-    description:
-      'Comprehensive BIT entrance preparation covering PU and other university patterns.',
-    students: 2800,
-    rating: 4.8,
-    reviews: 876,
-    duration: '6 months',
-    lectures: 220,
-    tests: 45,
-    color: 'secondary',
-    features: [
-      'Mathematics',
-      'Computer Science',
-      'English',
-      'General Knowledge',
-    ],
-    price: {
-      original: 12000,
-      discounted: 7999,
-    },
-    isBestseller: false,
-  },
-  {
-    id: 3,
-    slug: 'bca',
-    name: 'BCA',
-    fullName: 'Bachelor in Computer Application',
-    description:
-      'Expert-curated BCA entrance preparation with focus on practical problem-solving.',
-    students: 2100,
-    rating: 4.8,
-    reviews: 654,
-    duration: '4 months',
-    lectures: 180,
-    tests: 40,
-    color: 'gold',
-    features: [
-      'Mathematics',
-      'English',
-      'Computer Awareness',
-      'Reasoning & Aptitude',
-    ],
-    price: {
-      original: 10000,
-      discounted: 6999,
-    },
-    isBestseller: false,
-  },
-  {
-    id: 4,
-    slug: 'bim',
-    name: 'BIM',
-    fullName: 'Bachelor in Information Management',
-    description:
-      'Targeted BIM entrance preparation with management and IT fundamentals.',
-    students: 1200,
-    rating: 4.7,
-    reviews: 432,
-    duration: '4 months',
-    lectures: 150,
-    tests: 35,
-    color: 'primary',
-    features: [
-      'Mathematics',
-      'English',
-      'General Knowledge',
-      'Computer & Management',
-    ],
-    price: {
-      original: 10000,
-      discounted: 6999,
-    },
-    isBestseller: false,
-  },
-];
+// Course type from API
+interface Course {
+  id: string;
+  title: string;
+  fullName: string | null;
+  description: string;
+  slug: string;
+  thumbnailUrl: string | null;
+  price: number;
+  discountedPrice: number | null;
+  durationHours: number | null;
+  studentCount: number | null;
+  rating: number | null;
+  reviewsCount: number | null;
+  features: string[] | null;
+  isBestseller: boolean | null;
+  instructor: {
+    id: string;
+    fullName: string;
+    avatarUrl: string | null;
+  } | null;
+  chaptersCount: number | null;
+  lessonsCount: number | null;
+}
 
 // What's included
 const inclusions = [
@@ -133,7 +54,84 @@ const inclusions = [
   { icon: Award, text: 'Certificate' },
 ];
 
+// Loading skeleton component
+function CoursesSkeleton() {
+  return (
+    <div className="grid lg:grid-cols-2 gap-8">
+      {[1, 2, 3, 4].map((i) => (
+        <Card key={i} className="h-full overflow-hidden">
+          <CardContent className="p-0">
+            <div className="grid md:grid-cols-5">
+              <div className="md:col-span-3 p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-14 h-14 rounded-2xl bg-muted animate-pulse" />
+                  <div className="space-y-2">
+                    <div className="h-5 w-24 bg-muted rounded animate-pulse" />
+                    <div className="h-4 w-40 bg-muted rounded animate-pulse" />
+                  </div>
+                </div>
+                <div className="space-y-2 mb-4">
+                  <div className="h-4 w-full bg-muted rounded animate-pulse" />
+                  <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
+                </div>
+                <div className="space-y-2 mb-4">
+                  {[1, 2, 3].map((j) => (
+                    <div key={j} className="h-4 w-48 bg-muted rounded animate-pulse" />
+                  ))}
+                </div>
+              </div>
+              <div className="md:col-span-2 p-6 bg-muted/30">
+                <div className="space-y-4">
+                  <div className="h-6 w-24 bg-muted rounded animate-pulse" />
+                  <div className="h-10 w-full bg-muted rounded animate-pulse" />
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+// Error component
+function CoursesError({ message }: { message: string }) {
+  return (
+    <Card className="p-8">
+      <div className="flex flex-col items-center text-center">
+        <AlertCircle className="w-12 h-12 text-destructive mb-4" />
+        <h3 className="font-display font-semibold text-xl text-foreground mb-2">
+          Failed to load courses
+        </h3>
+        <p className="text-muted-foreground mb-4">{message}</p>
+        <Button onClick={() => window.location.reload()}>Try Again</Button>
+      </div>
+    </Card>
+  );
+}
+
+// Empty state component
+function CoursesEmpty() {
+  return (
+    <Card className="p-8">
+      <div className="flex flex-col items-center text-center">
+        <BookOpen className="w-12 h-12 text-muted-foreground mb-4" />
+        <h3 className="font-display font-semibold text-xl text-foreground mb-2">
+          No courses available
+        </h3>
+        <p className="text-muted-foreground">
+          Check back later for new courses.
+        </p>
+      </div>
+    </Card>
+  );
+}
+
 export default function CoursesPage() {
+  const { data, loading, error } = useQuery(GET_LANDING_COURSES);
+
+  const courses: Course[] = data?.courses || [];
+
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
@@ -177,152 +175,175 @@ export default function CoursesPage() {
       {/* Courses Grid */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-8">
-            {courses.map((course, index) => (
-              <motion.div
-                key={course.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="h-full overflow-hidden hover:shadow-strong transition-all group">
-                  <CardContent className="p-0">
-                    <div className="grid md:grid-cols-5">
-                      {/* Left - Course Info */}
-                      <div className="md:col-span-3 p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          <div
-                            className={`w-14 h-14 rounded-2xl bg-${course.color}/10 flex items-center justify-center group-hover:scale-110 transition-transform`}
-                          >
-                            <span
-                              className={`font-display font-bold text-xl text-${course.color}`}
-                            >
-                              {course.name.charAt(0)}
-                            </span>
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-display font-bold text-xl text-foreground">
-                                {course.name}
-                              </h3>
-                              {course.isBestseller && (
-                                <span className="px-2 py-0.5 rounded-full bg-gold/20 text-gold text-xs font-medium">
-                                  Bestseller
+          {loading ? (
+            <CoursesSkeleton />
+          ) : error ? (
+            <CoursesError message={error.message} />
+          ) : courses.length === 0 ? (
+            <CoursesEmpty />
+          ) : (
+            <div className="grid lg:grid-cols-2 gap-8">
+              {courses.map((course, index) => {
+                const originalPrice = course.price;
+                const discountedPrice = course.discountedPrice ?? course.price;
+                const hasDiscount = course.discountedPrice && course.discountedPrice < course.price;
+                const discountPercent = hasDiscount
+                  ? Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)
+                  : 0;
+
+                return (
+                  <motion.div
+                    key={course.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="h-full overflow-hidden hover:shadow-strong transition-all group">
+                      <CardContent className="p-0">
+                        <div className="grid md:grid-cols-5">
+                          {/* Left - Course Info */}
+                          <div className="md:col-span-3 p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <span className="font-display font-bold text-xl text-primary">
+                                  {course.title.charAt(0)}
+                                </span>
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h3 className="font-display font-bold text-xl text-foreground">
+                                    {course.title}
+                                  </h3>
+                                  {course.isBestseller && (
+                                    <span className="px-2 py-0.5 rounded-full bg-gold/20 text-gold text-xs font-medium">
+                                      Bestseller
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {course.fullName || course.title}
+                                </p>
+                              </div>
+                            </div>
+
+                            <p className="text-muted-foreground mb-4 line-clamp-2">
+                              {course.description}
+                            </p>
+
+                            {/* Features */}
+                            {course.features && course.features.length > 0 && (
+                              <div className="space-y-2 mb-4">
+                                {course.features.slice(0, 3).map((feature, i) => (
+                                  <div key={i} className="flex items-center gap-2 text-sm">
+                                    <CheckCircle2 className="w-4 h-4 text-secondary flex-shrink-0" />
+                                    <span className="text-muted-foreground">{feature}</span>
+                                  </div>
+                                ))}
+                                {course.features.length > 3 && (
+                                  <span className="text-sm text-primary">
+                                    +{course.features.length - 3} more
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Stats */}
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                              {course.studentCount && (
+                                <span className="flex items-center gap-1">
+                                  <Users className="w-4 h-4" />
+                                  {course.studentCount.toLocaleString()}
+                                </span>
+                              )}
+                              {course.rating && (
+                                <span className="flex items-center gap-1">
+                                  <Star className="w-4 h-4 text-gold fill-gold" />
+                                  {course.rating.toFixed(1)}
+                                  {course.reviewsCount && ` (${course.reviewsCount})`}
+                                </span>
+                              )}
+                              {course.durationHours && (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-4 h-4" />
+                                  {course.durationHours} hours
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                              {course.fullName}
-                            </p>
                           </div>
-                        </div>
 
-                        <p className="text-muted-foreground mb-4 line-clamp-2">
-                          {course.description}
-                        </p>
+                          {/* Right - Pricing & CTA */}
+                          <div className="md:col-span-2 p-6 bg-muted/30 flex flex-col justify-between">
+                            <div>
+                              {/* Inclusions */}
+                              <div className="grid grid-cols-2 gap-2 mb-6">
+                                {inclusions.map((item, i) => {
+                                  const Icon = item.icon;
+                                  return (
+                                    <div
+                                      key={i}
+                                      className="flex items-center gap-2 text-sm text-muted-foreground"
+                                    >
+                                      <Icon className="w-4 h-4 text-primary" />
+                                      <span>{item.text}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
 
-                        {/* Features */}
-                        <div className="space-y-2 mb-4">
-                          {course.features.slice(0, 3).map((feature, i) => (
-                            <div key={i} className="flex items-center gap-2 text-sm">
-                              <CheckCircle2 className="w-4 h-4 text-secondary flex-shrink-0" />
-                              <span className="text-muted-foreground">{feature}</span>
-                            </div>
-                          ))}
-                          {course.features.length > 3 && (
-                            <span className="text-sm text-primary">
-                              +{course.features.length - 3} more
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Stats */}
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            {course.students.toLocaleString()}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Star className="w-4 h-4 text-gold fill-gold" />
-                            {course.rating} ({course.reviews})
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-4 h-4" />
-                            {course.duration}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Right - Pricing & CTA */}
-                      <div className="md:col-span-2 p-6 bg-muted/30 flex flex-col justify-between">
-                        <div>
-                          {/* Inclusions */}
-                          <div className="grid grid-cols-2 gap-2 mb-6">
-                            {inclusions.map((item, i) => {
-                              const Icon = item.icon;
-                              return (
-                                <div
-                                  key={i}
-                                  className="flex items-center gap-2 text-sm text-muted-foreground"
-                                >
-                                  <Icon className="w-4 h-4 text-primary" />
-                                  <span>{item.text}</span>
+                              {/* Course metrics */}
+                              <div className="flex items-center gap-4 mb-6 text-sm">
+                                <div className="text-center">
+                                  <p className="font-bold text-foreground">
+                                    {course.lessonsCount ?? 0}+
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">Lectures</p>
                                 </div>
-                              );
-                            })}
-                          </div>
-
-                          {/* Course metrics */}
-                          <div className="flex items-center gap-4 mb-6 text-sm">
-                            <div className="text-center">
-                              <p className="font-bold text-foreground">
-                                {course.lectures}+
-                              </p>
-                              <p className="text-xs text-muted-foreground">Lectures</p>
+                                <div className="h-8 w-px bg-border" />
+                                <div className="text-center">
+                                  <p className="font-bold text-foreground">
+                                    {course.chaptersCount ?? 0}+
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">Chapters</p>
+                                </div>
+                              </div>
                             </div>
-                            <div className="h-8 w-px bg-border" />
-                            <div className="text-center">
-                              <p className="font-bold text-foreground">{course.tests}+</p>
-                              <p className="text-xs text-muted-foreground">Tests</p>
+
+                            {/* Pricing */}
+                            <div>
+                              <div className="mb-4">
+                                <div className="flex items-baseline gap-2">
+                                  <span className="font-display text-2xl font-bold text-foreground">
+                                    Rs. {discountedPrice.toLocaleString()}
+                                  </span>
+                                  {hasDiscount && (
+                                    <span className="text-sm text-muted-foreground line-through">
+                                      Rs. {originalPrice.toLocaleString()}
+                                    </span>
+                                  )}
+                                </div>
+                                {hasDiscount && (
+                                  <span className="text-xs text-secondary font-medium">
+                                    {discountPercent}% OFF
+                                  </span>
+                                )}
+                              </div>
+
+                              <Link href={`/courses/${course.slug}`}>
+                                <Button className="w-full gap-2">
+                                  View Course
+                                  <ChevronRight className="w-4 h-4" />
+                                </Button>
+                              </Link>
                             </div>
                           </div>
                         </div>
-
-                        {/* Pricing */}
-                        <div>
-                          <div className="mb-4">
-                            <div className="flex items-baseline gap-2">
-                              <span className="font-display text-2xl font-bold text-foreground">
-                                Rs. {course.price.discounted.toLocaleString()}
-                              </span>
-                              <span className="text-sm text-muted-foreground line-through">
-                                Rs. {course.price.original.toLocaleString()}
-                              </span>
-                            </div>
-                            <span className="text-xs text-secondary font-medium">
-                              {Math.round(
-                                ((course.price.original - course.price.discounted) /
-                                  course.price.original) *
-                                  100
-                              )}
-                              % OFF
-                            </span>
-                          </div>
-
-                          <Link href={`/courses/${course.slug}`}>
-                            <Button className="w-full gap-2">
-                              View Course
-                              <ChevronRight className="w-4 h-4" />
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
