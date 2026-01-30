@@ -7,19 +7,31 @@ import { supabase } from '@/lib/supabase/client';
 
 const httpLink = createHttpLink({
   uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:4000/graphql',
+  fetchOptions: {
+    // Prevent request from being aborted on component unmount
+    keepalive: true,
+  },
 });
 
 const authLink = setContext(async (_, { headers }) => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-  return {
-    headers: {
-      ...headers,
-      authorization: session?.access_token ? `Bearer ${session.access_token}` : '',
-    },
-  };
+    return {
+      headers: {
+        ...headers,
+        authorization: session?.access_token ? `Bearer ${session.access_token}` : '',
+      },
+    };
+  } catch (error) {
+    // Handle abort errors gracefully
+    if (error instanceof Error && error.name === 'AbortError') {
+      return { headers };
+    }
+    throw error;
+  }
 });
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
@@ -31,6 +43,10 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     });
   }
   if (networkError) {
+    // Ignore abort errors - these happen during navigation/unmount
+    if (networkError.name === 'AbortError') {
+      return;
+    }
     console.error(`[Network error]: ${networkError}`);
   }
 });
