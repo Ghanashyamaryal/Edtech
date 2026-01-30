@@ -276,14 +276,14 @@ export default function NewExamPage() {
               <div className="space-y-2">
                 <Label>Link to Course</Label>
                 <Select
-                  value={courseId}
-                  onValueChange={(value) => setValue("courseId", value)}
+                  value={courseId || "none"}
+                  onValueChange={(value) => setValue("courseId", value === "none" ? "" : value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a course (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No course</SelectItem>
+                    <SelectItem value="none">No course</SelectItem>
                     {courses.map((course: { id: string; title: string }) => (
                       <SelectItem key={course.id} value={course.id}>
                         {course.title}
