@@ -74,21 +74,33 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // Handle auth state changes
   useEffect(() => {
+    let isMounted = true;
+
     // Get initial session
     const initializeAuth = async () => {
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
 
+        if (!isMounted) return;
+
         if (initialSession?.user) {
           setSession(initialSession);
           setSupabaseUser(initialSession.user);
           const profile = await fetchUserProfile(initialSession.user.id);
-          setUser(profile);
+          if (isMounted) {
+            setUser(profile);
+          }
         }
       } catch (error) {
+        // Ignore abort errors - these happen during navigation/unmount
+        if (error instanceof Error && error.name === 'AbortError') {
+          return;
+        }
         console.error('Error initializing auth:', error);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -97,12 +109,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event: AuthChangeEvent, currentSession: Session | null) => {
+        if (!isMounted) return;
+
         setSession(currentSession);
         setSupabaseUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
           const profile = await fetchUserProfile(currentSession.user.id);
-          setUser(profile);
+          if (isMounted) {
+            setUser(profile);
+          }
         } else {
           setUser(null);
         }
@@ -117,6 +133,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     );
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
     };
   }, [fetchUserProfile]);
