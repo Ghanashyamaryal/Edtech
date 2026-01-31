@@ -41,9 +41,10 @@ import {
   Video,
   GripVertical,
   ClipboardList,
+  BookOpen,
   X,
 } from "lucide-react";
-import { GET_ADMIN_COURSE, GET_COURSE_EXAMS, GET_ADMIN_EXAMS } from "@/graphql/queries/admin";
+import { GET_ADMIN_COURSE, GET_COURSE_EXAMS, GET_ADMIN_EXAMS, GET_SUBJECTS, GET_COURSE_SUBJECTS } from "@/graphql/queries/admin";
 import {
   CREATE_CHAPTER,
   UPDATE_CHAPTER,
@@ -54,6 +55,7 @@ import {
   LINK_EXAM_TO_COURSE,
   UNLINK_EXAM_FROM_COURSE,
 } from "@/graphql/mutations/admin";
+import { LINK_SUBJECT_TO_COURSE, UNLINK_SUBJECT_FROM_COURSE } from "@/graphql/mutations/notes";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -105,6 +107,23 @@ interface CourseExam {
   exam: Exam;
 }
 
+interface Subject {
+  id: string;
+  name: string;
+  description: string | null;
+  icon: string | null;
+  questionsCount: number;
+  topicsCount: number;
+}
+
+interface CourseSubject {
+  id: string;
+  courseId: string;
+  subjectId: string;
+  displayOrder: number;
+  subject: Subject;
+}
+
 export default function ChaptersPage() {
   const params = useParams();
   const { toast } = useToast();
@@ -118,6 +137,7 @@ export default function ChaptersPage() {
   const [selectedChapterId, setSelectedChapterId] = React.useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = React.useState<{ type: "chapter" | "lesson"; id: string; name: string } | null>(null);
   const [selectedExamToAdd, setSelectedExamToAdd] = React.useState("");
+  const [selectedSubjectToAdd, setSelectedSubjectToAdd] = React.useState("");
 
   // Chapter form state
   const [chapterTitle, setChapterTitle] = React.useState("");
@@ -142,6 +162,13 @@ export default function ChaptersPage() {
   const { data: allExamsData } = useQuery(GET_ADMIN_EXAMS, {
     variables: { limit: 100 },
   });
+
+  const { data: courseSubjectsData, loading: loadingSubjects, refetch: refetchSubjects } = useQuery(GET_COURSE_SUBJECTS, {
+    variables: { courseId },
+    skip: !courseId,
+  });
+
+  const { data: allSubjectsData } = useQuery(GET_SUBJECTS);
 
   const [createChapter, { loading: creatingChapter }] = useMutation(CREATE_CHAPTER, {
     onCompleted: () => {
@@ -214,6 +241,23 @@ export default function ChaptersPage() {
     onCompleted: () => {
       toast({ title: "Exam unlinked", description: "The exam has been removed from this course." });
       refetchExams();
+    },
+    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
+  });
+
+  const [linkSubjectToCourse, { loading: linkingSubject }] = useMutation(LINK_SUBJECT_TO_COURSE, {
+    onCompleted: () => {
+      toast({ title: "Subject linked", description: "The subject has been added to this course." });
+      setSelectedSubjectToAdd("");
+      refetchSubjects();
+    },
+    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
+  });
+
+  const [unlinkSubjectFromCourse, { loading: unlinkingSubject }] = useMutation(UNLINK_SUBJECT_FROM_COURSE, {
+    onCompleted: () => {
+      toast({ title: "Subject unlinked", description: "The subject has been removed from this course." });
+      refetchSubjects();
     },
     onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
   });
@@ -341,6 +385,25 @@ export default function ChaptersPage() {
     });
   };
 
+  const handleLinkSubject = () => {
+    if (!selectedSubjectToAdd) return;
+    linkSubjectToCourse({
+      variables: {
+        subjectId: selectedSubjectToAdd,
+        courseId,
+      },
+    });
+  };
+
+  const handleUnlinkSubject = (subjectId: string) => {
+    unlinkSubjectFromCourse({
+      variables: {
+        subjectId,
+        courseId,
+      },
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -355,6 +418,11 @@ export default function ChaptersPage() {
   const allExams: Exam[] = allExamsData?.exams || [];
   const linkedExamIds = linkedExams.map((ce) => ce.examId);
   const availableExams = allExams.filter((exam) => !linkedExamIds.includes(exam.id));
+
+  const linkedSubjects: CourseSubject[] = courseSubjectsData?.courseSubjects || [];
+  const allSubjects: Subject[] = allSubjectsData?.subjects || [];
+  const linkedSubjectIds = linkedSubjects.map((cs) => cs.subjectId);
+  const availableSubjects = allSubjects.filter((subject) => !linkedSubjectIds.includes(subject.id));
 
   return (
     <div className="space-y-6">
@@ -613,6 +681,110 @@ export default function ChaptersPage() {
               All available exams have been linked.{" "}
               <Link href="/admin/exams/new" className="text-primary hover:underline">
                 Create a new exam
+              </Link>
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Subjects Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="w-5 h-5" />
+            Course Subjects
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Add Subject */}
+          {availableSubjects.length > 0 && (
+            <div className="flex gap-2">
+              <Select
+                value={selectedSubjectToAdd}
+                onValueChange={setSelectedSubjectToAdd}
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue placeholder="Select a subject to add" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableSubjects.map((subject) => (
+                    <SelectItem key={subject.id} value={subject.id}>
+                      {subject.name}
+                      {subject.questionsCount > 0 && ` (${subject.questionsCount} questions)`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleLinkSubject}
+                disabled={!selectedSubjectToAdd || linkingSubject}
+                className="gap-2"
+              >
+                {linkingSubject ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
+                Add
+              </Button>
+            </div>
+          )}
+
+          {/* Linked Subjects List */}
+          {loadingSubjects ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : linkedSubjects.length === 0 ? (
+            <div className="py-8 text-center">
+              <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-2">No subjects linked to this course</p>
+              <p className="text-sm text-muted-foreground">
+                Add subjects above or{" "}
+                <Link href="/admin/subjects" className="text-primary hover:underline">
+                  manage subjects
+                </Link>
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {linkedSubjects
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .map((courseSubject) => (
+                  <div
+                    key={courseSubject.id}
+                    className="flex items-center justify-between p-3 rounded-lg border bg-muted/50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <GripVertical className="w-4 h-4 text-muted-foreground" />
+                      <BookOpen className="w-4 h-4 text-primary" />
+                      <div>
+                        <p className="font-medium">{courseSubject.subject.name}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{courseSubject.subject.topicsCount || 0} topics</span>
+                          <span>{courseSubject.subject.questionsCount || 0} questions</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleUnlinkSubject(courseSubject.subjectId)}
+                      disabled={unlinkingSubject}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {availableSubjects.length === 0 && linkedSubjects.length > 0 && (
+            <p className="text-xs text-muted-foreground text-center">
+              All available subjects have been linked.{" "}
+              <Link href="/admin/subjects" className="text-primary hover:underline">
+                Create a new subject
               </Link>
             </p>
           )}

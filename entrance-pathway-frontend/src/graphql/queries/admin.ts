@@ -290,3 +290,23 @@ export const GET_COURSES_FOR_SELECT = gql`
     }
   }
 `;
+
+// Course-Subject relationship query
+export const GET_COURSE_SUBJECTS = gql`
+  query GetCourseSubjects($courseId: ID!) {
+    courseSubjects(courseId: $courseId) {
+      id
+      courseId
+      subjectId
+      displayOrder
+      subject {
+        id
+        name
+        description
+        icon
+        questionsCount
+        topicsCount
+      }
+    }
+  }
+`;
