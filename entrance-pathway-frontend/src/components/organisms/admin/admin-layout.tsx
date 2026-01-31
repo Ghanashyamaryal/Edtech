@@ -67,7 +67,7 @@ export function AdminLayout({ children, className }: AdminLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen top-0 bg-muted/30 flex flex-col">
+    <div className="min-h-screen bg-muted/30 flex flex-col -mt-8 lg:-mt-8">
       {/* Header */}
       <AdminHeader onMenuClick={handleMenuClick} />
 

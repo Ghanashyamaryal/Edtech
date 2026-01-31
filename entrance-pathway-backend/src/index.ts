@@ -10,7 +10,7 @@ import http from 'http';
 import { env } from './config';
 import { typeDefs } from './schema';
 import { resolvers } from './resolvers';
-import { authMiddleware, extractToken, AuthenticatedRequest } from './middleware';
+import { extractToken, verifyTokenWithSupabase, AuthenticatedRequest } from './middleware';
 import { Context } from './resolvers/types';
 import { startKeepAlive } from './utils';
 
@@ -57,14 +57,16 @@ async function startServer() {
       credentials: true,
     }),
     express.json(),
-    authMiddleware,
     expressMiddleware(server, {
       context: async ({ req }): Promise<Context> => {
-        const authReq = req as AuthenticatedRequest;
         const token = extractToken(req);
 
+        // Verify token with Supabase API and fetch role from database
+        // This ensures the role is always up-to-date from the users table
+        const user = token ? await verifyTokenWithSupabase(token) : null;
+
         return {
-          user: authReq.user || null,
+          user,
           token,
         };
       },

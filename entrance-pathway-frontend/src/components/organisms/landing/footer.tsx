@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   GraduationCap,
   Facebook,
@@ -76,7 +77,13 @@ const socialLinks = [
 ];
 
 export function LandingFooter() {
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+
+  // Don't render footer on dashboard or admin pages
+  if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <footer className="bg-foreground bottom-0 text-background">

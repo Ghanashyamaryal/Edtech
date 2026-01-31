@@ -71,8 +71,8 @@ export const courseResolvers = {
   Mutation: {
     createCourse: async (_: any, { input }: { input: any }, context: Context) => {
       if (!context.user) throw new AuthenticationError();
-      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
-        throw new ForbiddenError('Only instructors can create courses');
+      if (context.user.role !== 'mentor' && context.user.role !== 'admin') {
+        throw new ForbiddenError('Only mentors can create courses');
       }
 
       const slug = generateSlug(input.title);
@@ -141,6 +141,32 @@ export const courseResolvers = {
 
       if (error) throw new DatabaseError(error.message);
       return true;
+    },
+
+    publishCourse: async (_: any, { id }: { id: string }, context: Context) => {
+      if (!context.user) throw new AuthenticationError();
+
+      // Check ownership or admin
+      const { data: course } = await supabaseAdmin
+        .from('courses')
+        .select('instructor_id')
+        .eq('id', id)
+        .single();
+
+      if (!course) throw new NotFoundError('Course');
+      if (course.instructor_id !== context.user.id && context.user.role !== 'admin') {
+        throw new ForbiddenError();
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from('courses')
+        .update({ is_published: true })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw new DatabaseError(error.message);
+      return formatResponse(data);
     },
 
     enrollInCourse: async (_: any, { courseId }: { courseId: string }, context: Context) => {

@@ -296,8 +296,9 @@ export function LandingHeader() {
     setIsMounted(true);
   }, []);
 
-  // Check if we're on dashboard pages
+  // Check if we're on dashboard or admin pages (they have their own layouts)
   const isDashboard = pathname.startsWith("/dashboard");
+  const isAdmin = pathname.startsWith("/admin");
 
   // Handle scroll effect
   React.useEffect(() => {
@@ -325,8 +326,8 @@ export function LandingHeader() {
     };
   }, [isMobileMenuOpen]);
 
-  // Don't render header on dashboard - dashboard has its own layout
-  if (isDashboard) {
+  // Don't render header on dashboard or admin - they have their own layouts
+  if (isDashboard || isAdmin) {
     return null;
   }
 
@@ -445,7 +446,6 @@ export function LandingHeader() {
               <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
             ) : isAuthenticated ? (
               <>
-                <ExamCountdownTimer />
                 <NotificationsDropdown />
                 <ProfileDropdown />
               </>

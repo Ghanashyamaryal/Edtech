@@ -7,7 +7,7 @@ export interface SignUpInput {
   email: string;
   password: string;
   fullName: string;
-  role: 'student' | 'mentor' | 'admin' | 'instructor';
+  role: 'student' | 'mentor' | 'admin';
   phone?: string;
 }
 
