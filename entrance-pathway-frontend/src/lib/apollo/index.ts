@@ -1,2 +1,2 @@
-export { apolloClient } from './client';
+export { apolloClient, getApolloClient } from './client';
 export { ApolloProvider } from './provider';

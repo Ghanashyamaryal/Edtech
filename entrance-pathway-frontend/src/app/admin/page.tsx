@@ -49,19 +49,13 @@ function StatCard({ title, value, icon, href, loading }: StatCardProps) {
 }
 
 export default function AdminDashboardPage() {
-  const { data: usersData, loading: usersLoading } = useQuery(GET_USERS, {
-    variables: { limit: 1 },
-  });
+  const { data: usersData, loading: usersLoading } = useQuery(GET_USERS);
 
-  const { data: coursesData, loading: coursesLoading } = useQuery(GET_ADMIN_COURSES, {
-    variables: { limit: 1 },
-  });
+  const { data: coursesData, loading: coursesLoading } = useQuery(GET_ADMIN_COURSES);
 
   const { data: subjectsData, loading: subjectsLoading } = useQuery(GET_SUBJECTS);
 
-  const { data: examsData, loading: examsLoading } = useQuery(GET_ADMIN_EXAMS, {
-    variables: { limit: 1 },
-  });
+  const { data: examsData, loading: examsLoading } = useQuery(GET_ADMIN_EXAMS);
 
   // Calculate totals from data
   const totalUsers = usersData?.users?.length || 0;

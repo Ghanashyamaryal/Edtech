@@ -212,8 +212,8 @@ export const questionResolvers = {
     // Question mutations
     createQuestion: async (_: any, { input }: { input: any }, context: Context) => {
       if (!context.user) throw new AuthenticationError();
-      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
-        throw new ForbiddenError('Only instructors can create questions');
+      if (context.user.role !== 'mentor' && context.user.role !== 'admin') {
+        throw new ForbiddenError('Only mentors can create questions');
       }
 
       // Determine correct answer from options
@@ -241,7 +241,7 @@ export const questionResolvers = {
 
     updateQuestion: async (_: any, { id, input }: { id: string; input: any }, context: Context) => {
       if (!context.user) throw new AuthenticationError();
-      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+      if (context.user.role !== 'mentor' && context.user.role !== 'admin') {
         throw new ForbiddenError();
       }
 
@@ -270,7 +270,7 @@ export const questionResolvers = {
 
     deleteQuestion: async (_: any, { id }: { id: string }, context: Context) => {
       if (!context.user) throw new AuthenticationError();
-      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+      if (context.user.role !== 'mentor' && context.user.role !== 'admin') {
         throw new ForbiddenError();
       }
 

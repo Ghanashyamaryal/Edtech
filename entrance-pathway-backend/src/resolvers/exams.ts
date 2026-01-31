@@ -144,8 +144,8 @@ export const examResolvers = {
   Mutation: {
     createExam: async (_: any, { input }: { input: any }, context: Context) => {
       if (!context.user) throw new AuthenticationError();
-      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
-        throw new ForbiddenError('Only instructors can create exams');
+      if (context.user.role !== 'mentor' && context.user.role !== 'admin') {
+        throw new ForbiddenError('Only mentors can create exams');
       }
 
       const { courseId, ...examInput } = input;
@@ -186,7 +186,7 @@ export const examResolvers = {
 
     updateExam: async (_: any, { id, input }: { id: string; input: any }, context: Context) => {
       if (!context.user) throw new AuthenticationError();
-      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+      if (context.user.role !== 'mentor' && context.user.role !== 'admin') {
         throw new ForbiddenError();
       }
 
@@ -226,7 +226,7 @@ export const examResolvers = {
       context: Context
     ) => {
       if (!context.user) throw new AuthenticationError();
-      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+      if (context.user.role !== 'mentor' && context.user.role !== 'admin') {
         throw new ForbiddenError();
       }
 
@@ -267,7 +267,7 @@ export const examResolvers = {
       context: Context
     ) => {
       if (!context.user) throw new AuthenticationError();
-      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+      if (context.user.role !== 'mentor' && context.user.role !== 'admin') {
         throw new ForbiddenError();
       }
 
@@ -287,7 +287,7 @@ export const examResolvers = {
       context: Context
     ) => {
       if (!context.user) throw new AuthenticationError();
-      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+      if (context.user.role !== 'mentor' && context.user.role !== 'admin') {
         throw new ForbiddenError();
       }
 
@@ -319,7 +319,7 @@ export const examResolvers = {
       context: Context
     ) => {
       if (!context.user) throw new AuthenticationError();
-      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+      if (context.user.role !== 'mentor' && context.user.role !== 'admin') {
         throw new ForbiddenError();
       }
 
@@ -354,7 +354,7 @@ export const examResolvers = {
       context: Context
     ) => {
       if (!context.user) throw new AuthenticationError();
-      if (context.user.role !== 'instructor' && context.user.role !== 'admin') {
+      if (context.user.role !== 'mentor' && context.user.role !== 'admin') {
         throw new ForbiddenError();
       }
 

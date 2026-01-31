@@ -1,12 +1,16 @@
 'use client';
 
 import { ApolloProvider as BaseApolloProvider } from '@apollo/client';
-import { apolloClient } from './client';
+import { getApolloClient } from './client';
+import { useMemo } from 'react';
 
 interface ApolloProviderProps {
   children: React.ReactNode;
 }
 
 export function ApolloProvider({ children }: ApolloProviderProps) {
-  return <BaseApolloProvider client={apolloClient}>{children}</BaseApolloProvider>;
+  // Create/get the singleton client instance and memoize it
+  const client = useMemo(() => getApolloClient(), []);
+
+  return <BaseApolloProvider client={client}>{children}</BaseApolloProvider>;
 }
