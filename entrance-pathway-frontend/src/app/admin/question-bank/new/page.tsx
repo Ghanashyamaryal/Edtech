@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,8 +23,13 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { HelpCircle, ArrowLeft, Loader2, Plus, Trash2 } from "lucide-react";
-import { GET_SUBJECTS, GET_TOPICS } from "@/graphql/queries/admin";
-import { CREATE_QUESTION } from "@/graphql/mutations/admin";
+import {
+  getSubjects,
+  getTopics,
+  createQuestion,
+  type Subject,
+  type Topic,
+} from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -49,13 +53,36 @@ type QuestionFormData = z.infer<typeof questionSchema>;
 export default function NewQuestionPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [subjects, setSubjects] = React.useState<Subject[]>([]);
+  const [topics, setTopics] = React.useState<Topic[]>([]);
   const [selectedSubjectId, setSelectedSubjectId] = React.useState<string>("");
+  const [loading, setLoading] = React.useState(false);
 
-  const { data: subjectsData } = useQuery(GET_SUBJECTS);
-  const { data: topicsData } = useQuery(GET_TOPICS, {
-    variables: { subjectId: selectedSubjectId },
-    skip: !selectedSubjectId,
-  });
+  // Load subjects
+  React.useEffect(() => {
+    async function loadSubjects() {
+      const result = await getSubjects();
+      if (result.success) {
+        setSubjects(result.data);
+      }
+    }
+    loadSubjects();
+  }, []);
+
+  // Load topics when subject changes
+  React.useEffect(() => {
+    async function loadTopics() {
+      if (!selectedSubjectId) {
+        setTopics([]);
+        return;
+      }
+      const result = await getTopics(selectedSubjectId);
+      if (result.success) {
+        setTopics(result.data);
+      }
+    }
+    loadTopics();
+  }, [selectedSubjectId]);
 
   const {
     register,
@@ -110,23 +137,6 @@ export default function NewQuestionPage() {
     }
   }, [questionType, setValue]);
 
-  const [createQuestion, { loading }] = useMutation(CREATE_QUESTION, {
-    onCompleted: () => {
-      toast({
-        title: "Question created",
-        description: "Your question has been added to the question bank.",
-      });
-      router.push("/admin/question-bank");
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
   const setCorrectAnswer = (index: number) => {
     const newOptions = options.map((opt, i) => ({
       ...opt,
@@ -135,7 +145,7 @@ export default function NewQuestionPage() {
     setValue("options", newOptions);
   };
 
-  const onSubmit = (data: QuestionFormData) => {
+  const onSubmit = async (data: QuestionFormData) => {
     // Ensure at least one correct answer for multiple choice
     if (
       data.questionType === "multiple_choice" &&
@@ -149,23 +159,36 @@ export default function NewQuestionPage() {
       return;
     }
 
-    createQuestion({
-      variables: {
-        input: {
-          questionText: data.questionText,
-          questionType: data.questionType,
-          difficulty: data.difficulty,
-          subjectId: data.subjectId,
-          topicId: data.topicId || null,
-          explanation: data.explanation || null,
-          options: data.options,
-        },
-      },
+    setLoading(true);
+    const result = await createQuestion({
+      questionText: data.questionText,
+      questionType: data.questionType,
+      difficulty: data.difficulty,
+      subjectId: data.subjectId,
+      topicId: data.topicId || undefined,
+      explanation: data.explanation || undefined,
+      options: data.options.map((opt, index) => ({
+        id: `option-${index}`,
+        text: opt.text,
+        isCorrect: opt.isCorrect,
+      })),
     });
-  };
 
-  const subjects = subjectsData?.subjects || [];
-  const topics = topicsData?.topics || [];
+    if (result.success) {
+      toast({
+        title: "Question created",
+        description: "Your question has been added to the question bank.",
+      });
+      router.push("/admin/question-bank");
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -256,7 +279,7 @@ export default function NewQuestionPage() {
                     <SelectValue placeholder="Select subject" />
                   </SelectTrigger>
                   <SelectContent>
-                    {subjects.map((subject: any) => (
+                    {subjects.map((subject) => (
                       <SelectItem key={subject.id} value={subject.id}>
                         {subject.name}
                       </SelectItem>
@@ -278,7 +301,7 @@ export default function NewQuestionPage() {
                     <SelectValue placeholder="Select topic" />
                   </SelectTrigger>
                   <SelectContent>
-                    {topics.map((topic: any) => (
+                    {topics.map((topic) => (
                       <SelectItem key={topic.id} value={topic.id}>
                         {topic.name}
                       </SelectItem>

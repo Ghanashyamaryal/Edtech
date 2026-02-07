@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -31,12 +30,15 @@ import {
   Plus,
   X,
 } from "lucide-react";
-import { GET_ADMIN_EXAM, GET_COURSES_FOR_SELECT } from "@/graphql/queries/admin";
 import {
-  UPDATE_EXAM,
-  LINK_EXAM_TO_COURSE,
-  UNLINK_EXAM_FROM_COURSE,
-} from "@/graphql/mutations/admin";
+  getExamWithCourses,
+  getCourses,
+  updateExam,
+  linkExamToCourse,
+  unlinkExamFromCourse,
+  type Exam,
+  type Course,
+} from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -60,24 +62,19 @@ const examSchema = z.object({
 
 type ExamFormData = z.infer<typeof examSchema>;
 
-interface Course {
-  id: string;
-  title: string;
-  slug?: string;
-}
-
 export default function EditExamPage() {
   const params = useParams();
   const { toast } = useToast();
   const examId = params.id as string;
+
+  const [exam, setExam] = React.useState<Exam | null>(null);
+  const [allCourses, setAllCourses] = React.useState<Course[]>([]);
+  const [loadingExam, setLoadingExam] = React.useState(true);
+  const [loadingCourses, setLoadingCourses] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);
+  const [linking, setLinking] = React.useState(false);
+  const [unlinking, setUnlinking] = React.useState(false);
   const [selectedCourseToAdd, setSelectedCourseToAdd] = React.useState("");
-
-  const { data, loading: loadingExam, refetch } = useQuery(GET_ADMIN_EXAM, {
-    variables: { id: examId },
-    skip: !examId,
-  });
-
-  const { data: coursesData, loading: loadingCourses } = useQuery(GET_COURSES_FOR_SELECT);
 
   const {
     register,
@@ -101,72 +98,53 @@ export default function EditExamPage() {
 
   const examType = watch("examType");
 
+  // Load exam data
+  const loadExam = React.useCallback(async () => {
+    if (!examId) return;
+    setLoadingExam(true);
+    const result = await getExamWithCourses(examId);
+    if (result.success) {
+      setExam(result.data);
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setLoadingExam(false);
+  }, [examId, toast]);
+
+  // Load all courses
   React.useEffect(() => {
-    if (data?.exam) {
+    async function loadCourses() {
+      setLoadingCourses(true);
+      const result = await getCourses({ limit: 100 });
+      if (result.success) {
+        setAllCourses(result.data);
+      }
+      setLoadingCourses(false);
+    }
+    loadCourses();
+  }, []);
+
+  // Initial load
+  React.useEffect(() => {
+    loadExam();
+  }, [loadExam]);
+
+  // Set form values when exam data is loaded
+  React.useEffect(() => {
+    if (exam) {
       reset({
-        title: data.exam.title,
-        description: data.exam.description || "",
-        durationMinutes: data.exam.durationMinutes,
-        totalMarks: data.exam.totalMarks,
-        passingMarks: data.exam.passingMarks,
-        examType: data.exam.examType || "full_model",
-        setNumber: data.exam.setNumber || 1,
+        title: exam.title,
+        description: exam.description || "",
+        durationMinutes: exam.durationMinutes,
+        totalMarks: exam.totalMarks,
+        passingMarks: exam.passingMarks,
+        examType: exam.examType || "full_model",
+        setNumber: exam.setNumber || 1,
       });
     }
-  }, [data, reset]);
+  }, [exam, reset]);
 
-  const [updateExam, { loading }] = useMutation(UPDATE_EXAM, {
-    onCompleted: () => {
-      toast({
-        title: "Exam updated",
-        description: "Your changes have been saved.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const [linkExamToCourse, { loading: linking }] = useMutation(LINK_EXAM_TO_COURSE, {
-    onCompleted: () => {
-      toast({
-        title: "Course linked",
-        description: "Exam has been linked to the course.",
-      });
-      setSelectedCourseToAdd("");
-      refetch();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const [unlinkExamFromCourse, { loading: unlinking }] = useMutation(UNLINK_EXAM_FROM_COURSE, {
-    onCompleted: () => {
-      toast({
-        title: "Course unlinked",
-        description: "Exam has been removed from the course.",
-      });
-      refetch();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const onSubmit = (formData: ExamFormData) => {
+  const onSubmit = async (formData: ExamFormData) => {
     if (formData.passingMarks > formData.totalMarks) {
       toast({
         title: "Error",
@@ -176,40 +154,70 @@ export default function EditExamPage() {
       return;
     }
 
-    updateExam({
-      variables: {
-        id: examId,
-        input: {
-          title: formData.title,
-          description: formData.description || null,
-          durationMinutes: formData.durationMinutes,
-          totalMarks: formData.totalMarks,
-          passingMarks: formData.passingMarks,
-          examType: formData.examType || null,
-          setNumber: formData.setNumber || null,
-        },
-      },
+    setLoading(true);
+    const result = await updateExam(examId, {
+      title: formData.title,
+      description: formData.description || undefined,
+      durationMinutes: formData.durationMinutes,
+      totalMarks: formData.totalMarks,
+      passingMarks: formData.passingMarks,
+      examType: formData.examType || undefined,
+      setNumber: formData.setNumber || undefined,
     });
+
+    if (result.success) {
+      toast({
+        title: "Exam updated",
+        description: "Your changes have been saved.",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
   };
 
-  const handleLinkCourse = () => {
+  const handleLinkCourse = async () => {
     if (!selectedCourseToAdd) return;
-    linkExamToCourse({
-      variables: {
-        examId,
-        courseId: selectedCourseToAdd,
-        isRequired: false,
-      },
-    });
+    setLinking(true);
+    const result = await linkExamToCourse(examId, selectedCourseToAdd);
+    if (result.success) {
+      toast({
+        title: "Course linked",
+        description: "Exam has been linked to the course.",
+      });
+      setSelectedCourseToAdd("");
+      loadExam();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+    setLinking(false);
   };
 
-  const handleUnlinkCourse = (courseId: string) => {
-    unlinkExamFromCourse({
-      variables: {
-        examId,
-        courseId,
-      },
-    });
+  const handleUnlinkCourse = async (courseId: string) => {
+    setUnlinking(true);
+    const result = await unlinkExamFromCourse(examId, courseId);
+    if (result.success) {
+      toast({
+        title: "Course unlinked",
+        description: "Exam has been removed from the course.",
+      });
+      loadExam();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+    setUnlinking(false);
   };
 
   if (loadingExam) {
@@ -220,7 +228,7 @@ export default function EditExamPage() {
     );
   }
 
-  if (!data?.exam) {
+  if (!exam) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">Exam not found</p>
@@ -231,9 +239,8 @@ export default function EditExamPage() {
     );
   }
 
-  const allCourses: Course[] = coursesData?.courses || [];
-  const linkedCourses: Course[] = data.exam.courses || [];
-  const linkedCourseIds = linkedCourses.map((c: Course) => c.id);
+  const linkedCourses = exam.courses || [];
+  const linkedCourseIds = linkedCourses.map((c) => c.id);
   const availableCourses = allCourses.filter((c) => !linkedCourseIds.includes(c.id));
 
   return (
@@ -257,7 +264,7 @@ export default function EditExamPage() {
         <Link href={`/admin/exams/${examId}/questions`}>
           <Button variant="outline" className="gap-2">
             <ListChecks className="w-4 h-4" />
-            Manage Questions ({data.exam.questionsCount || 0})
+            Manage Questions ({exam.questionsCount || 0})
           </Button>
         </Link>
       </div>
@@ -432,7 +439,7 @@ export default function EditExamPage() {
             </p>
           ) : (
             <div className="space-y-2">
-              {linkedCourses.map((course: Course) => (
+              {linkedCourses.map((course) => (
                 <div
                   key={course.id}
                   className="flex items-center justify-between p-3 rounded-lg border bg-muted/50"

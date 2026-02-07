@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@apollo/client';
+import * as React from 'react';
 import { Card, CardContent, Button } from '@/components/ui';
 import Link from 'next/link';
 import {
@@ -15,39 +15,13 @@ import {
   BookOpen,
   Zap,
 } from 'lucide-react';
-import { GET_LANDING_EXAMS, GET_USER_EXAM_ATTEMPTS } from '@/graphql/queries/exams';
+import {
+  getPublishedExams,
+  getUserExamAttempts,
+  type Exam,
+  type ExamAttempt,
+} from '@/actions';
 import { useAuth } from '@/context/auth-context';
-
-// Exam type from API
-interface Exam {
-  id: string;
-  title: string;
-  description: string | null;
-  durationMinutes: number;
-  totalMarks: number;
-  examType: string | null;
-  setNumber: number | null;
-  questionsCount: number;
-  courses: { id: string; title: string; slug: string }[];
-}
-
-// Exam attempt type
-interface ExamAttempt {
-  id: string;
-  exam: {
-    id: string;
-    title: string;
-    description: string | null;
-    durationMinutes: number;
-    totalMarks: number;
-    passingMarks: number;
-    examType: string | null;
-    questionsCount: number;
-  };
-  startedAt: string;
-  completedAt: string | null;
-  score: number | null;
-}
 
 // Exam type config
 const examTypeConfig: Record<string, { label: string; icon: any; color: string }> = {
@@ -67,7 +41,7 @@ function formatDuration(minutes: number): string {
   return `${minutes} min`;
 }
 
-function getExamTypeLabel(examType: string | null): string {
+function getExamTypeLabel(examType: string | undefined | null): string {
   if (!examType) return 'Practice';
   return examTypeConfig[examType]?.label || 'Practice';
 }
@@ -87,17 +61,40 @@ function getRelativeTime(dateString: string): string {
 
 export default function MockTestsPage() {
   const { user } = useAuth();
+  const [availableExams, setAvailableExams] = React.useState<Exam[]>([]);
+  const [examAttempts, setExamAttempts] = React.useState<ExamAttempt[]>([]);
+  const [loadingExams, setLoadingExams] = React.useState(true);
+  const [loadingAttempts, setLoadingAttempts] = React.useState(true);
 
-  // Fetch available exams
-  const { data: examsData, loading: loadingExams } = useQuery(GET_LANDING_EXAMS);
-  const availableExams: Exam[] = examsData?.exams || [];
+  // Load available exams
+  React.useEffect(() => {
+    async function loadExams() {
+      setLoadingExams(true);
+      const result = await getPublishedExams();
+      if (result.success) {
+        setAvailableExams(result.data);
+      }
+      setLoadingExams(false);
+    }
+    loadExams();
+  }, []);
 
-  // Fetch user's exam attempts
-  const { data: attemptsData, loading: loadingAttempts } = useQuery(GET_USER_EXAM_ATTEMPTS, {
-    variables: { userId: user?.id },
-    skip: !user?.id,
-  });
-  const examAttempts: ExamAttempt[] = attemptsData?.userExamAttempts || [];
+  // Load user's exam attempts
+  React.useEffect(() => {
+    async function loadAttempts() {
+      if (!user?.id) {
+        setLoadingAttempts(false);
+        return;
+      }
+      setLoadingAttempts(true);
+      const result = await getUserExamAttempts(user.id);
+      if (result.success) {
+        setExamAttempts(result.data);
+      }
+      setLoadingAttempts(false);
+    }
+    loadAttempts();
+  }, [user?.id]);
 
   // Filter completed attempts
   const completedAttempts = examAttempts.filter(a => a.completedAt !== null);
@@ -239,7 +236,7 @@ export default function MockTestsPage() {
                     </span>
                   </div>
 
-                  {exam.courses.length > 0 && (
+                  {exam.courses && exam.courses.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-4">
                       {exam.courses.slice(0, 2).map((course) => (
                         <span

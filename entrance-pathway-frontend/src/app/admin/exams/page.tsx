@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useQuery, useMutation } from "@apollo/client";
 import {
   Card,
   CardContent,
@@ -16,8 +15,7 @@ import {
 import { Title, Paragraph } from "@/components/atoms";
 import { DataTable, Column, StatusBadge, ConfirmDialog } from "@/components/molecules/admin";
 import { ClipboardList, Plus, MoreHorizontal, Pencil, Trash2, ListChecks, BookOpen } from "lucide-react";
-import { GET_ADMIN_EXAMS } from "@/graphql/queries/admin";
-import { DELETE_EXAM } from "@/graphql/mutations/admin";
+import { getExams, deleteExam, type Exam } from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 
 const EXAM_TYPE_LABELS: Record<string, string> = {
@@ -28,66 +26,55 @@ const EXAM_TYPE_LABELS: Record<string, string> = {
   previous_year: "Previous Year",
 };
 
-interface Course {
-  id: string;
-  title: string;
-}
-
-interface Exam {
-  id: string;
-  title: string;
-  description: string | null;
-  durationMinutes: number;
-  totalMarks: number;
-  passingMarks: number;
-  examType: string | null;
-  setNumber: number | null;
-  isPublished: boolean;
-  questionsCount: number;
-  courses: Course[];
-  createdAt: string;
-}
-
 export default function AdminExamsPage() {
   const { toast } = useToast();
   const [searchValue, setSearchValue] = React.useState("");
   const [selectedExam, setSelectedExam] = React.useState<Exam | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
+  const [exams, setExams] = React.useState<Exam[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [deleting, setDeleting] = React.useState(false);
 
-  const { data, loading, refetch } = useQuery(GET_ADMIN_EXAMS, {
-    variables: { limit: 50 },
-  });
+  const loadExams = React.useCallback(async () => {
+    setLoading(true);
+    const result = await getExams({ limit: 50 });
+    if (result.success) {
+      setExams(result.data);
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setLoading(false);
+  }, [toast]);
 
-  const [deleteExam, { loading: deleting }] = useMutation(DELETE_EXAM, {
-    onCompleted: () => {
-      toast({
-        title: "Exam deleted",
-        description: "The exam has been successfully deleted.",
-      });
-      setShowDeleteDialog(false);
-      refetch();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  React.useEffect(() => {
+    loadExams();
+  }, [loadExams]);
 
   const handleDelete = (exam: Exam) => {
     setSelectedExam(exam);
     setShowDeleteDialog(true);
   };
 
-  const confirmDelete = () => {
-    if (selectedExam) {
-      deleteExam({ variables: { id: selectedExam.id } });
+  const confirmDelete = async () => {
+    if (!selectedExam) return;
+    setDeleting(true);
+    const result = await deleteExam(selectedExam.id);
+    if (result.success) {
+      toast({
+        title: "Exam deleted",
+        description: "The exam has been successfully deleted.",
+      });
+      setShowDeleteDialog(false);
+      loadExams();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
     }
+    setDeleting(false);
   };
-
-  const exams: Exam[] = data?.exams || [];
 
   const filteredExams = exams.filter((exam) =>
     exam.title?.toLowerCase().includes(searchValue.toLowerCase())
@@ -127,10 +114,10 @@ export default function AdminExamsPage() {
       header: "Courses",
       cell: (exam) => (
         <div className="flex items-center gap-1">
-          {exam.courses && exam.courses.length > 0 ? (
+          {exam.coursesCount && exam.coursesCount > 0 ? (
             <div className="flex items-center gap-1">
               <BookOpen className="w-3 h-3 text-muted-foreground" />
-              <span className="text-sm">{exam.courses.length}</span>
+              <span className="text-sm">{exam.coursesCount}</span>
             </div>
           ) : (
             <span className="text-sm text-muted-foreground">-</span>

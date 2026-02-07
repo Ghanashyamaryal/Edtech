@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,8 +22,7 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { ClipboardList, ArrowLeft, Loader2 } from "lucide-react";
-import { CREATE_EXAM, LINK_EXAM_TO_COURSE } from "@/graphql/mutations/admin";
-import { GET_COURSES_FOR_SELECT } from "@/graphql/queries/admin";
+import { createExam, linkExamToCourse, getCourses, type Course } from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -52,8 +50,9 @@ type ExamFormData = z.infer<typeof examSchema>;
 export default function NewExamPage() {
   const router = useRouter();
   const { toast } = useToast();
-
-  const { data: coursesData, loading: loadingCourses } = useQuery(GET_COURSES_FOR_SELECT);
+  const [courses, setCourses] = React.useState<Course[]>([]);
+  const [loadingCourses, setLoadingCourses] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);
 
   const {
     register,
@@ -78,41 +77,20 @@ export default function NewExamPage() {
   const examType = watch("examType");
   const courseId = watch("courseId");
 
-  const [linkExamToCourse] = useMutation(LINK_EXAM_TO_COURSE, {
-    onError: (error) => {
-      console.error("Failed to link exam to course:", error);
-    },
-  });
-
-  const [createExam, { loading }] = useMutation(CREATE_EXAM, {
-    onCompleted: async (data) => {
-      // If a course was selected, link the exam to it
-      if (courseId && courseId !== "") {
-        await linkExamToCourse({
-          variables: {
-            examId: data.createExam.id,
-            courseId: courseId,
-            isRequired: false,
-          },
-        });
+  // Load courses
+  React.useEffect(() => {
+    async function loadCourses() {
+      setLoadingCourses(true);
+      const result = await getCourses({ limit: 100 });
+      if (result.success) {
+        setCourses(result.data);
       }
+      setLoadingCourses(false);
+    }
+    loadCourses();
+  }, []);
 
-      toast({
-        title: "Exam created",
-        description: "Now add questions to your exam.",
-      });
-      router.push(`/admin/exams/${data.createExam.id}/questions`);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const onSubmit = (data: ExamFormData) => {
+  const onSubmit = async (data: ExamFormData) => {
     if (data.passingMarks > data.totalMarks) {
       toast({
         title: "Error",
@@ -122,23 +100,39 @@ export default function NewExamPage() {
       return;
     }
 
-    createExam({
-      variables: {
-        input: {
-          title: data.title,
-          description: data.description || null,
-          durationMinutes: data.durationMinutes,
-          totalMarks: data.totalMarks,
-          passingMarks: data.passingMarks,
-          examType: data.examType || null,
-          setNumber: data.setNumber || null,
-          courseId: data.courseId || null,
-        },
-      },
-    });
-  };
+    setLoading(true);
 
-  const courses = coursesData?.courses || [];
+    const result = await createExam({
+      title: data.title,
+      description: data.description || undefined,
+      durationMinutes: data.durationMinutes,
+      totalMarks: data.totalMarks,
+      passingMarks: data.passingMarks,
+      examType: data.examType || undefined,
+      setNumber: data.setNumber || undefined,
+    });
+
+    if (result.success) {
+      // If a course was selected, link the exam to it
+      if (courseId && courseId !== "") {
+        await linkExamToCourse(result.data.id, courseId);
+      }
+
+      toast({
+        title: "Exam created",
+        description: "Now add questions to your exam.",
+      });
+      router.push(`/admin/exams/${result.data.id}/questions`);
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+
+    setLoading(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -284,7 +278,7 @@ export default function NewExamPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No course</SelectItem>
-                    {courses.map((course: { id: string; title: string }) => (
+                    {courses.map((course) => (
                       <SelectItem key={course.id} value={course.id}>
                         {course.title}
                       </SelectItem>

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
 import {
   Card,
   CardContent,
@@ -33,8 +32,15 @@ import {
   Search,
   HelpCircle,
 } from "lucide-react";
-import { GET_ADMIN_EXAM, GET_ADMIN_QUESTIONS, GET_SUBJECTS } from "@/graphql/queries/admin";
-import { ADD_QUESTION_TO_EXAM, REMOVE_QUESTION_FROM_EXAM } from "@/graphql/mutations/admin";
+import {
+  getExamWithQuestions,
+  getQuestions,
+  getSubjects,
+  addQuestionToExam,
+  removeQuestionFromExam,
+  type Question,
+  type Subject,
+} from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -51,19 +57,23 @@ interface ExamQuestion {
   };
 }
 
-interface Question {
-  id: string;
-  questionText: string;
-  questionType: string;
-  difficulty: string;
-  subject: { id: string; name: string } | null;
-}
-
 export default function ExamQuestionsPage() {
   const params = useParams();
   const { toast } = useToast();
   const examId = params.id as string;
 
+  // Data states
+  const [exam, setExam] = React.useState<any>(null);
+  const [allQuestions, setAllQuestions] = React.useState<Question[]>([]);
+  const [subjects, setSubjects] = React.useState<Subject[]>([]);
+
+  // Loading states
+  const [loadingExam, setLoadingExam] = React.useState(true);
+  const [loadingQuestions, setLoadingQuestions] = React.useState(true);
+  const [adding, setAdding] = React.useState(false);
+  const [removing, setRemoving] = React.useState(false);
+
+  // UI states
   const [showAddDialog, setShowAddDialog] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
   const [subjectFilter, setSubjectFilter] = React.useState("all");
@@ -71,65 +81,86 @@ export default function ExamQuestionsPage() {
   const [marks, setMarks] = React.useState("1");
   const [removeTarget, setRemoveTarget] = React.useState<ExamQuestion | null>(null);
 
-  const { data: examData, loading: loadingExam, refetch } = useQuery(GET_ADMIN_EXAM, {
-    variables: { id: examId },
-    skip: !examId,
-  });
+  // Load exam data
+  const loadExam = React.useCallback(async () => {
+    if (!examId) return;
+    setLoadingExam(true);
+    const result = await getExamWithQuestions(examId);
+    if (result.success) {
+      setExam(result.data);
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setLoadingExam(false);
+  }, [examId, toast]);
 
-  const { data: questionsData, loading: loadingQuestions } = useQuery(GET_ADMIN_QUESTIONS, {
-    variables: {
+  // Load questions based on filter
+  const loadQuestions = React.useCallback(async () => {
+    setLoadingQuestions(true);
+    const result = await getQuestions({
       subjectId: subjectFilter === "all" ? undefined : subjectFilter,
       limit: 100,
-    },
-  });
+    });
+    if (result.success) {
+      setAllQuestions(result.data);
+    }
+    setLoadingQuestions(false);
+  }, [subjectFilter]);
 
-  const { data: subjectsData } = useQuery(GET_SUBJECTS);
+  // Load subjects
+  React.useEffect(() => {
+    async function loadSubjects() {
+      const result = await getSubjects();
+      if (result.success) {
+        setSubjects(result.data);
+      }
+    }
+    loadSubjects();
+  }, []);
 
-  const [addQuestion, { loading: adding }] = useMutation(ADD_QUESTION_TO_EXAM, {
-    onCompleted: () => {
+  // Initial load
+  React.useEffect(() => {
+    loadExam();
+  }, [loadExam]);
+
+  // Load questions when filter changes or dialog opens
+  React.useEffect(() => {
+    if (showAddDialog) {
+      loadQuestions();
+    }
+  }, [showAddDialog, loadQuestions]);
+
+  const handleAddQuestion = async () => {
+    if (!selectedQuestion) return;
+    setAdding(true);
+    const result = await addQuestionToExam(examId, selectedQuestion.id, parseInt(marks) || 1);
+    if (result.success) {
       toast({ title: "Question added to exam" });
       setShowAddDialog(false);
       setSelectedQuestion(null);
       setMarks("1");
-      refetch();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
+      loadExam();
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setAdding(false);
+  };
 
-  const [removeQuestion, { loading: removing }] = useMutation(REMOVE_QUESTION_FROM_EXAM, {
-    onCompleted: () => {
+  const handleRemoveQuestion = async () => {
+    if (!removeTarget) return;
+    setRemoving(true);
+    const result = await removeQuestionFromExam(examId, removeTarget.questionId);
+    if (result.success) {
       toast({ title: "Question removed from exam" });
       setRemoveTarget(null);
-      refetch();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const handleAddQuestion = () => {
-    if (!selectedQuestion) return;
-    addQuestion({
-      variables: {
-        examId,
-        questionId: selectedQuestion.id,
-        marks: parseInt(marks) || 1,
-      },
-    });
+      loadExam();
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setRemoving(false);
   };
 
-  const handleRemoveQuestion = () => {
-    if (!removeTarget) return;
-    removeQuestion({
-      variables: {
-        examId,
-        questionId: removeTarget.questionId,
-      },
-    });
-  };
-
-  const exam = examData?.exam;
   const examQuestions: ExamQuestion[] = exam?.questions || [];
-  const allQuestions: Question[] = questionsData?.questions || [];
-  const subjects = subjectsData?.subjects || [];
 
   // Filter out questions already in the exam
   const examQuestionIds = new Set(examQuestions.map((eq) => eq.questionId));
@@ -300,7 +331,7 @@ export default function ExamQuestionsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Subjects</SelectItem>
-                  {subjects.map((subject: any) => (
+                  {subjects.map((subject) => (
                     <SelectItem key={subject.id} value={subject.id}>
                       {subject.name}
                     </SelectItem>
@@ -338,11 +369,6 @@ export default function ExamQuestionsPage() {
                       >
                         {question.difficulty}
                       </span>
-                      {question.subject && (
-                        <span className="text-xs bg-muted px-2 py-0.5 rounded">
-                          {question.subject.name}
-                        </span>
-                      )}
                     </div>
                     <p className="line-clamp-2 text-sm">{question.questionText}</p>
                   </div>

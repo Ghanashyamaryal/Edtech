@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -25,8 +24,13 @@ import {
 import { Title, Paragraph } from "@/components/atoms";
 import { ArrowLeft, Upload, FileText, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { GET_SUBJECTS, GET_TOPICS } from "@/graphql/queries/admin";
-import { CREATE_NOTE } from "@/graphql/mutations/notes";
+import {
+  getSubjects,
+  getTopics,
+  createNote,
+  type Subject,
+  type Topic,
+} from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@supabase/supabase-js";
 
@@ -58,13 +62,24 @@ const NOTE_TYPES = [
 export default function NewNotePage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [subjects, setSubjects] = React.useState<Subject[]>([]);
+  const [topics, setTopics] = React.useState<Topic[]>([]);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [uploading, setUploading] = React.useState(false);
   const [uploadProgress, setUploadProgress] = React.useState(0);
+  const [creating, setCreating] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const { data: subjectsData } = useQuery(GET_SUBJECTS);
-  const subjects = subjectsData?.subjects || [];
+  // Load subjects
+  React.useEffect(() => {
+    async function loadSubjects() {
+      const result = await getSubjects();
+      if (result.success) {
+        setSubjects(result.data);
+      }
+    }
+    loadSubjects();
+  }, []);
 
   const {
     register,
@@ -84,28 +99,19 @@ export default function NewNotePage() {
   const noteType = watch("noteType");
 
   // Load topics when subject is selected
-  const { data: topicsData } = useQuery(GET_TOPICS, {
-    variables: { subjectId: selectedSubjectId },
-    skip: !selectedSubjectId,
-  });
-  const topics = topicsData?.topics || [];
-
-  const [createNote, { loading: creating }] = useMutation(CREATE_NOTE, {
-    onCompleted: () => {
-      toast({
-        title: "Note created",
-        description: "The note has been successfully uploaded.",
-      });
-      router.push("/admin/notes");
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  React.useEffect(() => {
+    async function loadTopics() {
+      if (!selectedSubjectId) {
+        setTopics([]);
+        return;
+      }
+      const result = await getTopics(selectedSubjectId);
+      if (result.success) {
+        setTopics(result.data);
+      }
+    }
+    loadTopics();
+  }, [selectedSubjectId]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -179,24 +185,36 @@ export default function NewNotePage() {
       setUploadProgress(70);
 
       // Create note in database
-      await createNote({
-        variables: {
-          input: {
-            title: data.title,
-            description: data.description || null,
-            fileUrl,
-            fileName: selectedFile.name,
-            fileSize: selectedFile.size,
-            fileType: selectedFile.type,
-            noteType: data.noteType,
-            subjectId: data.subjectId,
-            topicId: data.topicId || null,
-            year: data.year || null,
-            isPremium: data.isPremium,
-          },
-        },
+      setCreating(true);
+      const result = await createNote({
+        title: data.title,
+        description: data.description || undefined,
+        fileUrl,
+        fileName: selectedFile.name,
+        fileSize: selectedFile.size,
+        fileType: selectedFile.type,
+        noteType: data.noteType,
+        subjectId: data.subjectId,
+        topicId: data.topicId || undefined,
+        year: data.year || undefined,
+        isPremium: data.isPremium,
       });
+
       setUploadProgress(100);
+
+      if (result.success) {
+        toast({
+          title: "Note created",
+          description: "The note has been successfully uploaded.",
+        });
+        router.push("/admin/notes");
+      } else {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -205,6 +223,7 @@ export default function NewNotePage() {
       });
     } finally {
       setUploading(false);
+      setCreating(false);
       setUploadProgress(0);
     }
   };
@@ -327,7 +346,7 @@ export default function NewNotePage() {
                       <SelectValue placeholder="Select subject" />
                     </SelectTrigger>
                     <SelectContent>
-                      {subjects.map((subject: any) => (
+                      {subjects.map((subject) => (
                         <SelectItem key={subject.id} value={subject.id}>
                           {subject.name}
                         </SelectItem>
@@ -350,7 +369,7 @@ export default function NewNotePage() {
                         <SelectValue placeholder="Select topic" />
                       </SelectTrigger>
                       <SelectContent>
-                        {topics.map((topic: any) => (
+                        {topics.map((topic) => (
                           <SelectItem key={topic.id} value={topic.id}>
                             {topic.name}
                           </SelectItem>

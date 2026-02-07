@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@apollo/client';
+import * as React from 'react';
 import { motion } from 'framer-motion';
 import { Button, Card, CardContent } from '@/components/ui';
 import {
@@ -15,38 +15,13 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import Link from 'next/link';
-import { GET_LANDING_COURSES } from '@/graphql/queries/courses';
+import { getPublishedCourses, type Course } from '@/actions';
 import {
   HeroSection,
   SectionHeader,
   FeatureGrid,
   DataState,
 } from '@/components/molecules';
-
-// Course type from API
-interface Course {
-  id: string;
-  title: string;
-  fullName: string | null;
-  description: string;
-  slug: string;
-  thumbnailUrl: string | null;
-  price: number;
-  discountedPrice: number | null;
-  durationHours: number | null;
-  studentCount: number | null;
-  rating: number | null;
-  reviewsCount: number | null;
-  features: string[] | null;
-  isBestseller: boolean | null;
-  instructor: {
-    id: string;
-    fullName: string;
-    avatarUrl: string | null;
-  } | null;
-  chaptersCount: number | null;
-  lessonsCount: number | null;
-}
 
 // What's included
 const inclusions = [
@@ -236,7 +211,24 @@ function CourseCard({ course, index }: { course: Course; index: number }) {
 }
 
 export default function CoursesPage() {
-  const { data, loading, error } = useQuery(GET_LANDING_COURSES);
+  const [courses, setCourses] = React.useState<Course[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    async function loadCourses() {
+      setLoading(true);
+      setError(null);
+      const result = await getPublishedCourses({ limit: 20 });
+      if (result.success) {
+        setCourses(result.data);
+      } else {
+        setError(result.error);
+      }
+      setLoading(false);
+    }
+    loadCourses();
+  }, []);
 
   return (
     <div className="min-h-screen pt-20">
@@ -255,18 +247,18 @@ export default function CoursesPage() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <DataState
-            data={data?.courses}
+            data={courses}
             loading={loading}
-            error={error}
+            error={error ? { message: error } : undefined}
             emptyIcon={BookOpen}
             emptyTitle="No courses available"
             emptyDescription="Check back later for new courses."
             skeletonCount={4}
             skeletonColumns={2}
           >
-            {(courses: Course[]) => (
+            {(courseList: Course[]) => (
               <div className="grid lg:grid-cols-2 gap-8">
-                {courses.map((course, index) => (
+                {courseList.map((course, index) => (
                   <CourseCard key={course.id} course={course} index={index} />
                 ))}
               </div>

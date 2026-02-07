@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -26,9 +25,16 @@ import {
 import { Title, Paragraph } from "@/components/atoms";
 import { ArrowLeft, Save, FileText, Loader2, Download, Eye, CheckCircle } from "lucide-react";
 import Link from "next/link";
-import { GET_NOTE } from "@/graphql/queries/notes";
-import { GET_SUBJECTS, GET_TOPICS } from "@/graphql/queries/admin";
-import { UPDATE_NOTE, PUBLISH_NOTE } from "@/graphql/mutations/notes";
+import {
+  getNote,
+  getSubjects,
+  getTopics,
+  updateNote,
+  publishNote,
+  type Note,
+  type Subject,
+  type Topic,
+} from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 
 const noteSchema = z.object({
@@ -66,13 +72,12 @@ export default function EditNotePage() {
   const { toast } = useToast();
   const noteId = params.id as string;
 
-  const { data: noteData, loading: loadingNote } = useQuery(GET_NOTE, {
-    variables: { id: noteId },
-  });
-  const note = noteData?.note;
-
-  const { data: subjectsData } = useQuery(GET_SUBJECTS);
-  const subjects = subjectsData?.subjects || [];
+  const [note, setNote] = React.useState<Note | null>(null);
+  const [subjects, setSubjects] = React.useState<Subject[]>([]);
+  const [topics, setTopics] = React.useState<Topic[]>([]);
+  const [loadingNote, setLoadingNote] = React.useState(true);
+  const [updating, setUpdating] = React.useState(false);
+  const [publishing, setPublishing] = React.useState(false);
 
   const {
     register,
@@ -88,82 +93,105 @@ export default function EditNotePage() {
   const selectedSubjectId = watch("subjectId");
   const noteType = watch("noteType");
 
-  // Load topics when subject is selected
-  const { data: topicsData } = useQuery(GET_TOPICS, {
-    variables: { subjectId: selectedSubjectId },
-    skip: !selectedSubjectId,
-  });
-  const topics = topicsData?.topics || [];
-
-  // Set form values when note data loads
+  // Load subjects
   React.useEffect(() => {
-    if (note) {
-      reset({
-        title: note.title,
-        description: note.description || "",
-        noteType: note.noteType,
-        subjectId: note.subjectId,
-        topicId: note.topicId || "",
-        year: note.year,
-        isPremium: note.isPremium,
-        isPublished: note.isPublished,
-      });
+    async function loadSubjects() {
+      const result = await getSubjects();
+      if (result.success) {
+        setSubjects(result.data);
+      }
     }
-  }, [note, reset]);
+    loadSubjects();
+  }, []);
 
-  const [updateNote, { loading: updating }] = useMutation(UPDATE_NOTE, {
-    onCompleted: () => {
+  // Load topics when subject is selected
+  React.useEffect(() => {
+    async function loadTopics() {
+      if (!selectedSubjectId) {
+        setTopics([]);
+        return;
+      }
+      const result = await getTopics(selectedSubjectId);
+      if (result.success) {
+        setTopics(result.data);
+      }
+    }
+    loadTopics();
+  }, [selectedSubjectId]);
+
+  // Load note data
+  React.useEffect(() => {
+    async function loadNote() {
+      if (!noteId) return;
+      setLoadingNote(true);
+      const result = await getNote(noteId);
+      if (result.success) {
+        setNote(result.data);
+        reset({
+          title: result.data.title,
+          description: result.data.description || "",
+          noteType: result.data.noteType as any,
+          subjectId: result.data.subjectId,
+          topicId: result.data.topicId || "",
+          year: result.data.year,
+          isPremium: result.data.isPremium,
+          isPublished: result.data.isPublished,
+        });
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setLoadingNote(false);
+    }
+    loadNote();
+  }, [noteId, reset, toast]);
+
+  const onSubmit = async (data: NoteFormData) => {
+    setUpdating(true);
+    const result = await updateNote(noteId, {
+      title: data.title,
+      description: data.description || undefined,
+      noteType: data.noteType,
+      subjectId: data.subjectId,
+      topicId: data.topicId || undefined,
+      year: data.year || undefined,
+      isPremium: data.isPremium,
+      isPublished: data.isPublished,
+    });
+
+    if (result.success) {
       toast({
         title: "Note updated",
         description: "The note has been successfully updated.",
       });
-    },
-    onError: (error) => {
+      setNote(result.data);
+    } else {
       toast({
         title: "Error",
-        description: error.message,
+        description: result.error,
         variant: "destructive",
       });
-    },
-  });
+    }
+    setUpdating(false);
+  };
 
-  const [publishNote, { loading: publishing }] = useMutation(PUBLISH_NOTE, {
-    onCompleted: () => {
+  const handlePublish = async () => {
+    setPublishing(true);
+    const result = await publishNote(noteId);
+    if (result.success) {
       toast({
         title: "Note published",
         description: "The note is now visible to users.",
       });
       setValue("isPublished", true);
-    },
-    onError: (error) => {
+      setNote(result.data);
+    } else {
       toast({
         title: "Error",
-        description: error.message,
+        description: result.error,
         variant: "destructive",
       });
-    },
-  });
-
-  const onSubmit = async (data: NoteFormData) => {
-    await updateNote({
-      variables: {
-        id: noteId,
-        input: {
-          title: data.title,
-          description: data.description || null,
-          noteType: data.noteType,
-          subjectId: data.subjectId,
-          topicId: data.topicId || null,
-          year: data.year || null,
-          isPremium: data.isPremium,
-          isPublished: data.isPublished,
-        },
-      },
-    });
-  };
-
-  const handlePublish = () => {
-    publishNote({ variables: { id: noteId } });
+    }
+    setPublishing(false);
   };
 
   if (loadingNote) {
@@ -328,7 +356,7 @@ export default function EditNotePage() {
                       <SelectValue placeholder="Select subject" />
                     </SelectTrigger>
                     <SelectContent>
-                      {subjects.map((subject: any) => (
+                      {subjects.map((subject) => (
                         <SelectItem key={subject.id} value={subject.id}>
                           {subject.name}
                         </SelectItem>
@@ -351,7 +379,7 @@ export default function EditNotePage() {
                         <SelectValue placeholder="Select topic" />
                       </SelectTrigger>
                       <SelectContent>
-                        {topics.map((topic: any) => (
+                        {topics.map((topic) => (
                           <SelectItem key={topic.id} value={topic.id}>
                             {topic.name}
                           </SelectItem>

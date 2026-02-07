@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,8 +18,7 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { BookOpen, ArrowLeft, Loader2, Layers, Plus, X } from "lucide-react";
-import { GET_ADMIN_COURSE } from "@/graphql/queries/admin";
-import { UPDATE_COURSE } from "@/graphql/mutations/admin";
+import { getCourse, updateCourse, type Course } from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -44,10 +42,9 @@ export default function EditCoursePage() {
   const { toast } = useToast();
   const courseId = params.id as string;
 
-  const { data, loading: loadingCourse } = useQuery(GET_ADMIN_COURSE, {
-    variables: { id: courseId },
-    skip: !courseId,
-  });
+  const [course, setCourse] = React.useState<Course | null>(null);
+  const [loadingCourse, setLoadingCourse] = React.useState(true);
+  const [updating, setUpdating] = React.useState(false);
 
   const {
     register,
@@ -81,10 +78,32 @@ export default function EditCoursePage() {
   const isPublished = watch("isPublished");
   const isBestseller = watch("isBestseller");
 
-  // Set form values when data is loaded
+  // Load course data
   React.useEffect(() => {
-    if (data?.course) {
-      const course = data.course;
+    async function loadCourse() {
+      if (!courseId) return;
+
+      setLoadingCourse(true);
+      const result = await getCourse({ id: courseId });
+
+      if (result.success) {
+        setCourse(result.data);
+      } else {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        });
+      }
+      setLoadingCourse(false);
+    }
+
+    loadCourse();
+  }, [courseId, toast]);
+
+  // Set form values when course data is loaded
+  React.useEffect(() => {
+    if (course) {
       const featuresArray = course.features && course.features.length > 0
         ? course.features.map((f: string) => ({ value: f }))
         : [{ value: "" }];
@@ -105,47 +124,44 @@ export default function EditCoursePage() {
       // Replace field array with loaded data
       replace(featuresArray);
     }
-  }, [data, reset, replace]);
+  }, [course, reset, replace]);
 
-  const [updateCourse, { loading: updating }] = useMutation(UPDATE_COURSE, {
-    onCompleted: () => {
-      toast({
-        title: "Course updated",
-        description: "Your changes have been saved.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  const onSubmit = async (formData: CourseFormData) => {
+    setUpdating(true);
 
-  const onSubmit = (formData: CourseFormData) => {
     // Filter out empty features
     const features = formData.features
       ?.map((f) => f.value.trim())
       .filter((f) => f.length > 0) || [];
 
-    updateCourse({
-      variables: {
-        id: courseId,
-        input: {
-          title: formData.title,
-          fullName: formData.fullName || null,
-          description: formData.description,
-          thumbnailUrl: formData.thumbnailUrl || null,
-          price: formData.price,
-          discountedPrice: formData.discountedPrice ? Number(formData.discountedPrice) : null,
-          durationHours: formData.durationHours ? Number(formData.durationHours) : null,
-          features: features.length > 0 ? features : null,
-          isBestseller: formData.isBestseller || false,
-          isPublished: formData.isPublished,
-        },
-      },
+    const result = await updateCourse(courseId, {
+      title: formData.title,
+      fullName: formData.fullName || undefined,
+      description: formData.description,
+      thumbnailUrl: formData.thumbnailUrl || undefined,
+      price: formData.price,
+      discountedPrice: formData.discountedPrice ? Number(formData.discountedPrice) : undefined,
+      durationHours: formData.durationHours ? Number(formData.durationHours) : undefined,
+      features: features.length > 0 ? features : undefined,
+      isBestseller: formData.isBestseller || false,
+      isPublished: formData.isPublished,
     });
+
+    if (result.success) {
+      toast({
+        title: "Course updated",
+        description: "Your changes have been saved.",
+      });
+      setCourse(result.data);
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+
+    setUpdating(false);
   };
 
   if (loadingCourse) {
@@ -156,7 +172,7 @@ export default function EditCoursePage() {
     );
   }
 
-  if (!data?.course) {
+  if (!course) {
     return (
       <div className="text-center py-12">
         <p className="text-muted-foreground">Course not found</p>

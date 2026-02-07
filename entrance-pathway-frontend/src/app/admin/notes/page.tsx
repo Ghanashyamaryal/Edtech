@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useQuery, useMutation } from "@apollo/client";
 import {
   Card,
   CardContent,
@@ -17,8 +16,12 @@ import {
 import { Title, Paragraph } from "@/components/atoms";
 import { DataTable, Column, StatusBadge, ConfirmDialog } from "@/components/molecules/admin";
 import { FileText, Plus, MoreHorizontal, Pencil, Trash2, Download, Eye, CheckCircle } from "lucide-react";
-import { GET_ADMIN_NOTES } from "@/graphql/queries/notes";
-import { DELETE_NOTE, PUBLISH_NOTE } from "@/graphql/mutations/notes";
+import {
+  getNotes,
+  deleteNote,
+  publishNote,
+  type Note,
+} from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 
 const NOTE_TYPE_LABELS: Record<string, { label: string; color: string }> = {
@@ -28,40 +31,6 @@ const NOTE_TYPE_LABELS: Record<string, { label: string; color: string }> = {
   syllabus: { label: "Syllabus", color: "bg-orange-100 text-orange-800" },
   formula_sheet: { label: "Formula Sheet", color: "bg-pink-100 text-pink-800" },
 };
-
-interface Subject {
-  id: string;
-  name: string;
-}
-
-interface Topic {
-  id: string;
-  name: string;
-}
-
-interface User {
-  id: string;
-  fullName: string;
-}
-
-interface Note {
-  id: string;
-  title: string;
-  description: string | null;
-  fileUrl: string;
-  fileName: string;
-  fileSize: number;
-  fileType: string;
-  noteType: string;
-  subject: Subject | null;
-  topic: Topic | null;
-  year: number | null;
-  isPremium: boolean;
-  isPublished: boolean;
-  downloadCount: number;
-  uploader: User | null;
-  createdAt: string;
-}
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -73,65 +42,72 @@ function formatFileSize(bytes: number): string {
 
 export default function AdminNotesPage() {
   const { toast } = useToast();
+  const [notes, setNotes] = React.useState<Note[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [deleting, setDeleting] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
   const [selectedNote, setSelectedNote] = React.useState<Note | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
 
-  const { data, loading, refetch } = useQuery(GET_ADMIN_NOTES, {
-    variables: { limit: 100 },
-  });
+  // Load notes
+  const loadNotes = React.useCallback(async () => {
+    setLoading(true);
+    const result = await getNotes({ limit: 100 });
+    if (result.success) {
+      setNotes(result.data);
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setLoading(false);
+  }, [toast]);
 
-  const [deleteNote, { loading: deleting }] = useMutation(DELETE_NOTE, {
-    onCompleted: () => {
-      toast({
-        title: "Note deleted",
-        description: "The note has been successfully deleted.",
-      });
-      setShowDeleteDialog(false);
-      refetch();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const [publishNote] = useMutation(PUBLISH_NOTE, {
-    onCompleted: () => {
-      toast({
-        title: "Note published",
-        description: "The note is now visible to users.",
-      });
-      refetch();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  React.useEffect(() => {
+    loadNotes();
+  }, [loadNotes]);
 
   const handleDelete = (note: Note) => {
     setSelectedNote(note);
     setShowDeleteDialog(true);
   };
 
-  const confirmDelete = () => {
-    if (selectedNote) {
-      deleteNote({ variables: { id: selectedNote.id } });
+  const confirmDelete = async () => {
+    if (!selectedNote) return;
+    setDeleting(true);
+    const result = await deleteNote(selectedNote.id);
+    if (result.success) {
+      toast({
+        title: "Note deleted",
+        description: "The note has been successfully deleted.",
+      });
+      setShowDeleteDialog(false);
+      setSelectedNote(null);
+      loadNotes();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+    setDeleting(false);
+  };
+
+  const handlePublish = async (note: Note) => {
+    const result = await publishNote(note.id);
+    if (result.success) {
+      toast({
+        title: "Note published",
+        description: "The note is now visible to users.",
+      });
+      loadNotes();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
     }
   };
-
-  const handlePublish = (note: Note) => {
-    publishNote({ variables: { id: note.id } });
-  };
-
-  const notes: Note[] = data?.notes || [];
 
   const filteredNotes = notes.filter(
     (note) =>

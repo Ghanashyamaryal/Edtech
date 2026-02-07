@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@apollo/client';
+import * as React from 'react';
 import { motion } from 'framer-motion';
 import { Button, Card, CardContent } from '@/components/ui';
 import { Title, Subtitle, Paragraph, Small } from '@/components/atoms';
@@ -22,17 +22,7 @@ import {
   Quote,
 } from 'lucide-react';
 import Link from 'next/link';
-import { GET_LANDING_COURSES } from '@/graphql/queries/courses';
-
-// Course type from API
-interface Course {
-  id: string;
-  title: string;
-  fullName: string | null;
-  slug: string;
-  studentCount: number | null;
-  rating: number | null;
-}
+import { getPublishedCourses, type Course } from '@/actions';
 
 // Stats data
 const stats = [
@@ -127,8 +117,20 @@ const celebrations = [
 ];
 
 export default function HomePage() {
-  const { data: coursesData, loading: loadingCourses } = useQuery(GET_LANDING_COURSES);
-  const courses: Course[] = coursesData?.courses?.slice(0, 4) || [];
+  const [courses, setCourses] = React.useState<Course[]>([]);
+  const [loadingCourses, setLoadingCourses] = React.useState(true);
+
+  React.useEffect(() => {
+    async function loadCourses() {
+      setLoadingCourses(true);
+      const result = await getPublishedCourses({ limit: 4 });
+      if (result.success) {
+        setCourses(result.data);
+      }
+      setLoadingCourses(false);
+    }
+    loadCourses();
+  }, []);
 
   return (
     <>

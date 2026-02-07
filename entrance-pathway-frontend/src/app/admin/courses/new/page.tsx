@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@apollo/client";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -19,7 +18,7 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { BookOpen, ArrowLeft, Loader2, Plus, X } from "lucide-react";
-import { CREATE_COURSE } from "@/graphql/mutations/admin";
+import { createCourse } from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -40,6 +39,7 @@ type CourseFormData = z.infer<typeof courseSchema>;
 export default function NewCoursePage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [loading, setLoading] = React.useState(false);
 
   const {
     register,
@@ -70,49 +70,43 @@ export default function NewCoursePage() {
 
   const isBestseller = watch("isBestseller");
 
-  const [createCourse, { loading }] = useMutation(CREATE_COURSE, {
-    onCompleted: (data) => {
-      toast({
-        title: "Course created",
-        description: "Your course has been created. Now add chapters and lessons.",
-      });
-      router.push(`/admin/courses/${data.createCourse.id}/chapters`);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  const onSubmit = async (data: CourseFormData) => {
+    setLoading(true);
 
-  const onSubmit = (data: CourseFormData) => {
-    // Filter out empty features
     const features = data.features
       ?.map((f) => f.value.trim())
       .filter((f) => f.length > 0) || [];
 
-    createCourse({
-      variables: {
-        input: {
-          title: data.title,
-          fullName: data.fullName || null,
-          description: data.description,
-          thumbnailUrl: data.thumbnailUrl || null,
-          price: data.price,
-          discountedPrice: data.discountedPrice ? Number(data.discountedPrice) : null,
-          durationHours: data.durationHours ? Number(data.durationHours) : null,
-          features: features.length > 0 ? features : null,
-          isBestseller: data.isBestseller || false,
-        },
-      },
+    const result = await createCourse({
+      title: data.title,
+      fullName: data.fullName || undefined,
+      description: data.description,
+      thumbnailUrl: data.thumbnailUrl || undefined,
+      price: data.price,
+      discountedPrice: data.discountedPrice ? Number(data.discountedPrice) : undefined,
+      durationHours: data.durationHours ? Number(data.durationHours) : undefined,
+      features: features.length > 0 ? features : undefined,
+      isBestseller: data.isBestseller || false,
     });
+
+    if (result.success) {
+      toast({
+        title: "Course created",
+        description: "Your course has been created. Now add chapters and lessons.",
+      });
+      router.push(`/admin/courses/${result.data.id}/chapters`);
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/admin/courses">
           <Button variant="ghost" size="icon">
@@ -130,9 +124,7 @@ export default function NewCoursePage() {
         </div>
       </div>
 
-      {/* Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        {/* Basic Info */}
         <Card>
           <CardHeader>
             <CardTitle>Basic Information</CardTitle>
@@ -191,7 +183,6 @@ export default function NewCoursePage() {
           </CardContent>
         </Card>
 
-        {/* Pricing */}
         <Card>
           <CardHeader>
             <CardTitle>Pricing & Duration</CardTitle>
@@ -256,7 +247,6 @@ export default function NewCoursePage() {
           </CardContent>
         </Card>
 
-        {/* Features */}
         <Card>
           <CardHeader>
             <CardTitle>Course Features</CardTitle>
@@ -298,7 +288,6 @@ export default function NewCoursePage() {
           </CardContent>
         </Card>
 
-        {/* Actions */}
         <div className="flex gap-4">
           <Button type="submit" disabled={loading || isSubmitting}>
             {(loading || isSubmitting) && (

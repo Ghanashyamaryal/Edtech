@@ -1,7 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useEnrolledCourses } from '@/hooks/use-courses';
+import { getEnrolledCourses } from '@/actions';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Title, Subtitle, Paragraph, Small } from '@/components/atoms';
 import Link from 'next/link';
@@ -18,7 +19,24 @@ import {
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const { data, loading: coursesLoading } = useEnrolledCourses(user?.id || '');
+  const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
+  const [coursesLoading, setCoursesLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadEnrolledCourses() {
+      if (!user?.id) {
+        setCoursesLoading(false);
+        return;
+      }
+      setCoursesLoading(true);
+      const result = await getEnrolledCourses(user.id);
+      if (result.success) {
+        setEnrolledCourses(result.data);
+      }
+      setCoursesLoading(false);
+    }
+    loadEnrolledCourses();
+  }, [user?.id]);
 
   if (authLoading) {
     return (
@@ -69,7 +87,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <Subtitle as="p" className="text-2xl">
-                  {coursesLoading ? '...' : data?.enrolledCourses?.length || 0}
+                  {coursesLoading ? '...' : enrolledCourses.length}
                 </Subtitle>
                 <Small className="text-xs">Enrolled Courses</Small>
               </div>
@@ -232,9 +250,9 @@ export default function DashboardPage() {
             <div className="flex items-center justify-center py-8">
               <div className="animate-pulse text-muted-foreground">Loading courses...</div>
             </div>
-          ) : data?.enrolledCourses?.length > 0 ? (
+          ) : enrolledCourses.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {data.enrolledCourses.slice(0, 3).map((enrollment: any) => (
+              {enrolledCourses.slice(0, 3).map((enrollment: any) => (
                 <div
                   key={enrollment.id}
                   className="p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-colors"
