@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@apollo/client';
+import * as React from 'react';
 import { motion } from 'framer-motion';
 import { Button, Card, CardContent } from '@/components/ui';
 import { Title, Subtitle, Paragraph, Small } from '@/components/atoms';
@@ -22,23 +22,10 @@ import {
   Play,
 } from 'lucide-react';
 import Link from 'next/link';
-import { GET_LANDING_EXAMS } from '@/graphql/queries/exams';
-
-// Exam type from API
-interface Exam {
-  id: string;
-  title: string;
-  description: string | null;
-  durationMinutes: number;
-  totalMarks: number;
-  examType: string | null;
-  setNumber: number | null;
-  questionsCount: number;
-  courses: { id: string; title: string; slug: string }[];
-}
+import { getPublishedExams, type Exam } from '@/actions';
 
 // Test category config
-const testCategoryConfig: Record<string, { name: string; description: string; icon: any; color: string }> = {
+const testCategoryConfig: Record<string, { name: string; description: string; icon: React.ElementType; color: string }> = {
   full_model: {
     name: 'Full Model Tests',
     description: 'Complete entrance exam simulations',
@@ -104,14 +91,26 @@ function formatDuration(minutes: number): string {
   return `${minutes} min`;
 }
 
-function getExamTypeLabel(examType: string | null): string {
+function getExamTypeLabel(examType: string | null | undefined): string {
   if (!examType) return 'Practice Test';
   return testCategoryConfig[examType]?.name || 'Practice Test';
 }
 
 export default function MockTestsPage() {
-  const { data, loading } = useQuery(GET_LANDING_EXAMS);
-  const exams: Exam[] = data?.exams || [];
+  const [exams, setExams] = React.useState<Exam[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function loadExams() {
+      setLoading(true);
+      const result = await getPublishedExams();
+      if (result.success) {
+        setExams(result.data);
+      }
+      setLoading(false);
+    }
+    loadExams();
+  }, []);
 
   // Group exams by type for categories
   const examsByType = exams.reduce((acc, exam) => {
@@ -388,7 +387,7 @@ export default function MockTestsPage() {
                         </span>
                       </div>
 
-                      {exam.courses.length > 0 && (
+                      {exam.courses && exam.courses.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-4">
                           {exam.courses.slice(0, 2).map((course) => (
                             <span

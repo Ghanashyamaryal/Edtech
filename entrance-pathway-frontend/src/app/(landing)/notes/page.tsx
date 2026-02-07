@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery, useMutation } from '@apollo/client';
+import * as React from 'react';
 import { motion } from 'framer-motion';
 import { Button, Card, CardContent, CardHeader, CardTitle, Input } from '@/components/ui';
 import {
@@ -15,39 +15,10 @@ import {
   BookMarked,
   Sparkles,
   Lock,
-  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
-import { GET_SUBJECTS_WITH_NOTES, GET_LANDING_NOTES } from '@/graphql/queries/notes';
-import { INCREMENT_NOTE_DOWNLOAD } from '@/graphql/mutations/notes';
-import { useState } from 'react';
-
-// Types
-interface Subject {
-  id: string;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  topicsCount: number;
-  questionsCount: number;
-  notesCount: number;
-}
-
-interface Note {
-  id: string;
-  title: string;
-  description: string | null;
-  fileUrl: string;
-  fileName: string;
-  fileSize: number;
-  fileType: string;
-  noteType: string;
-  subject: { id: string; name: string; icon: string | null } | null;
-  year: number | null;
-  isPremium: boolean;
-  downloadCount: number;
-  createdAt: string;
-}
+import { getNotes, incrementNoteDownload, type Note } from '@/actions/notes';
+import { getSubjects, type Subject } from '@/actions/subjects';
 
 const NOTE_TYPE_LABELS: Record<string, string> = {
   notes: 'Notes',
@@ -75,7 +46,7 @@ const DEFAULT_SUBJECT_ICONS: Record<string, string> = {
   'default': '📚',
 };
 
-function getSubjectIcon(name: string, icon: string | null): string {
+function getSubjectIcon(name: string, icon: string | null | undefined): string {
   if (icon) return icon;
   const normalizedName = name.toLowerCase();
   return DEFAULT_SUBJECT_ICONS[normalizedName] || DEFAULT_SUBJECT_ICONS['default'];
@@ -104,17 +75,36 @@ function getRelativeTime(dateString: string): string {
 }
 
 export default function NotesPage() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [subjects, setSubjects] = React.useState<Subject[]>([]);
+  const [allNotes, setAllNotes] = React.useState<Note[]>([]);
+  const [loadingSubjects, setLoadingSubjects] = React.useState(true);
+  const [loadingNotes, setLoadingNotes] = React.useState(true);
 
-  // Fetch subjects with notes count
-  const { data: subjectsData, loading: loadingSubjects } = useQuery(GET_SUBJECTS_WITH_NOTES);
-  const subjects: Subject[] = subjectsData?.subjects?.filter((s: Subject) => s.notesCount > 0) || [];
+  // Load subjects and notes
+  React.useEffect(() => {
+    async function loadData() {
+      setLoadingSubjects(true);
+      setLoadingNotes(true);
 
-  // Fetch recent/featured notes
-  const { data: notesData, loading: loadingNotes, refetch } = useQuery(GET_LANDING_NOTES, {
-    variables: { limit: 20 },
-  });
-  const allNotes: Note[] = notesData?.notes || [];
+      const [subjectsResult, notesResult] = await Promise.all([
+        getSubjects(),
+        getNotes({ isPublished: true, limit: 20 }),
+      ]);
+
+      if (subjectsResult.success) {
+        // Filter subjects that have notes
+        setSubjects(subjectsResult.data.filter((s) => (s.notesCount || 0) > 0));
+      }
+      setLoadingSubjects(false);
+
+      if (notesResult.success) {
+        setAllNotes(notesResult.data);
+      }
+      setLoadingNotes(false);
+    }
+    loadData();
+  }, []);
 
   // Featured notes (most downloaded)
   const featuredNotes = [...allNotes]
@@ -126,14 +116,15 @@ export default function NotesPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 4);
 
-  // Increment download count
-  const [incrementDownload] = useMutation(INCREMENT_NOTE_DOWNLOAD);
-
   const handleDownload = async (note: Note) => {
-    await incrementDownload({ variables: { id: note.id } });
+    await incrementNoteDownload(note.id);
     // Open file in new tab
     window.open(note.fileUrl, '_blank');
-    refetch();
+    // Refresh notes
+    const result = await getNotes({ isPublished: true, limit: 20 });
+    if (result.success) {
+      setAllNotes(result.data);
+    }
   };
 
   const isLoading = loadingSubjects || loadingNotes;

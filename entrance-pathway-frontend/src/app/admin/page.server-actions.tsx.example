@@ -1,3 +1,20 @@
+// ============================================================
+// MIGRATION EXAMPLE: Admin Dashboard with Server Actions
+// This file shows how to migrate from Apollo Client to Server Actions
+// ============================================================
+
+// BEFORE (Apollo Client):
+// -----------------------
+// "use client";
+// import { useQuery } from "@apollo/client";
+// import { GET_USERS, GET_ADMIN_COURSES } from "@/graphql/queries/admin";
+// const { data: usersData, loading } = useQuery(GET_USERS);
+
+// AFTER (Server Actions):
+// -----------------------
+// This is a Server Component (no "use client")
+// Data is fetched on the server, no loading states needed for initial render
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import {
@@ -9,7 +26,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui";
-import { getUsers, getCourses, getSubjects, getExams } from "@/actions";
+
+// Import server actions instead of GraphQL queries
+import { getUsers, getCourses, getSubjects, getExams, getDashboardStats } from "@/actions";
 
 interface StatCardProps {
   title: string;
@@ -38,29 +57,38 @@ function StatCard({ title, value, icon, href }: StatCardProps) {
   );
 }
 
+// This is now an async Server Component
 export default async function AdminDashboardPage() {
-  const [usersResult, coursesResult, subjectsResult, examsResult] = await Promise.all([
+  // Fetch data in parallel using server actions
+  const [usersResult, coursesResult, subjectsResult, examsResult, statsResult] = await Promise.all([
     getUsers({ limit: 10 }),
     getCourses({ limit: 10 }),
     getSubjects(),
-    getExams({ limit: 100 }),
+    getExams({ limit: 10 }),
+    getDashboardStats(),
   ]);
 
+  // Extract data (with fallbacks)
   const users = usersResult.success ? usersResult.data : [];
   const courses = coursesResult.success ? coursesResult.data : [];
   const subjects = subjectsResult.success ? subjectsResult.data : [];
   const exams = examsResult.success ? examsResult.data : [];
+  const stats = statsResult.success ? statsResult.data : {
+    totalUsers: 0,
+    totalCourses: 0,
+    totalExams: 0,
+    totalQuestions: 0,
+  };
 
-  const totalUsers = users.length;
-  const totalCourses = courses.length;
+  // Calculate total questions from subjects
   const totalQuestions = subjects.reduce(
     (acc, subject) => acc + (subject.questionsCount || 0),
     0
   );
-  const totalExams = exams.length;
 
   return (
     <div className="space-y-8">
+      {/* Header */}
       <div>
         <Title>Admin Dashboard</Title>
         <Paragraph className="text-muted-foreground">
@@ -68,16 +96,17 @@ export default async function AdminDashboardPage() {
         </Paragraph>
       </div>
 
+      {/* Stats Grid - No loading states needed, data is server-rendered */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Users"
-          value={totalUsers}
+          value={stats.totalUsers}
           icon={<Users className="w-6 h-6" />}
           href="/admin/users"
         />
         <StatCard
           title="Courses"
-          value={totalCourses}
+          value={stats.totalCourses}
           icon={<BookOpen className="w-6 h-6" />}
           href="/admin/courses"
         />
@@ -89,12 +118,13 @@ export default async function AdminDashboardPage() {
         />
         <StatCard
           title="Exams"
-          value={totalExams}
+          value={stats.totalExams}
           icon={<ClipboardList className="w-6 h-6" />}
           href="/admin/exams"
         />
       </div>
 
+      {/* Quick Actions */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -132,6 +162,7 @@ export default async function AdminDashboardPage() {
         </CardContent>
       </Card>
 
+      {/* Recent Activity - Data is already fetched */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -212,3 +243,42 @@ export default async function AdminDashboardPage() {
     </div>
   );
 }
+
+// ============================================================
+// MIGRATION GUIDE: Client Components with Mutations
+// ============================================================
+// For components that need mutations (create, update, delete),
+// you'll still use "use client" but call server actions directly:
+//
+// "use client";
+// import { createCourse } from "@/actions";
+// import { useTransition } from "react";
+//
+// function CreateCourseForm() {
+//   const [isPending, startTransition] = useTransition();
+//
+//   const handleSubmit = (formData: FormData) => {
+//     startTransition(async () => {
+//       const result = await createCourse({
+//         title: formData.get("title") as string,
+//         description: formData.get("description") as string,
+//       });
+//
+//       if (result.success) {
+//         toast({ title: "Course created!" });
+//       } else {
+//         toast({ title: "Error", description: result.error, variant: "destructive" });
+//       }
+//     });
+//   };
+//
+//   return (
+//     <form action={handleSubmit}>
+//       <input name="title" />
+//       <button disabled={isPending}>
+//         {isPending ? "Creating..." : "Create Course"}
+//       </button>
+//     </form>
+//   );
+// }
+// ============================================================

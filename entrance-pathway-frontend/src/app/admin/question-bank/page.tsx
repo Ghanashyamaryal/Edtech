@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useQuery, useMutation } from "@apollo/client";
 import {
   Card,
   CardContent,
@@ -21,74 +20,84 @@ import {
 import { Title, Paragraph } from "@/components/atoms";
 import { DataTable, Column, ConfirmDialog } from "@/components/molecules/admin";
 import { HelpCircle, Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { GET_ADMIN_QUESTIONS, GET_SUBJECTS } from "@/graphql/queries/admin";
-import { DELETE_QUESTION } from "@/graphql/mutations/admin";
+import {
+  getQuestions,
+  getSubjects,
+  deleteQuestion,
+  type Question,
+  type Subject,
+} from "@/actions";
 import { useToast } from "@/hooks/use-toast";
-
-interface Question {
-  id: string;
-  questionText: string;
-  questionType: string;
-  difficulty: string;
-  subject: { id: string; name: string } | null;
-  topic: { id: string; name: string } | null;
-  createdAt: string;
-}
-
-interface Subject {
-  id: string;
-  name: string;
-}
 
 export default function QuestionBankPage() {
   const { toast } = useToast();
+  const [questions, setQuestions] = React.useState<Question[]>([]);
+  const [subjects, setSubjects] = React.useState<Subject[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [deleting, setDeleting] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
   const [subjectFilter, setSubjectFilter] = React.useState<string>("all");
   const [difficultyFilter, setDifficultyFilter] = React.useState<string>("all");
   const [selectedQuestion, setSelectedQuestion] = React.useState<Question | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
 
-  const { data: subjectsData } = useQuery(GET_SUBJECTS);
+  // Load subjects
+  React.useEffect(() => {
+    async function loadSubjects() {
+      const result = await getSubjects();
+      if (result.success) {
+        setSubjects(result.data);
+      }
+    }
+    loadSubjects();
+  }, []);
 
-  const { data, loading, refetch } = useQuery(GET_ADMIN_QUESTIONS, {
-    variables: {
+  // Load questions
+  const loadQuestions = React.useCallback(async () => {
+    setLoading(true);
+    const result = await getQuestions({
       subjectId: subjectFilter === "all" ? undefined : subjectFilter,
       difficulty: difficultyFilter === "all" ? undefined : difficultyFilter,
       limit: 100,
-    },
-  });
+    });
+    if (result.success) {
+      setQuestions(result.data);
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setLoading(false);
+  }, [subjectFilter, difficultyFilter, toast]);
 
-  const [deleteQuestion, { loading: deleting }] = useMutation(DELETE_QUESTION, {
-    onCompleted: () => {
-      toast({
-        title: "Question deleted",
-        description: "The question has been successfully deleted.",
-      });
-      setShowDeleteDialog(false);
-      refetch();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  React.useEffect(() => {
+    loadQuestions();
+  }, [loadQuestions]);
 
   const handleDelete = (question: Question) => {
     setSelectedQuestion(question);
     setShowDeleteDialog(true);
   };
 
-  const confirmDelete = () => {
-    if (selectedQuestion) {
-      deleteQuestion({ variables: { id: selectedQuestion.id } });
+  const confirmDelete = async () => {
+    if (!selectedQuestion) return;
+    setDeleting(true);
+    const result = await deleteQuestion(selectedQuestion.id);
+    if (result.success) {
+      toast({
+        title: "Question deleted",
+        description: "The question has been successfully deleted.",
+      });
+      setShowDeleteDialog(false);
+      setSelectedQuestion(null);
+      loadQuestions();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
     }
+    setDeleting(false);
   };
-
-  const questions: Question[] = data?.questions || [];
-  const subjects: Subject[] = subjectsData?.subjects || [];
 
   const filteredQuestions = questions.filter((question) =>
     question.questionText?.toLowerCase().includes(searchValue.toLowerCase())

@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useRouter, useParams } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,8 +23,14 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { HelpCircle, ArrowLeft, Loader2, Plus, Trash2 } from "lucide-react";
-import { GET_ADMIN_QUESTION, GET_SUBJECTS, GET_TOPICS } from "@/graphql/queries/admin";
-import { UPDATE_QUESTION } from "@/graphql/mutations/admin";
+import {
+  getQuestion,
+  getSubjects,
+  getTopics,
+  updateQuestion,
+  type Subject,
+  type Topic,
+} from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -51,18 +56,12 @@ export default function EditQuestionPage() {
   const params = useParams();
   const { toast } = useToast();
   const questionId = params.id as string;
+
+  const [subjects, setSubjects] = React.useState<Subject[]>([]);
+  const [topics, setTopics] = React.useState<Topic[]>([]);
   const [selectedSubjectId, setSelectedSubjectId] = React.useState<string>("");
-
-  const { data: questionData, loading: loadingQuestion } = useQuery(GET_ADMIN_QUESTION, {
-    variables: { id: questionId },
-    skip: !questionId,
-  });
-
-  const { data: subjectsData } = useQuery(GET_SUBJECTS);
-  const { data: topicsData } = useQuery(GET_TOPICS, {
-    variables: { subjectId: selectedSubjectId },
-    skip: !selectedSubjectId,
-  });
+  const [loadingQuestion, setLoadingQuestion] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);
 
   const {
     register,
@@ -93,25 +92,60 @@ export default function EditQuestionPage() {
   const questionType = watch("questionType");
   const options = watch("options");
 
+  // Load subjects
+  React.useEffect(() => {
+    async function loadSubjects() {
+      const result = await getSubjects();
+      if (result.success) {
+        setSubjects(result.data);
+      }
+    }
+    loadSubjects();
+  }, []);
+
+  // Load topics when subject changes
+  React.useEffect(() => {
+    async function loadTopics() {
+      if (!selectedSubjectId) {
+        setTopics([]);
+        return;
+      }
+      const result = await getTopics(selectedSubjectId);
+      if (result.success) {
+        setTopics(result.data);
+      }
+    }
+    loadTopics();
+  }, [selectedSubjectId]);
+
   // Load question data
   React.useEffect(() => {
-    if (questionData?.question) {
-      const q = questionData.question;
-      reset({
-        questionText: q.questionText,
-        questionType: q.questionType,
-        difficulty: q.difficulty,
-        subjectId: q.subjectId,
-        topicId: q.topicId || "",
-        explanation: q.explanation || "",
-        options: q.options.map((opt: any) => ({
-          text: opt.text,
-          isCorrect: opt.isCorrect || false,
-        })),
-      });
-      setSelectedSubjectId(q.subjectId);
+    async function loadQuestion() {
+      if (!questionId) return;
+      setLoadingQuestion(true);
+      const result = await getQuestion(questionId);
+      if (result.success) {
+        const q = result.data;
+        reset({
+          questionText: q.questionText,
+          questionType: q.questionType,
+          difficulty: q.difficulty,
+          subjectId: q.subjectId,
+          topicId: q.topicId || "",
+          explanation: q.explanation || "",
+          options: q.options.map((opt) => ({
+            text: opt.text,
+            isCorrect: opt.isCorrect || false,
+          })),
+        });
+        setSelectedSubjectId(q.subjectId);
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setLoadingQuestion(false);
     }
-  }, [questionData, reset]);
+    loadQuestion();
+  }, [questionId, reset, toast]);
 
   // Update subject ID for topics query
   React.useEffect(() => {
@@ -123,23 +157,6 @@ export default function EditQuestionPage() {
     return () => subscription.unsubscribe();
   }, [watch]);
 
-  const [updateQuestion, { loading }] = useMutation(UPDATE_QUESTION, {
-    onCompleted: () => {
-      toast({
-        title: "Question updated",
-        description: "Your changes have been saved.",
-      });
-      router.push("/admin/question-bank");
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
   const setCorrectAnswer = (index: number) => {
     const newOptions = options.map((opt, i) => ({
       ...opt,
@@ -148,7 +165,7 @@ export default function EditQuestionPage() {
     setValue("options", newOptions);
   };
 
-  const onSubmit = (data: QuestionFormData) => {
+  const onSubmit = async (data: QuestionFormData) => {
     if (
       data.questionType === "multiple_choice" &&
       !data.options.some((opt) => opt.isCorrect)
@@ -161,24 +178,36 @@ export default function EditQuestionPage() {
       return;
     }
 
-    updateQuestion({
-      variables: {
-        id: questionId,
-        input: {
-          questionText: data.questionText,
-          questionType: data.questionType,
-          difficulty: data.difficulty,
-          subjectId: data.subjectId,
-          topicId: data.topicId || null,
-          explanation: data.explanation || null,
-          options: data.options,
-        },
-      },
+    setLoading(true);
+    const result = await updateQuestion(questionId, {
+      questionText: data.questionText,
+      questionType: data.questionType,
+      difficulty: data.difficulty,
+      subjectId: data.subjectId,
+      topicId: data.topicId || undefined,
+      explanation: data.explanation || undefined,
+      options: data.options.map((opt, index) => ({
+        id: `option-${index}`,
+        text: opt.text,
+        isCorrect: opt.isCorrect,
+      })),
     });
-  };
 
-  const subjects = subjectsData?.subjects || [];
-  const topics = topicsData?.topics || [];
+    if (result.success) {
+      toast({
+        title: "Question updated",
+        description: "Your changes have been saved.",
+      });
+      router.push("/admin/question-bank");
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
+  };
 
   if (loadingQuestion) {
     return (
@@ -274,7 +303,7 @@ export default function EditQuestionPage() {
                     <SelectValue placeholder="Select subject" />
                   </SelectTrigger>
                   <SelectContent>
-                    {subjects.map((subject: any) => (
+                    {subjects.map((subject) => (
                       <SelectItem key={subject.id} value={subject.id}>
                         {subject.name}
                       </SelectItem>
@@ -293,7 +322,7 @@ export default function EditQuestionPage() {
                     <SelectValue placeholder="Select topic" />
                   </SelectTrigger>
                   <SelectContent>
-                    {topics.map((topic: any) => (
+                    {topics.map((topic) => (
                       <SelectItem key={topic.id} value={topic.id}>
                         {topic.name}
                       </SelectItem>

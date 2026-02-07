@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useParams } from "next/navigation";
-import { useQuery, useMutation } from "@apollo/client";
 import {
   Card,
   CardContent,
@@ -44,18 +43,30 @@ import {
   BookOpen,
   X,
 } from "lucide-react";
-import { GET_ADMIN_COURSE, GET_COURSE_EXAMS, GET_ADMIN_EXAMS, GET_SUBJECTS, GET_COURSE_SUBJECTS } from "@/graphql/queries/admin";
 import {
-  CREATE_CHAPTER,
-  UPDATE_CHAPTER,
-  DELETE_CHAPTER,
-  CREATE_LESSON,
-  UPDATE_LESSON,
-  DELETE_LESSON,
-  LINK_EXAM_TO_COURSE,
-  UNLINK_EXAM_FROM_COURSE,
-} from "@/graphql/mutations/admin";
-import { LINK_SUBJECT_TO_COURSE, UNLINK_SUBJECT_FROM_COURSE } from "@/graphql/mutations/notes";
+  getCourseWithChapters,
+  getCourseExams,
+  getExams,
+  getCourseSubjects,
+  getSubjects,
+  createChapter,
+  updateChapter,
+  deleteChapter,
+  createLesson,
+  updateLesson,
+  deleteLesson,
+  linkExamToCourse,
+  unlinkExamFromCourse,
+  linkSubjectToCourse,
+  unlinkSubjectFromCourse,
+  type Course,
+  type Chapter,
+  type Lesson,
+  type CourseExam,
+  type Exam,
+  type CourseSubject,
+  type Subject,
+} from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 
@@ -67,68 +78,24 @@ const EXAM_TYPE_LABELS: Record<string, string> = {
   previous_year: "Previous Year",
 };
 
-interface Lesson {
-  id: string;
-  title: string;
-  description: string | null;
-  videoUrl: string | null;
-  duration: number | null;
-  position: number;
-  isPublished: boolean;
-  isFree: boolean;
-}
-
-interface Chapter {
-  id: string;
-  title: string;
-  description: string | null;
-  position: number;
-  isPublished: boolean;
-  lessons: Lesson[];
-}
-
-interface Exam {
-  id: string;
-  title: string;
-  examType: string | null;
-  setNumber: number | null;
-  durationMinutes: number;
-  totalMarks: number;
-  isPublished: boolean;
-  questionsCount: number;
-}
-
-interface CourseExam {
-  id: string;
-  courseId: string;
-  examId: string;
-  displayOrder: number;
-  isRequired: boolean;
-  exam: Exam;
-}
-
-interface Subject {
-  id: string;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  questionsCount: number;
-  topicsCount: number;
-}
-
-interface CourseSubject {
-  id: string;
-  courseId: string;
-  subjectId: string;
-  displayOrder: number;
-  subject: Subject;
-}
-
 export default function ChaptersPage() {
   const params = useParams();
   const { toast } = useToast();
   const courseId = params.id as string;
 
+  // Data states
+  const [course, setCourse] = React.useState<(Course & { chapters: (Chapter & { lessons: Lesson[] })[] }) | null>(null);
+  const [linkedExams, setLinkedExams] = React.useState<CourseExam[]>([]);
+  const [allExams, setAllExams] = React.useState<Exam[]>([]);
+  const [linkedSubjects, setLinkedSubjects] = React.useState<CourseSubject[]>([]);
+  const [allSubjects, setAllSubjects] = React.useState<Subject[]>([]);
+
+  // Loading states
+  const [loading, setLoading] = React.useState(true);
+  const [loadingExams, setLoadingExams] = React.useState(true);
+  const [loadingSubjects, setLoadingSubjects] = React.useState(true);
+
+  // UI states
   const [expandedChapters, setExpandedChapters] = React.useState<Set<string>>(new Set());
   const [showChapterDialog, setShowChapterDialog] = React.useState(false);
   const [showLessonDialog, setShowLessonDialog] = React.useState(false);
@@ -138,6 +105,18 @@ export default function ChaptersPage() {
   const [deleteTarget, setDeleteTarget] = React.useState<{ type: "chapter" | "lesson"; id: string; name: string } | null>(null);
   const [selectedExamToAdd, setSelectedExamToAdd] = React.useState("");
   const [selectedSubjectToAdd, setSelectedSubjectToAdd] = React.useState("");
+
+  // Action loading states
+  const [creatingChapter, setCreatingChapter] = React.useState(false);
+  const [updatingChapter, setUpdatingChapter] = React.useState(false);
+  const [deletingChapter, setDeletingChapter] = React.useState(false);
+  const [creatingLesson, setCreatingLesson] = React.useState(false);
+  const [updatingLesson, setUpdatingLesson] = React.useState(false);
+  const [deletingLesson, setDeletingLesson] = React.useState(false);
+  const [linkingExam, setLinkingExam] = React.useState(false);
+  const [unlinkingExam, setUnlinkingExam] = React.useState(false);
+  const [linkingSubject, setLinkingSubject] = React.useState(false);
+  const [unlinkingSubject, setUnlinkingSubject] = React.useState(false);
 
   // Chapter form state
   const [chapterTitle, setChapterTitle] = React.useState("");
@@ -149,118 +128,65 @@ export default function ChaptersPage() {
   const [lessonVideoUrl, setLessonVideoUrl] = React.useState("");
   const [lessonIsFree, setLessonIsFree] = React.useState(false);
 
-  const { data, loading, refetch } = useQuery(GET_ADMIN_COURSE, {
-    variables: { id: courseId },
-    skip: !courseId,
-  });
+  // Load course data
+  const loadCourse = React.useCallback(async () => {
+    if (!courseId) return;
+    setLoading(true);
+    const result = await getCourseWithChapters(courseId);
+    if (result.success) {
+      setCourse(result.data as any);
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setLoading(false);
+  }, [courseId, toast]);
 
-  const { data: courseExamsData, loading: loadingExams, refetch: refetchExams } = useQuery(GET_COURSE_EXAMS, {
-    variables: { courseId },
-    skip: !courseId,
-  });
+  // Load course exams
+  const loadCourseExams = React.useCallback(async () => {
+    if (!courseId) return;
+    setLoadingExams(true);
+    const result = await getCourseExams(courseId);
+    if (result.success) {
+      setLinkedExams(result.data);
+    }
+    setLoadingExams(false);
+  }, [courseId]);
 
-  const { data: allExamsData } = useQuery(GET_ADMIN_EXAMS, {
-    variables: { limit: 100 },
-  });
+  // Load all exams
+  const loadAllExams = React.useCallback(async () => {
+    const result = await getExams({ limit: 100 });
+    if (result.success) {
+      setAllExams(result.data);
+    }
+  }, []);
 
-  const { data: courseSubjectsData, loading: loadingSubjects, refetch: refetchSubjects } = useQuery(GET_COURSE_SUBJECTS, {
-    variables: { courseId },
-    skip: !courseId,
-  });
+  // Load course subjects
+  const loadCourseSubjects = React.useCallback(async () => {
+    if (!courseId) return;
+    setLoadingSubjects(true);
+    const result = await getCourseSubjects(courseId);
+    if (result.success) {
+      setLinkedSubjects(result.data);
+    }
+    setLoadingSubjects(false);
+  }, [courseId]);
 
-  const { data: allSubjectsData } = useQuery(GET_SUBJECTS);
+  // Load all subjects
+  const loadAllSubjects = React.useCallback(async () => {
+    const result = await getSubjects();
+    if (result.success) {
+      setAllSubjects(result.data);
+    }
+  }, []);
 
-  const [createChapter, { loading: creatingChapter }] = useMutation(CREATE_CHAPTER, {
-    onCompleted: () => {
-      toast({ title: "Chapter created" });
-      setShowChapterDialog(false);
-      resetChapterForm();
-      refetch();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [updateChapter, { loading: updatingChapter }] = useMutation(UPDATE_CHAPTER, {
-    onCompleted: () => {
-      toast({ title: "Chapter updated" });
-      setShowChapterDialog(false);
-      resetChapterForm();
-      refetch();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [deleteChapter, { loading: deletingChapter }] = useMutation(DELETE_CHAPTER, {
-    onCompleted: () => {
-      toast({ title: "Chapter deleted" });
-      setDeleteTarget(null);
-      refetch();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [createLesson, { loading: creatingLesson }] = useMutation(CREATE_LESSON, {
-    onCompleted: () => {
-      toast({ title: "Lesson created" });
-      setShowLessonDialog(false);
-      resetLessonForm();
-      refetch();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [updateLesson, { loading: updatingLesson }] = useMutation(UPDATE_LESSON, {
-    onCompleted: () => {
-      toast({ title: "Lesson updated" });
-      setShowLessonDialog(false);
-      resetLessonForm();
-      refetch();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [deleteLesson, { loading: deletingLesson }] = useMutation(DELETE_LESSON, {
-    onCompleted: () => {
-      toast({ title: "Lesson deleted" });
-      setDeleteTarget(null);
-      refetch();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [linkExamToCourse, { loading: linkingExam }] = useMutation(LINK_EXAM_TO_COURSE, {
-    onCompleted: () => {
-      toast({ title: "Exam linked", description: "The exam has been added to this course." });
-      setSelectedExamToAdd("");
-      refetchExams();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [unlinkExamFromCourse, { loading: unlinkingExam }] = useMutation(UNLINK_EXAM_FROM_COURSE, {
-    onCompleted: () => {
-      toast({ title: "Exam unlinked", description: "The exam has been removed from this course." });
-      refetchExams();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [linkSubjectToCourse, { loading: linkingSubject }] = useMutation(LINK_SUBJECT_TO_COURSE, {
-    onCompleted: () => {
-      toast({ title: "Subject linked", description: "The subject has been added to this course." });
-      setSelectedSubjectToAdd("");
-      refetchSubjects();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [unlinkSubjectFromCourse, { loading: unlinkingSubject }] = useMutation(UNLINK_SUBJECT_FROM_COURSE, {
-    onCompleted: () => {
-      toast({ title: "Subject unlinked", description: "The subject has been removed from this course." });
-      refetchSubjects();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
+  // Initial data load
+  React.useEffect(() => {
+    loadCourse();
+    loadCourseExams();
+    loadAllExams();
+    loadCourseSubjects();
+    loadAllSubjects();
+  }, [loadCourse, loadCourseExams, loadAllExams, loadCourseSubjects, loadAllSubjects]);
 
   const resetChapterForm = () => {
     setChapterTitle("");
@@ -298,60 +224,105 @@ export default function ChaptersPage() {
     setShowLessonDialog(true);
   };
 
-  const handleSaveChapter = () => {
+  const handleSaveChapter = async () => {
     if (editingChapter) {
-      updateChapter({
-        variables: {
-          id: editingChapter.id,
-          title: chapterTitle,
-          description: chapterDescription || null,
-        },
+      setUpdatingChapter(true);
+      const result = await updateChapter(editingChapter.id, {
+        title: chapterTitle,
+        description: chapterDescription || undefined,
       });
+      if (result.success) {
+        toast({ title: "Chapter updated" });
+        setShowChapterDialog(false);
+        resetChapterForm();
+        loadCourse();
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setUpdatingChapter(false);
     } else {
-      createChapter({
-        variables: {
-          input: {
-            courseId,
-            title: chapterTitle,
-            description: chapterDescription || null,
-          },
-        },
+      setCreatingChapter(true);
+      const result = await createChapter({
+        courseId,
+        title: chapterTitle,
+        description: chapterDescription || undefined,
       });
+      if (result.success) {
+        toast({ title: "Chapter created" });
+        setShowChapterDialog(false);
+        resetChapterForm();
+        loadCourse();
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setCreatingChapter(false);
     }
   };
 
-  const handleSaveLesson = () => {
+  const handleSaveLesson = async () => {
     if (editingLesson) {
-      updateLesson({
-        variables: {
-          id: editingLesson.id,
-          title: lessonTitle,
-          description: lessonDescription || null,
-          videoUrl: lessonVideoUrl || null,
-          isFree: lessonIsFree,
-        },
+      setUpdatingLesson(true);
+      const result = await updateLesson(editingLesson.id, {
+        title: lessonTitle,
+        description: lessonDescription || undefined,
+        videoUrl: lessonVideoUrl || undefined,
+        isFree: lessonIsFree,
       });
+      if (result.success) {
+        toast({ title: "Lesson updated" });
+        setShowLessonDialog(false);
+        resetLessonForm();
+        loadCourse();
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setUpdatingLesson(false);
     } else {
-      createLesson({
-        variables: {
-          input: {
-            chapterId: selectedChapterId,
-            title: lessonTitle,
-            description: lessonDescription || null,
-            videoUrl: lessonVideoUrl || null,
-            isFree: lessonIsFree,
-          },
-        },
+      if (!selectedChapterId) return;
+      setCreatingLesson(true);
+      const result = await createLesson({
+        chapterId: selectedChapterId,
+        title: lessonTitle,
+        description: lessonDescription || undefined,
+        videoUrl: lessonVideoUrl || undefined,
+        isFree: lessonIsFree,
       });
+      if (result.success) {
+        toast({ title: "Lesson created" });
+        setShowLessonDialog(false);
+        resetLessonForm();
+        loadCourse();
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setCreatingLesson(false);
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
     if (deleteTarget.type === "chapter") {
-      deleteChapter({ variables: { id: deleteTarget.id } });
+      setDeletingChapter(true);
+      const result = await deleteChapter(deleteTarget.id);
+      if (result.success) {
+        toast({ title: "Chapter deleted" });
+        setDeleteTarget(null);
+        loadCourse();
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setDeletingChapter(false);
     } else {
-      deleteLesson({ variables: { id: deleteTarget.id } });
+      setDeletingLesson(true);
+      const result = await deleteLesson(deleteTarget.id);
+      if (result.success) {
+        toast({ title: "Lesson deleted" });
+        setDeleteTarget(null);
+        loadCourse();
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setDeletingLesson(false);
     }
   };
 
@@ -365,43 +336,56 @@ export default function ChaptersPage() {
     setExpandedChapters(newExpanded);
   };
 
-  const handleLinkExam = () => {
+  const handleLinkExam = async () => {
     if (!selectedExamToAdd) return;
-    linkExamToCourse({
-      variables: {
-        examId: selectedExamToAdd,
-        courseId,
-        isRequired: false,
-      },
-    });
+    setLinkingExam(true);
+    const result = await linkExamToCourse(selectedExamToAdd, courseId);
+    if (result.success) {
+      toast({ title: "Exam linked", description: "The exam has been added to this course." });
+      setSelectedExamToAdd("");
+      loadCourseExams();
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setLinkingExam(false);
   };
 
-  const handleUnlinkExam = (examId: string) => {
-    unlinkExamFromCourse({
-      variables: {
-        examId,
-        courseId,
-      },
-    });
+  const handleUnlinkExam = async (examId: string) => {
+    setUnlinkingExam(true);
+    const result = await unlinkExamFromCourse(examId, courseId);
+    if (result.success) {
+      toast({ title: "Exam unlinked", description: "The exam has been removed from this course." });
+      loadCourseExams();
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setUnlinkingExam(false);
   };
 
-  const handleLinkSubject = () => {
+  const handleLinkSubject = async () => {
     if (!selectedSubjectToAdd) return;
-    linkSubjectToCourse({
-      variables: {
-        subjectId: selectedSubjectToAdd,
-        courseId,
-      },
-    });
+    setLinkingSubject(true);
+    const result = await linkSubjectToCourse(courseId, selectedSubjectToAdd);
+    if (result.success) {
+      toast({ title: "Subject linked", description: "The subject has been added to this course." });
+      setSelectedSubjectToAdd("");
+      loadCourseSubjects();
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setLinkingSubject(false);
   };
 
-  const handleUnlinkSubject = (subjectId: string) => {
-    unlinkSubjectFromCourse({
-      variables: {
-        subjectId,
-        courseId,
-      },
-    });
+  const handleUnlinkSubject = async (subjectId: string) => {
+    setUnlinkingSubject(true);
+    const result = await unlinkSubjectFromCourse(courseId, subjectId);
+    if (result.success) {
+      toast({ title: "Subject unlinked", description: "The subject has been removed from this course." });
+      loadCourseSubjects();
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setUnlinkingSubject(false);
   };
 
   if (loading) {
@@ -412,15 +396,9 @@ export default function ChaptersPage() {
     );
   }
 
-  const course = data?.course;
-  const chapters: Chapter[] = course?.chapters || [];
-  const linkedExams: CourseExam[] = courseExamsData?.courseExams || [];
-  const allExams: Exam[] = allExamsData?.exams || [];
+  const chapters = course?.chapters || [];
   const linkedExamIds = linkedExams.map((ce) => ce.examId);
   const availableExams = allExams.filter((exam) => !linkedExamIds.includes(exam.id));
-
-  const linkedSubjects: CourseSubject[] = courseSubjectsData?.courseSubjects || [];
-  const allSubjects: Subject[] = allSubjectsData?.subjects || [];
   const linkedSubjectIds = linkedSubjects.map((cs) => cs.subjectId);
   const availableSubjects = allSubjects.filter((subject) => !linkedSubjectIds.includes(subject.id));
 

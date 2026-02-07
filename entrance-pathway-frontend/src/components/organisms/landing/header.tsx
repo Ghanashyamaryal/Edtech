@@ -3,13 +3,12 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useQuery } from "@apollo/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
 import { Subtitle, Paragraph, Small } from "@/components/atoms";
 import { useAuth } from "@/context/auth-context";
-import { GET_LANDING_COURSES } from "@/graphql/queries/courses";
+import { getPublishedCourses, type Course } from "@/actions";
 import {
   GraduationCap,
   Menu,
@@ -24,15 +23,6 @@ import {
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Avatar from "@radix-ui/react-avatar";
-
-// Course type from API
-interface Course {
-  id: string;
-  title: string;
-  fullName: string | null;
-  slug: string;
-  description: string | null;
-}
 
 // Main navigation items for landing pages
 const landingNavItems = [
@@ -286,10 +276,18 @@ export function LandingHeader() {
     null,
   );
   const [isMounted, setIsMounted] = React.useState(false);
+  const [courses, setCourses] = React.useState<Course[]>([]);
 
   // Fetch courses for dropdown
-  const { data: coursesData } = useQuery(GET_LANDING_COURSES);
-  const courses: Course[] = coursesData?.courses?.slice(0, 6) || [];
+  React.useEffect(() => {
+    async function loadCourses() {
+      const result = await getPublishedCourses({ limit: 6 });
+      if (result.success) {
+        setCourses(result.data);
+      }
+    }
+    loadCourses();
+  }, []);
 
   // Ensure consistent client-side rendering to avoid hydration mismatch
   React.useEffect(() => {

@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useQuery, useMutation } from "@apollo/client";
 import {
   Card,
   CardContent,
@@ -32,36 +31,38 @@ import {
   Loader2,
   Tag,
 } from "lucide-react";
-import { GET_SUBJECTS, GET_SUBJECT } from "@/graphql/queries/admin";
 import {
-  CREATE_SUBJECT,
-  UPDATE_SUBJECT,
-  DELETE_SUBJECT,
-  CREATE_TOPIC,
-  UPDATE_TOPIC,
-  DELETE_TOPIC,
-} from "@/graphql/mutations/admin";
+  getSubjects,
+  getSubject,
+  createSubject,
+  updateSubject,
+  deleteSubject,
+  getTopics,
+  createTopic,
+  updateTopic,
+  deleteTopic,
+  type Subject,
+  type Topic,
+} from "@/actions";
 import { useToast } from "@/hooks/use-toast";
-
-interface Topic {
-  id: string;
-  name: string;
-  description: string | null;
-  questionsCount: number;
-}
-
-interface Subject {
-  id: string;
-  name: string;
-  description: string | null;
-  icon: string | null;
-  topics?: Topic[];
-  topicsCount: number;
-  questionsCount: number;
-}
 
 export default function SubjectsPage() {
   const { toast } = useToast();
+
+  // Data states
+  const [subjects, setSubjects] = React.useState<Subject[]>([]);
+  const [topicsBySubject, setTopicsBySubject] = React.useState<Record<string, Topic[]>>({});
+
+  // Loading states
+  const [loading, setLoading] = React.useState(true);
+  const [creatingSubject, setCreatingSubject] = React.useState(false);
+  const [updatingSubject, setUpdatingSubject] = React.useState(false);
+  const [deletingSubject, setDeletingSubject] = React.useState(false);
+  const [creatingTopic, setCreatingTopic] = React.useState(false);
+  const [updatingTopic, setUpdatingTopic] = React.useState(false);
+  const [deletingTopic, setDeletingTopic] = React.useState(false);
+
+  // UI states
   const [expandedSubjects, setExpandedSubjects] = React.useState<Set<string>>(new Set());
   const [showSubjectDialog, setShowSubjectDialog] = React.useState(false);
   const [showTopicDialog, setShowTopicDialog] = React.useState(false);
@@ -79,74 +80,30 @@ export default function SubjectsPage() {
   const [topicName, setTopicName] = React.useState("");
   const [topicDescription, setTopicDescription] = React.useState("");
 
-  const { data, loading, refetch } = useQuery(GET_SUBJECTS);
+  // Load subjects
+  const loadSubjects = React.useCallback(async () => {
+    setLoading(true);
+    const result = await getSubjects();
+    if (result.success) {
+      setSubjects(result.data);
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setLoading(false);
+  }, [toast]);
 
-  // Fetch topics when expanding a subject
-  const { data: subjectData, refetch: refetchSubject } = useQuery(GET_SUBJECT, {
-    variables: { id: selectedSubjectId },
-    skip: !selectedSubjectId,
-  });
+  // Load topics for a subject
+  const loadTopicsForSubject = React.useCallback(async (subjectId: string) => {
+    const result = await getTopics(subjectId);
+    if (result.success) {
+      setTopicsBySubject((prev) => ({ ...prev, [subjectId]: result.data }));
+    }
+  }, []);
 
-  const [createSubject, { loading: creatingSubject }] = useMutation(CREATE_SUBJECT, {
-    onCompleted: () => {
-      toast({ title: "Subject created" });
-      setShowSubjectDialog(false);
-      resetSubjectForm();
-      refetch();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [updateSubject, { loading: updatingSubject }] = useMutation(UPDATE_SUBJECT, {
-    onCompleted: () => {
-      toast({ title: "Subject updated" });
-      setShowSubjectDialog(false);
-      resetSubjectForm();
-      refetch();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [deleteSubject, { loading: deletingSubject }] = useMutation(DELETE_SUBJECT, {
-    onCompleted: () => {
-      toast({ title: "Subject deleted" });
-      setDeleteTarget(null);
-      refetch();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [createTopic, { loading: creatingTopic }] = useMutation(CREATE_TOPIC, {
-    onCompleted: () => {
-      toast({ title: "Topic created" });
-      setShowTopicDialog(false);
-      resetTopicForm();
-      refetch();
-      if (selectedSubjectId) refetchSubject();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [updateTopic, { loading: updatingTopic }] = useMutation(UPDATE_TOPIC, {
-    onCompleted: () => {
-      toast({ title: "Topic updated" });
-      setShowTopicDialog(false);
-      resetTopicForm();
-      refetch();
-      if (selectedSubjectId) refetchSubject();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
-
-  const [deleteTopic, { loading: deletingTopic }] = useMutation(DELETE_TOPIC, {
-    onCompleted: () => {
-      toast({ title: "Topic deleted" });
-      setDeleteTarget(null);
-      refetch();
-      if (selectedSubjectId) refetchSubject();
-    },
-    onError: (error) => toast({ title: "Error", description: error.message, variant: "destructive" }),
-  });
+  // Initial load
+  React.useEffect(() => {
+    loadSubjects();
+  }, [loadSubjects]);
 
   const resetSubjectForm = () => {
     setSubjectName("");
@@ -181,57 +138,107 @@ export default function SubjectsPage() {
     setShowTopicDialog(true);
   };
 
-  const handleSaveSubject = () => {
+  const handleSaveSubject = async () => {
     if (editingSubject) {
-      updateSubject({
-        variables: {
-          id: editingSubject.id,
-          name: subjectName,
-          description: subjectDescription || null,
-          icon: subjectIcon || null,
-        },
+      setUpdatingSubject(true);
+      const result = await updateSubject(editingSubject.id, {
+        name: subjectName,
+        description: subjectDescription || undefined,
+        icon: subjectIcon || undefined,
       });
+      if (result.success) {
+        toast({ title: "Subject updated" });
+        setShowSubjectDialog(false);
+        resetSubjectForm();
+        loadSubjects();
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setUpdatingSubject(false);
     } else {
-      createSubject({
-        variables: {
-          input: {
-            name: subjectName,
-            description: subjectDescription || null,
-            icon: subjectIcon || null,
-          },
-        },
+      setCreatingSubject(true);
+      const result = await createSubject({
+        name: subjectName,
+        description: subjectDescription || undefined,
+        icon: subjectIcon || undefined,
       });
+      if (result.success) {
+        toast({ title: "Subject created" });
+        setShowSubjectDialog(false);
+        resetSubjectForm();
+        loadSubjects();
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setCreatingSubject(false);
     }
   };
 
-  const handleSaveTopic = () => {
+  const handleSaveTopic = async () => {
+    if (!selectedSubjectId) return;
+
     if (editingTopic) {
-      updateTopic({
-        variables: {
-          id: editingTopic.id,
-          name: topicName,
-          description: topicDescription || null,
-        },
+      setUpdatingTopic(true);
+      const result = await updateTopic(editingTopic.id, {
+        name: topicName,
+        description: topicDescription || undefined,
       });
+      if (result.success) {
+        toast({ title: "Topic updated" });
+        setShowTopicDialog(false);
+        resetTopicForm();
+        loadSubjects();
+        loadTopicsForSubject(selectedSubjectId);
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setUpdatingTopic(false);
     } else {
-      createTopic({
-        variables: {
-          input: {
-            subjectId: selectedSubjectId,
-            name: topicName,
-            description: topicDescription || null,
-          },
-        },
+      setCreatingTopic(true);
+      const result = await createTopic({
+        subjectId: selectedSubjectId,
+        name: topicName,
+        description: topicDescription || undefined,
       });
+      if (result.success) {
+        toast({ title: "Topic created" });
+        setShowTopicDialog(false);
+        resetTopicForm();
+        loadSubjects();
+        loadTopicsForSubject(selectedSubjectId);
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setCreatingTopic(false);
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deleteTarget) return;
+
     if (deleteTarget.type === "subject") {
-      deleteSubject({ variables: { id: deleteTarget.id } });
+      setDeletingSubject(true);
+      const result = await deleteSubject(deleteTarget.id);
+      if (result.success) {
+        toast({ title: "Subject deleted" });
+        setDeleteTarget(null);
+        loadSubjects();
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setDeletingSubject(false);
     } else {
-      deleteTopic({ variables: { id: deleteTarget.id } });
+      setDeletingTopic(true);
+      const result = await deleteTopic(deleteTarget.id);
+      if (result.success) {
+        toast({ title: "Topic deleted" });
+        setDeleteTarget(null);
+        loadSubjects();
+        if (selectedSubjectId) loadTopicsForSubject(selectedSubjectId);
+      } else {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+      }
+      setDeletingTopic(false);
     }
   };
 
@@ -243,18 +250,16 @@ export default function SubjectsPage() {
     } else {
       newExpanded.add(subjectId);
       setSelectedSubjectId(subjectId);
+      // Load topics if not already loaded
+      if (!topicsBySubject[subjectId]) {
+        loadTopicsForSubject(subjectId);
+      }
     }
     setExpandedSubjects(newExpanded);
   };
 
-  const subjects: Subject[] = data?.subjects || [];
-
-  // Merge topics from subjectData when available
   const getTopicsForSubject = (subjectId: string) => {
-    if (subjectData?.subject?.id === subjectId) {
-      return subjectData.subject.topics || [];
-    }
-    return [];
+    return topicsBySubject[subjectId] || [];
   };
 
   if (loading) {
@@ -346,7 +351,7 @@ export default function SubjectsPage() {
                 <CollapsibleContent>
                   <CardContent className="pt-0">
                     <div className="space-y-2 ml-8">
-                      {getTopicsForSubject(subject.id).map((topic: Topic) => (
+                      {getTopicsForSubject(subject.id).map((topic) => (
                         <div
                           key={topic.id}
                           className="flex items-center justify-between p-3 rounded-lg bg-muted/50"

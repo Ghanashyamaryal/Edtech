@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@apollo/client';
+import * as React from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Title, Subtitle, Paragraph, Small } from '@/components/atoms';
@@ -14,15 +14,15 @@ import {
   AlertCircle,
   ArrowLeft,
 } from 'lucide-react';
-import { GET_COURSE } from '@/graphql/queries/courses';
+import { getCourseBySlug, type Course } from '@/actions';
 
-// Types
+// Types for chapters and lessons from the course data
 interface Lesson {
   id: string;
   title: string;
-  description: string | null;
-  videoUrl: string | null;
-  duration: number | null;
+  description?: string;
+  videoUrl?: string;
+  duration?: number;
   position: number;
   isPublished: boolean;
   isFree: boolean;
@@ -31,34 +31,10 @@ interface Lesson {
 interface Chapter {
   id: string;
   title: string;
-  description: string | null;
+  description?: string;
   position: number;
   isPublished: boolean;
   lessons: Lesson[];
-}
-
-interface Course {
-  id: string;
-  title: string;
-  fullName: string | null;
-  description: string;
-  slug: string;
-  thumbnailUrl: string | null;
-  price: number;
-  discountedPrice: number | null;
-  durationHours: number | null;
-  studentCount: number | null;
-  rating: number | null;
-  reviewsCount: number | null;
-  features: string[] | null;
-  isBestseller: boolean | null;
-  isPublished: boolean;
-  instructor: {
-    id: string;
-    fullName: string;
-    avatarUrl: string | null;
-  } | null;
-  chapters: Chapter[];
 }
 
 // Loading skeleton
@@ -150,20 +126,34 @@ export default function CourseDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
 
-  const { data, loading, error } = useQuery(GET_COURSE, {
-    variables: { slug },
-    skip: !slug,
-  });
+  const [course, setCourse] = React.useState<(Course & { chapters: Chapter[] }) | null>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    async function loadCourse() {
+      if (!slug) return;
+
+      setLoading(true);
+      setError(null);
+      const result = await getCourseBySlug(slug);
+      if (result.success) {
+        setCourse(result.data);
+      } else {
+        setError(result.error);
+      }
+      setLoading(false);
+    }
+    loadCourse();
+  }, [slug]);
 
   if (loading) {
     return <CourseDetailSkeleton />;
   }
 
   if (error) {
-    return <CourseError message={error.message} />;
+    return <CourseError message={error} />;
   }
-
-  const course: Course | null = data?.course;
 
   if (!course) {
     return <CourseNotFound />;

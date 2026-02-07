@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useQuery, useMutation } from "@apollo/client";
 import {
   Card,
   CardContent,
@@ -20,57 +19,39 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
-import { DataTable, Column, StatusBadge, ConfirmDialog } from "@/components/molecules/admin";
+import { DataTable, Column, ConfirmDialog } from "@/components/molecules/admin";
 import { Users, MoreHorizontal, Shield, UserCheck, GraduationCap } from "lucide-react";
-import { GET_USERS } from "@/graphql/queries/admin";
-import { UPDATE_USER_ROLE } from "@/graphql/mutations/admin";
+import { getUsers, updateUserRole, type User, type UserRole } from "@/actions";
 import { useToast } from "@/hooks/use-toast";
-
-interface User {
-  id: string;
-  email: string;
-  fullName: string;
-  avatarUrl: string | null;
-  phone: string | null;
-  role: "student" | "mentor" | "admin";
-  createdAt: string;
-}
 
 export default function AdminUsersPage() {
   const { toast } = useToast();
   const [searchValue, setSearchValue] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState<string>("all");
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(10);
+  const [users, setUsers] = React.useState<User[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [selectedUser, setSelectedUser] = React.useState<User | null>(null);
   const [newRole, setNewRole] = React.useState<string>("");
   const [showRoleDialog, setShowRoleDialog] = React.useState(false);
+  const [updatingRole, setUpdatingRole] = React.useState(false);
 
-  const { data, loading, refetch } = useQuery(GET_USERS, {
-    variables: {
-      role: roleFilter === "all" ? undefined : roleFilter,
-      limit: pageSize,
-      offset: (page - 1) * pageSize,
-    },
-  });
+  const loadUsers = React.useCallback(async () => {
+    setLoading(true);
+    const result = await getUsers({
+      role: roleFilter === "all" ? undefined : (roleFilter as UserRole),
+      limit: 50,
+    });
+    if (result.success) {
+      setUsers(result.data);
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setLoading(false);
+  }, [roleFilter, toast]);
 
-  const [updateRole, { loading: updatingRole }] = useMutation(UPDATE_USER_ROLE, {
-    onCompleted: () => {
-      toast({
-        title: "Role updated",
-        description: `User role has been changed to ${newRole}`,
-      });
-      setShowRoleDialog(false);
-      refetch();
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
+  React.useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const handleRoleChange = (user: User, role: string) => {
     setSelectedUser(user);
@@ -78,18 +59,26 @@ export default function AdminUsersPage() {
     setShowRoleDialog(true);
   };
 
-  const confirmRoleChange = () => {
-    if (selectedUser && newRole) {
-      updateRole({
-        variables: {
-          userId: selectedUser.id,
-          role: newRole,
-        },
+  const confirmRoleChange = async () => {
+    if (!selectedUser || !newRole) return;
+    setUpdatingRole(true);
+    const result = await updateUserRole(selectedUser.id, newRole as UserRole);
+    if (result.success) {
+      toast({
+        title: "Role updated",
+        description: `User role has been changed to ${newRole}`,
+      });
+      setShowRoleDialog(false);
+      loadUsers();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
       });
     }
+    setUpdatingRole(false);
   };
-
-  const users: User[] = data?.users || [];
 
   // Filter by search
   const filteredUsers = users.filter(
@@ -107,7 +96,7 @@ export default function AdminUsersPage() {
           {user.avatarUrl ? (
             <img
               src={user.avatarUrl}
-              alt={user.fullName}
+              alt={user.fullName || "User"}
               className="w-8 h-8 rounded-full object-cover"
             />
           ) : (
