@@ -619,17 +619,17 @@ export default function ChaptersPage() {
                       <GripVertical className="w-4 h-4 text-muted-foreground" />
                       <ClipboardList className="w-4 h-4 text-primary" />
                       <div>
-                        <p className="font-medium">{courseExam.exam.title}</p>
+                        <p className="font-medium">{courseExam.exam?.title}</p>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          {courseExam.exam.examType && (
+                          {courseExam.exam?.examType && (
                             <span className="bg-muted px-1.5 py-0.5 rounded">
                               {EXAM_TYPE_LABELS[courseExam.exam.examType] || courseExam.exam.examType}
                               {courseExam.exam.setNumber && courseExam.exam.setNumber > 1 && ` Set ${courseExam.exam.setNumber}`}
                             </span>
                           )}
-                          <span>{courseExam.exam.durationMinutes} min</span>
-                          <span>{courseExam.exam.totalMarks} marks</span>
-                          <span>{courseExam.exam.questionsCount || 0} questions</span>
+                          <span>{courseExam.exam?.durationMinutes} min</span>
+                          <span>{courseExam.exam?.totalMarks} marks</span>
+                          <span>{courseExam.exam?.questionsCount || 0} questions</span>
                         </div>
                       </div>
                     </div>
@@ -688,7 +688,7 @@ export default function ChaptersPage() {
                   {availableSubjects.map((subject) => (
                     <SelectItem key={subject.id} value={subject.id}>
                       {subject.name}
-                      {subject.questionsCount > 0 && ` (${subject.questionsCount} questions)`}
+                      {(subject.questionsCount ?? 0) > 0 && ` (${subject.questionsCount} questions)`}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -737,10 +737,10 @@ export default function ChaptersPage() {
                       <GripVertical className="w-4 h-4 text-muted-foreground" />
                       <BookOpen className="w-4 h-4 text-primary" />
                       <div>
-                        <p className="font-medium">{courseSubject.subject.name}</p>
+                        <p className="font-medium">{courseSubject.subject?.name}</p>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{courseSubject.subject.topicsCount || 0} topics</span>
-                          <span>{courseSubject.subject.questionsCount || 0} questions</span>
+                          <span>{courseSubject.subject?.topicsCount || 0} topics</span>
+                          <span>{courseSubject.subject?.questionsCount || 0} questions</span>
                         </div>
                       </div>
                     </div>

@@ -37,14 +37,14 @@ export function generateSlug(text: string): string {
 }
 
 // Format database row to response format (snake_case to camelCase)
-export function formatResponse<T extends Record<string, unknown>>(row: T | null): Record<string, unknown> | null {
+export function formatResponse<T extends Record<string, unknown>, R = Record<string, unknown>>(row: T | null): R | null {
   if (!row) return null;
-  return toCamelCase(row);
+  return toCamelCase(row) as R;
 }
 
 // Format array of database rows
-export function formatResponseArray<T extends Record<string, unknown>>(rows: T[]): Record<string, unknown>[] {
-  return rows.map((row) => toCamelCase(row));
+export function formatResponseArray<T extends Record<string, unknown>, R = Record<string, unknown>>(rows: T[]): R[] {
+  return rows.map((row) => toCamelCase(row)) as R[];
 }
 
 // Action result type for consistent error handling

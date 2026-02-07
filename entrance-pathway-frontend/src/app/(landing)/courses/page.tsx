@@ -249,7 +249,7 @@ export default function CoursesPage() {
           <DataState
             data={courses}
             loading={loading}
-            error={error ? { message: error } : undefined}
+            error={error ? new Error(error) : undefined}
             emptyIcon={BookOpen}
             emptyTitle="No courses available"
             emptyDescription="Check back later for new courses."

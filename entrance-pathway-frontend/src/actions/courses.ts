@@ -15,6 +15,7 @@ export interface CourseInput {
   durationHours?: number;
   features?: string[];
   isBestseller?: boolean;
+  isPublished?: boolean;
 }
 
 export interface Course {
@@ -241,7 +242,7 @@ export async function createCourse(input: CourseInput): Promise<ActionResult<Cou
     const { data, error } = await supabase
       .from('courses')
       .insert({
-        ...toSnakeCase(input),
+        ...toSnakeCase(input as unknown as Record<string, unknown>),
         slug,
         instructor_id: user.id,
         is_published: false,
