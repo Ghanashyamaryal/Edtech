@@ -55,7 +55,7 @@ export async function getChapters(courseId: string): Promise<ActionResult<Chapte
 
     if (error) throw new Error(error.message);
 
-    return { success: true, data: formatResponseArray(data || []) as Chapter[] };
+    return { success: true, data: formatResponseArray<Record<string, unknown>, Chapter>(data || []) };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch chapters' };
   }
@@ -73,7 +73,7 @@ export async function getChapter(id: string): Promise<ActionResult<Chapter>> {
 
     if (error) throw new Error(error.message);
 
-    return { success: true, data: formatResponse(data) as Chapter };
+    return { success: true, data: formatResponse<Record<string, unknown>, Chapter>(data)! };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch chapter' };
   }
@@ -102,8 +102,8 @@ export async function getChapterWithLessons(id: string): Promise<ActionResult<Ch
     return {
       success: true,
       data: {
-        ...formatResponse(chapter) as Chapter,
-        lessons: formatResponseArray(lessons || []) as Lesson[],
+        ...formatResponse<Record<string, unknown>, Chapter>(chapter)!,
+        lessons: formatResponseArray<Record<string, unknown>, Lesson>(lessons || []),
       },
     };
   } catch (error) {
@@ -143,7 +143,7 @@ export async function createChapter(input: CreateChapterInput): Promise<ActionRe
     if (error) throw new Error(error.message);
 
     revalidatePath(`/admin/courses/${input.courseId}/chapters`);
-    return { success: true, data: formatResponse(data) as Chapter };
+    return { success: true, data: formatResponse<Record<string, unknown>, Chapter>(data)! };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to create chapter' };
   }
@@ -169,7 +169,7 @@ export async function updateChapter(
 
     if (error) throw new Error(error.message);
 
-    const chapter = formatResponse(data) as Chapter;
+    const chapter = formatResponse<Record<string, unknown>, Chapter>(data)!;
     revalidatePath(`/admin/courses/${chapter.courseId}/chapters`);
     return { success: true, data: chapter };
   } catch (error) {
@@ -230,7 +230,7 @@ export async function reorderChapters(
     if (error) throw new Error(error.message);
 
     revalidatePath(`/admin/courses/${courseId}/chapters`);
-    return { success: true, data: formatResponseArray(data || []) as Chapter[] };
+    return { success: true, data: formatResponseArray<Record<string, unknown>, Chapter>(data || []) };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to reorder chapters' };
   }
@@ -250,7 +250,7 @@ export async function getLessons(chapterId: string): Promise<ActionResult<Lesson
 
     if (error) throw new Error(error.message);
 
-    return { success: true, data: formatResponseArray(data || []) as Lesson[] };
+    return { success: true, data: formatResponseArray<Record<string, unknown>, Lesson>(data || []) };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch lessons' };
   }
@@ -268,7 +268,7 @@ export async function getLesson(id: string): Promise<ActionResult<Lesson>> {
 
     if (error) throw new Error(error.message);
 
-    return { success: true, data: formatResponse(data) as Lesson };
+    return { success: true, data: formatResponse<Record<string, unknown>, Lesson>(data)! };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch lesson' };
   }
@@ -318,7 +318,7 @@ export async function createLesson(input: CreateLessonInput): Promise<ActionResu
       revalidatePath(`/admin/courses/${chapter.course_id}/chapters`);
     }
 
-    return { success: true, data: formatResponse(data) as Lesson };
+    return { success: true, data: formatResponse<Record<string, unknown>, Lesson>(data)! };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to create lesson' };
   }
@@ -346,7 +346,7 @@ export async function updateLesson(
 
     if (error) throw new Error(error.message);
 
-    const lesson = formatResponse(data) as Lesson;
+    const lesson = formatResponse<Record<string, unknown>, Lesson>(data)!;
 
     // Get course ID for revalidation
     const { data: chapter } = await supabase
@@ -437,7 +437,7 @@ export async function reorderLessons(
       revalidatePath(`/admin/courses/${chapter.course_id}/chapters`);
     }
 
-    return { success: true, data: formatResponseArray(data || []) as Lesson[] };
+    return { success: true, data: formatResponseArray<Record<string, unknown>, Lesson>(data || []) };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to reorder lessons' };
   }

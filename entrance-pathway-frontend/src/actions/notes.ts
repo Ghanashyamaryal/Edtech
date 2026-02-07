@@ -169,7 +169,7 @@ export async function createNote(input: CreateNoteInput): Promise<ActionResult<N
     const { data, error } = await supabase
       .from('notes')
       .insert({
-        ...toSnakeCase(input),
+        ...toSnakeCase(input as unknown as Record<string, unknown>),
         uploaded_by: user.id,
         is_published: false,
         download_count: 0,
@@ -206,7 +206,7 @@ export async function updateNote(id: string, input: UpdateNoteInput): Promise<Ac
 
     const { data, error } = await supabase
       .from('notes')
-      .update(toSnakeCase(input))
+      .update(toSnakeCase(input as unknown as Record<string, unknown>))
       .eq('id', id)
       .select()
       .single();

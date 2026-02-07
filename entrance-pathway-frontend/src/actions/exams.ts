@@ -34,6 +34,7 @@ export interface ExamInput {
   title: string;
   description?: string;
   examType?: string;
+  setNumber?: number;
   durationMinutes?: number;
   totalMarks?: number;
   passingMarks?: number;
@@ -247,9 +248,9 @@ export async function getCourseExams(courseId: string): Promise<ActionResult<Cou
     const courseExams = (data || []).map((ce) => ({
       ...formatResponse(ce),
       exam: ce.exam ? formatResponse(ce.exam) : null,
-    }));
+    })) as unknown as CourseExam[];
 
-    return { success: true, data: courseExams as CourseExam[] };
+    return { success: true, data: courseExams };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch course exams' };
   }
@@ -527,9 +528,9 @@ export async function getUserExamAttempts(userId: string): Promise<ActionResult<
           ...formatResponse(attempt),
           exam: attempt.exam
             ? {
-                ...formatResponse(attempt.exam),
-                questionsCount: count || 0,
-              }
+              ...formatResponse(attempt.exam),
+              questionsCount: count || 0,
+            }
             : null,
         };
       })
@@ -746,7 +747,6 @@ export async function completeExamAttempt(attemptId: string): Promise<ActionResu
         }
       }
     }
-
     const { data, error } = await supabase
       .from('exam_attempts')
       .update({
