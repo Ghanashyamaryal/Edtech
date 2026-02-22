@@ -98,7 +98,7 @@ export default function GuidePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-primary/5 py-20">
+      <section className="bg-linear-to-br from-accent to-background py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <Title className="mb-4">Student Guide</Title>
@@ -111,7 +111,7 @@ export default function GuidePage() {
       </section>
 
       {/* Getting Started Steps */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <Subtitle className="text-center mb-12">Getting Started</Subtitle>
           <div className="max-w-4xl mx-auto">
@@ -167,7 +167,7 @@ export default function GuidePage() {
       </section>
 
       {/* Quick Links */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <Subtitle className="text-center mb-8">Quick Links</Subtitle>
@@ -188,7 +188,7 @@ export default function GuidePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <Subtitle className="mb-4">Ready to Start?</Subtitle>

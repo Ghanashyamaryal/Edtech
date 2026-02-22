@@ -84,7 +84,7 @@ export default function BlogPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-primary/5 py-20">
+      <section className="bg-linear-to-br from-accent to-background py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <Title className="mb-4">Blog</Title>
@@ -120,7 +120,7 @@ export default function BlogPage() {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <Link href={featuredPost.href}>
-            <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card className="overflow-hidden hover:shadow-medium transition-shadow">
               <div className="grid md:grid-cols-2">
                 <div className="bg-muted/30 h-64 md:h-auto flex items-center justify-center">
                   <Paragraph className="text-muted-foreground">
@@ -161,7 +161,7 @@ export default function BlogPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.map((post) => (
               <Link key={post.title} href={post.href}>
-                <Card className="h-full hover:shadow-lg transition-shadow">
+                <Card className="h-full hover:shadow-medium transition-shadow">
                   <div className="h-40 bg-muted/50 flex items-center justify-center">
                     <Paragraph className="text-muted-foreground text-sm">
                       Post Image
@@ -193,7 +193,7 @@ export default function BlogPage() {
 
           {/* Load More */}
           <div className="text-center mt-12">
-            <button className="inline-flex items-center gap-2 px-6 py-3 bg-background border rounded-lg hover:bg-muted transition-colors">
+            <button className="inline-flex items-center gap-2 px-6 py-3 bg-background border border-input rounded-lg font-semibold hover:bg-muted transition-colors">
               Load More Posts
               <ArrowRight className="w-4 h-4" />
             </button>
@@ -202,7 +202,7 @@ export default function BlogPage() {
       </section>
 
       {/* Newsletter CTA */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <Subtitle className="mb-4">Subscribe to Our Newsletter</Subtitle>
@@ -211,15 +211,8 @@ export default function BlogPage() {
               your inbox.
             </Paragraph>
             <form className="flex gap-2 max-w-md mx-auto">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <button
-                type="submit"
-                className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
-              >
+              <input type="email" placeholder="Enter your email" className="flex-1 px-4 py-2 border border-input rounded-lg bg-background text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20" />
+              <button type="submit" className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors">
                 Subscribe
               </button>
             </form>

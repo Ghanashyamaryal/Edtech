@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createAdminClient, requireAuth, requireMentorOrAdmin } from '@/lib/supabase/server';
+import { createAdminClient, requireAuth } from '@/lib/supabase/server';
 import { formatResponse, formatResponseArray, type ActionResult } from './utils';
 
 // Types
@@ -115,7 +115,6 @@ export async function getChapterWithLessons(id: string): Promise<ActionResult<Ch
 
 export async function createChapter(input: CreateChapterInput): Promise<ActionResult<Chapter>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     // Get the current max position for this course
@@ -154,7 +153,6 @@ export async function updateChapter(
   input: { title?: string; description?: string }
 ): Promise<ActionResult<Chapter>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     const { data, error } = await supabase
@@ -179,7 +177,6 @@ export async function updateChapter(
 
 export async function deleteChapter(id: string): Promise<ActionResult<boolean>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     // Get course ID before deleting
@@ -207,7 +204,6 @@ export async function reorderChapters(
   chapterIds: string[]
 ): Promise<ActionResult<Chapter[]>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     // Update positions
@@ -278,7 +274,6 @@ export async function getLesson(id: string): Promise<ActionResult<Lesson>> {
 
 export async function createLesson(input: CreateLessonInput): Promise<ActionResult<Lesson>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     // Get the current max position for this chapter
@@ -329,7 +324,6 @@ export async function updateLesson(
   input: { title?: string; description?: string; videoUrl?: string; isFree?: boolean }
 ): Promise<ActionResult<Lesson>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     const { data, error } = await supabase
@@ -367,7 +361,6 @@ export async function updateLesson(
 
 export async function deleteLesson(id: string): Promise<ActionResult<boolean>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     // Get chapter ID before deleting
@@ -404,7 +397,6 @@ export async function reorderLessons(
   lessonIds: string[]
 ): Promise<ActionResult<Lesson[]>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     // Update positions

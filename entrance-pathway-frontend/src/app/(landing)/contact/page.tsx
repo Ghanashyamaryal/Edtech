@@ -58,7 +58,7 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-primary/5 py-20">
+      <section className="bg-linear-to-br from-accent to-background py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <Title className="mb-4">Contact Us</Title>
@@ -71,11 +71,11 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
             {/* Contact Form */}
-            <Card>
+            <Card className="rounded-xl shadow-medium">
               <CardContent className="pt-6">
                 <Subtitle className="mb-6">Send us a Message</Subtitle>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -114,7 +114,7 @@ export default function ContactPage() {
                   const Icon = item.icon;
                   const content = (
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
                         <Icon className="w-6 h-6 text-primary" />
                       </div>
                       <div>
@@ -145,7 +145,7 @@ export default function ContactPage() {
               </div>
 
               {/* Map Placeholder */}
-              <div className="mt-8 bg-muted/30 rounded-lg h-64 flex items-center justify-center">
+              <div className="mt-8 bg-muted/30 rounded-xl h-64 flex items-center justify-center">
                 <Paragraph className="text-muted-foreground">
                   Map coming soon
                 </Paragraph>

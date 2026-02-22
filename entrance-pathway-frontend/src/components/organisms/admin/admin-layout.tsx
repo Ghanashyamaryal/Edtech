@@ -1,9 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useRequireRole } from "@/context";
 import { AdminSidebar } from "./admin-sidebar";
 import { AdminHeader } from "./admin-header";
 
@@ -13,9 +11,7 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children, className }: AdminLayoutProps) {
-  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  const { hasAccess, isLoading } = useRequireRole(["admin"], "/dashboard");
 
   const handleMenuClick = React.useCallback(() => {
     setSidebarOpen(true);
@@ -49,36 +45,23 @@ export function AdminLayout({ children, className }: AdminLayoutProps) {
     };
   }, [sidebarOpen]);
 
-  // Show loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-muted/30 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If no access, the useRequireRole hook will redirect
-  if (!hasAccess) {
-    return null;
-  }
-
   return (
-    <div className="min-h-screen bg-muted/30 flex flex-col -mt-8 lg:-mt-8">
+    <div className="min-h-screen bg-muted/30 flex flex-col">
       {/* Header */}
       <AdminHeader onMenuClick={handleMenuClick} />
 
       {/* Content area with sidebar */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
         <AdminSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
 
         {/* Main content area */}
         <main
-          className={cn("flex-1  w-full lg:w-[calc(100%-288px)]", className)}
+          className={cn(
+            "flex-1 w-full lg:w-[calc(100%-288px)] overflow-y-auto overflow-x-hidden",
+            "p-4 md:p-6 lg:p-8",
+            className
+          )}
         >
           {children}
         </main>

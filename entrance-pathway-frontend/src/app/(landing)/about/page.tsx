@@ -40,7 +40,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-primary/5 py-20">
+      <section className="bg-linear-to-br from-accent to-background py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <Title className="mb-4">About Entrance Pathway</Title>
@@ -54,7 +54,7 @@ export default function AboutPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-background">
+      <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat) => (
@@ -72,7 +72,7 @@ export default function AboutPage() {
       </section>
 
       {/* Mission Section */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <Subtitle className="mb-4">Our Mission</Subtitle>
@@ -87,7 +87,7 @@ export default function AboutPage() {
       </section>
 
       {/* Values Section */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <Subtitle className="text-center mb-12">Our Values</Subtitle>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -96,7 +96,7 @@ export default function AboutPage() {
               return (
                 <Card key={value.title}>
                   <CardContent className="pt-6">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
                       <Icon className="w-6 h-6 text-primary" />
                     </div>
                     <Subtitle as="h3" className="mb-2">
@@ -114,7 +114,7 @@ export default function AboutPage() {
       </section>
 
       {/* Story Section */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <Subtitle className="text-center mb-8">Our Story</Subtitle>

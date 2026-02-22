@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createAdminClient, requireMentorOrAdmin } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { formatResponse, formatResponseArray, type ActionResult } from './utils';
 
 // Types
@@ -115,7 +115,6 @@ export async function getQuestion(id: string): Promise<ActionResult<Question>> {
 
 export async function createQuestion(input: CreateQuestionInput): Promise<ActionResult<Question>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     // Determine correct answer from options
@@ -148,7 +147,6 @@ export async function createQuestion(input: CreateQuestionInput): Promise<Action
 
 export async function updateQuestion(id: string, input: CreateQuestionInput): Promise<ActionResult<Question>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     const correctOption = input.options.find((opt) => opt.isCorrect);
@@ -182,7 +180,6 @@ export async function updateQuestion(id: string, input: CreateQuestionInput): Pr
 
 export async function deleteQuestion(id: string): Promise<ActionResult<boolean>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     const { error } = await supabase.from('questions').delete().eq('id', id);

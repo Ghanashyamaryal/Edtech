@@ -59,7 +59,7 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-primary/5 py-20">
+      <section className="bg-linear-to-br from-accent to-background py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <Title className="mb-4">Privacy Policy</Title>
@@ -71,7 +71,7 @@ export default function PrivacyPage() {
       </section>
 
       {/* Content */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <Paragraph className="mb-8">

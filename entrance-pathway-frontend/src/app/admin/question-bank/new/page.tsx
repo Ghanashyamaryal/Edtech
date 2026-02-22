@@ -321,7 +321,7 @@ export default function NewQuestionPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {fields.map((field, index) => (
-                <div key={field.id} className="flex items-center gap-4">
+                <div key={field.id} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                   <div className="flex-1">
                     <Input
                       placeholder={`Option ${index + 1}`}
@@ -329,26 +329,28 @@ export default function NewQuestionPage() {
                       disabled={questionType === "true_false"}
                     />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Label htmlFor={`correct-${index}`} className="text-sm text-muted-foreground">
-                      Correct
-                    </Label>
-                    <Switch
-                      id={`correct-${index}`}
-                      checked={options[index]?.isCorrect || false}
-                      onCheckedChange={() => setCorrectAnswer(index)}
-                    />
+                  <div className="flex items-center justify-between sm:justify-start gap-2">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor={`correct-${index}`} className="text-sm text-muted-foreground">
+                        Correct
+                      </Label>
+                      <Switch
+                        id={`correct-${index}`}
+                        checked={options[index]?.isCorrect || false}
+                        onCheckedChange={() => setCorrectAnswer(index)}
+                      />
+                    </div>
+                    {questionType === "multiple_choice" && fields.length > 2 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => remove(index)}
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    )}
                   </div>
-                  {questionType === "multiple_choice" && fields.length > 2 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => remove(index)}
-                    >
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  )}
                 </div>
               ))}
               {questionType === "multiple_choice" && fields.length < 6 && (

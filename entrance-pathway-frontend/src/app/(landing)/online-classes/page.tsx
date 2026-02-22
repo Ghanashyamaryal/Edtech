@@ -143,7 +143,7 @@ export default function OnlineClassesPage() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
-      <section className="relative py-16 overflow-hidden">
+      <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 gradient-hero" />
         <div className="absolute bottom-20 right-20 w-64 h-64 bg-secondary/10 rounded-full blur-3xl" />
 
@@ -233,7 +233,7 @@ export default function OnlineClassesPage() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => {
@@ -266,7 +266,7 @@ export default function OnlineClassesPage() {
       </section>
 
       {/* Upcoming Classes */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -294,7 +294,7 @@ export default function OnlineClassesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="hover:shadow-strong transition-all hover:-translate-y-1">
+                <Card className="hover:shadow-medium hover:-translate-y-1 transition-all duration-200">
                   <CardContent className="pt-6">
                     <div className="flex items-start gap-4">
                       <div className="p-4 rounded-2xl bg-primary/10">
@@ -347,7 +347,7 @@ export default function OnlineClassesPage() {
       </section>
 
       {/* Instructors */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -377,7 +377,7 @@ export default function OnlineClassesPage() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="h-full text-center hover:shadow-strong transition-all hover:-translate-y-1">
+                <Card className="h-full text-center hover:shadow-medium hover:-translate-y-1 transition-all duration-200">
                   <CardContent className="pt-6">
                     <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                       <span className="font-display text-2xl font-bold text-primary">
@@ -412,7 +412,7 @@ export default function OnlineClassesPage() {
       </section>
 
       {/* Why Live Classes */}
-      <section className="py-16 bg-primary/5">
+      <section className="py-20 bg-accent">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -473,7 +473,7 @@ export default function OnlineClassesPage() {
               viewport={{ once: true }}
               className="relative"
             >
-              <Card className="shadow-strong">
+              <Card className="shadow-medium">
                 <CardContent className="pt-6">
                   <div className="aspect-video bg-muted rounded-xl flex items-center justify-center mb-4">
                     <div className="p-4 rounded-full bg-primary/20">

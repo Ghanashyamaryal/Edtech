@@ -1,6 +1,6 @@
 import { LandingHeader, LandingFooter } from "@/components/organisms/landing";
 
-export default function LandingLayout({
+export default function UnauthorizedLayout({
   children,
 }: {
   children: React.ReactNode;

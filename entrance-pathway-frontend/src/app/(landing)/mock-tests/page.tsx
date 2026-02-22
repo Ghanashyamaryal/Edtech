@@ -142,7 +142,7 @@ export default function MockTestsPage() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
-      <section className="relative py-16 overflow-hidden">
+      <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 gradient-hero" />
         <div className="absolute top-20 left-20 w-64 h-64 bg-gold/10 rounded-full blur-3xl" />
 
@@ -189,6 +189,8 @@ export default function MockTestsPage() {
               { icon: Target, value: totalQuestions > 0 ? `${totalQuestions}+` : '0', label: 'Questions', color: 'gold' },
               { icon: Trophy, value: '10,000+', label: 'Top Rankers', color: 'primary' },
             ].map((stat, index) => {
+              const statBgColors = ['bg-primary/10', 'bg-secondary/10', 'bg-gold/10', 'bg-primary/10'];
+              const statTextColors = ['text-primary', 'text-secondary', 'text-gold', 'text-primary'];
               const Icon = stat.icon;
               return (
                 <motion.div
@@ -199,9 +201,9 @@ export default function MockTestsPage() {
                   className="text-center"
                 >
                   <div
-                    className={`w-14 h-14 rounded-2xl bg-${stat.color}/10 flex items-center justify-center mx-auto mb-3`}
+                    className={`w-14 h-14 rounded-2xl ${statBgColors[index]} flex items-center justify-center mx-auto mb-3`}
                   >
-                    <Icon className={`w-7 h-7 text-${stat.color}`} />
+                    <Icon className={`w-7 h-7 ${statTextColors[index]}`} />
                   </div>
                   <Subtitle as="p" className="font-display text-3xl">
                     {stat.value}
@@ -215,7 +217,7 @@ export default function MockTestsPage() {
       </section>
 
       {/* Test Categories */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -246,7 +248,9 @@ export default function MockTestsPage() {
             </div>
           ) : testCategories.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {testCategories.map((category, index) => {
+              {(() => {
+                const categoryColorMap: Record<string, { bg: string; text: string }> = { primary: { bg: 'bg-primary/10', text: 'text-primary' }, secondary: { bg: 'bg-secondary/10', text: 'text-secondary' }, gold: { bg: 'bg-gold/10', text: 'text-gold' } };
+                return testCategories.map((category, index) => {
                 const Icon = category.icon;
                 return (
                   <motion.div
@@ -256,12 +260,12 @@ export default function MockTestsPage() {
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <Card className="h-full hover:shadow-strong transition-all hover:-translate-y-1 cursor-pointer group">
+                    <Card className="h-full hover:shadow-medium hover:-translate-y-1 transition-all duration-200 cursor-pointer group">
                       <CardContent className="pt-6 text-center">
                         <div
-                          className={`w-16 h-16 rounded-2xl bg-${category.color}/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}
+                          className={`w-16 h-16 rounded-2xl ${categoryColorMap[category.color]?.bg || 'bg-primary/10'} flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}
                         >
-                          <Icon className={`w-8 h-8 text-${category.color}`} />
+                          <Icon className={`w-8 h-8 ${categoryColorMap[category.color]?.text || 'text-primary'}`} />
                         </div>
                         <Subtitle as="h3" className="font-display text-lg mb-2">
                           {category.name}
@@ -277,7 +281,8 @@ export default function MockTestsPage() {
                     </Card>
                   </motion.div>
                 );
-              })}
+              });
+              })()}
             </div>
           ) : (
             <div className="text-center py-8">
@@ -290,7 +295,7 @@ export default function MockTestsPage() {
       </section>
 
       {/* Featured Tests */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -341,7 +346,7 @@ export default function MockTestsPage() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="hover:shadow-strong transition-all">
+                  <Card className="hover:shadow-medium transition-all">
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-start gap-4">
@@ -432,7 +437,7 @@ export default function MockTestsPage() {
       </section>
 
       {/* Features */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -481,7 +486,7 @@ export default function MockTestsPage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-16 bg-primary/5">
+      <section className="py-20 bg-accent">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -541,9 +546,9 @@ export default function MockTestsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
-          <Card className="bg-linear-to-r from-primary to-primary/80 border-0">
+          <Card className="gradient-primary rounded-2xl border-0">
             <CardContent className="py-12">
               <div className="text-center max-w-2xl mx-auto">
                 <Trophy className="w-16 h-16 text-primary-foreground/80 mx-auto mb-6" />
@@ -568,7 +573,7 @@ export default function MockTestsPage() {
                     <Button
                       variant="outline"
                       size="lg"
-                      className="border-primary/30 text-primary hover:bg-primary/10"
+                      className="border-white/30 text-white hover:bg-white/10"
                     >
                       View Pricing
                     </Button>

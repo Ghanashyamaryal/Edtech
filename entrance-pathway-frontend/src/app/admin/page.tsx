@@ -22,13 +22,13 @@ function StatCard({ title, value, icon, href }: StatCardProps) {
   return (
     <Link href={href}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
               <p className="text-sm font-medium text-muted-foreground">{title}</p>
-              <p className="text-3xl font-bold text-foreground mt-1">{value}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{value}</p>
             </div>
-            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
               {icon}
             </div>
           </div>
@@ -132,7 +132,7 @@ export default async function AdminDashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Recent Users</CardTitle>
@@ -143,20 +143,20 @@ export default async function AdminDashboardPage() {
                 {users.slice(0, 5).map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                    className="flex items-center justify-between gap-3 p-2 sm:p-3 rounded-lg bg-muted/50"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <span className="text-sm font-medium text-primary">
                           {user.fullName?.charAt(0) || "U"}
                         </span>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{user.fullName}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{user.fullName}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                       </div>
                     </div>
-                    <span className="text-xs bg-secondary px-2 py-1 rounded capitalize">
+                    <span className="text-xs bg-secondary px-2 py-1 rounded capitalize shrink-0">
                       {user.role}
                     </span>
                   </div>
@@ -178,21 +178,21 @@ export default async function AdminDashboardPage() {
                 {courses.slice(0, 5).map((course) => (
                   <div
                     key={course.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                    className="flex items-center justify-between gap-3 p-2 sm:p-3 rounded-lg bg-muted/50"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                         <BookOpen className="w-4 h-4 text-primary" />
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{course.title}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium truncate">{course.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {course.chaptersCount || 0} chapters
                         </p>
                       </div>
                     </div>
                     <span
-                      className={`text-xs px-2 py-1 rounded ${
+                      className={`text-xs px-2 py-1 rounded shrink-0 ${
                         course.isPublished
                           ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
                           : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"

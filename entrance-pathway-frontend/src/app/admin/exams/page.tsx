@@ -211,7 +211,7 @@ export default function AdminExamsPage() {
 
       {/* Data Table */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-3 sm:p-6">
           <DataTable
             data={filteredExams}
             columns={columns}

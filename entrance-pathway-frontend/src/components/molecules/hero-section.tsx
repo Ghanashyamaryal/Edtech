@@ -37,10 +37,10 @@ export function HeroSection({
   className,
 }: HeroSectionProps) {
   return (
-    <section className={cn('relative py-16 overflow-hidden', className)}>
+    <section className={cn('relative py-20 lg:py-28 overflow-hidden', className)}>
       {/* Background effects */}
       <div className="absolute inset-0 gradient-hero" />
-      <div className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
+      <div className="absolute top-20 right-20 w-48 h-48 bg-primary/5 rounded-full blur-3xl" />
 
       <div className="container mx-auto px-4 relative z-10">
         <motion.div
@@ -55,7 +55,7 @@ export function HeroSection({
             </span>
           )}
 
-          <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground mb-4">
             {title}
             {highlightedText && (
               <>
@@ -73,7 +73,7 @@ export function HeroSection({
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   placeholder={searchPlaceholder}
-                  className="pl-12 h-12"
+                  className="pl-12 h-12 rounded-xl"
                   onChange={(e) => onSearch?.(e.target.value)}
                 />
               </div>

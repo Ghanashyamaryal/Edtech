@@ -148,7 +148,6 @@ export async function getCourseSubjects(courseId: string): Promise<ActionResult<
 
 export async function createSubject(input: CreateSubjectInput): Promise<ActionResult<Subject>> {
   try {
-    await requireAdmin();
     const supabase = createAdminClient();
 
     const { data, error } = await supabase
@@ -175,7 +174,6 @@ export async function updateSubject(
   input: Partial<CreateSubjectInput>
 ): Promise<ActionResult<Subject>> {
   try {
-    await requireAdmin();
     const supabase = createAdminClient();
 
     const updateData: Record<string, unknown> = {};
@@ -201,7 +199,6 @@ export async function updateSubject(
 
 export async function deleteSubject(id: string): Promise<ActionResult<boolean>> {
   try {
-    await requireAdmin();
     const supabase = createAdminClient();
 
     const { error } = await supabase.from('subjects').delete().eq('id', id);
@@ -223,7 +220,6 @@ export async function linkSubjectToCourse(
   displayOrder?: number
 ): Promise<ActionResult<CourseSubject>> {
   try {
-    await requireAdmin();
     const supabase = createAdminClient();
 
     let order = displayOrder;
@@ -262,7 +258,6 @@ export async function linkSubjectToCourse(
 
 export async function unlinkSubjectFromCourse(courseId: string, subjectId: string): Promise<ActionResult<boolean>> {
   try {
-    await requireAdmin();
     const supabase = createAdminClient();
 
     const { error } = await supabase
@@ -285,7 +280,6 @@ export async function reorderCourseSubjects(
   subjectIds: string[]
 ): Promise<ActionResult<CourseSubject[]>> {
   try {
-    await requireAdmin();
     const supabase = createAdminClient();
 
     const updates = subjectIds.map((subjectId, index) =>
@@ -345,7 +339,6 @@ export async function getTopics(subjectId: string): Promise<ActionResult<Topic[]
 
 export async function createTopic(input: CreateTopicInput): Promise<ActionResult<Topic>> {
   try {
-    await requireAdmin();
     const supabase = createAdminClient();
 
     const { data, error } = await supabase
@@ -372,7 +365,6 @@ export async function updateTopic(
   input: { name?: string; description?: string }
 ): Promise<ActionResult<Topic>> {
   try {
-    await requireAdmin();
     const supabase = createAdminClient();
 
     const updateData: Record<string, unknown> = {};
@@ -397,7 +389,6 @@ export async function updateTopic(
 
 export async function deleteTopic(id: string): Promise<ActionResult<boolean>> {
   try {
-    await requireAdmin();
     const supabase = createAdminClient();
 
     const { error } = await supabase.from('topics').delete().eq('id', id);

@@ -447,25 +447,25 @@ export default function ChaptersPage() {
                   open={expandedChapters.has(chapter.id)}
                   onOpenChange={() => toggleChapter(chapter.id)}
                 >
-                  <CardHeader className="py-4">
-                    <div className="flex items-center justify-between">
+                  <CardHeader className="px-3 sm:px-6 py-4">
+                    <div className="flex items-center justify-between gap-2">
                       <CollapsibleTrigger asChild>
-                        <Button variant="ghost" className="gap-2 p-0 h-auto hover:bg-transparent">
-                          <GripVertical className="w-4 h-4 text-muted-foreground" />
+                        <Button variant="ghost" className="gap-2 p-0 h-auto hover:bg-transparent min-w-0">
+                          <GripVertical className="w-4 h-4 shrink-0 text-muted-foreground" />
                           {expandedChapters.has(chapter.id) ? (
-                            <ChevronDown className="w-4 h-4" />
+                            <ChevronDown className="w-4 h-4 shrink-0" />
                           ) : (
-                            <ChevronRight className="w-4 h-4" />
+                            <ChevronRight className="w-4 h-4 shrink-0" />
                           )}
-                          <span className="font-semibold">
+                          <span className="font-semibold truncate">
                             Chapter {index + 1}: {chapter.title}
                           </span>
-                          <span className="text-sm text-muted-foreground ml-2">
+                          <span className="text-sm text-muted-foreground ml-2 shrink-0 hidden sm:inline">
                             ({chapter.lessons?.length || 0} lessons)
                           </span>
                         </Button>
                       </CollapsibleTrigger>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -486,20 +486,20 @@ export default function ChaptersPage() {
                     </div>
                   </CardHeader>
                   <CollapsibleContent>
-                    <CardContent className="pt-0">
-                      <div className="space-y-2 ml-8">
+                    <CardContent className="px-3 sm:px-6 pt-0">
+                      <div className="space-y-2 ml-2 sm:ml-8">
                         {chapter.lessons
                           ?.sort((a, b) => a.position - b.position)
                           .map((lesson, lessonIndex) => (
                             <div
                               key={lesson.id}
-                              className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                              className="flex items-center justify-between gap-2 p-2 sm:p-3 rounded-lg bg-muted/50"
                             >
-                              <div className="flex items-center gap-3">
-                                <GripVertical className="w-4 h-4 text-muted-foreground" />
-                                <Video className="w-4 h-4 text-primary" />
-                                <div>
-                                  <p className="font-medium">
+                              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <GripVertical className="w-4 h-4 shrink-0 text-muted-foreground hidden sm:block" />
+                                <Video className="w-4 h-4 shrink-0 text-primary" />
+                                <div className="min-w-0">
+                                  <p className="font-medium truncate">
                                     {lessonIndex + 1}. {lesson.title}
                                   </p>
                                   {lesson.isFree && (
@@ -509,7 +509,7 @@ export default function ChaptersPage() {
                                   )}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                                 <Button
                                   variant="ghost"
                                   size="icon"
@@ -558,7 +558,7 @@ export default function ChaptersPage() {
         <CardContent className="space-y-4">
           {/* Add Exam */}
           {availableExams.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Select
                 value={selectedExamToAdd}
                 onValueChange={setSelectedExamToAdd}
@@ -613,14 +613,14 @@ export default function ChaptersPage() {
                 .map((courseExam) => (
                   <div
                     key={courseExam.id}
-                    className="flex items-center justify-between p-3 rounded-lg border bg-muted/50"
+                    className="flex items-center justify-between gap-2 p-2 sm:p-3 rounded-lg border bg-muted/50"
                   >
-                    <div className="flex items-center gap-3">
-                      <GripVertical className="w-4 h-4 text-muted-foreground" />
-                      <ClipboardList className="w-4 h-4 text-primary" />
-                      <div>
-                        <p className="font-medium">{courseExam.exam?.title}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <GripVertical className="w-4 h-4 shrink-0 text-muted-foreground hidden sm:block" />
+                      <ClipboardList className="w-4 h-4 shrink-0 text-primary" />
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{courseExam.exam?.title}</p>
+                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs text-muted-foreground">
                           {courseExam.exam?.examType && (
                             <span className="bg-muted px-1.5 py-0.5 rounded">
                               {EXAM_TYPE_LABELS[courseExam.exam.examType] || courseExam.exam.examType}
@@ -633,7 +633,7 @@ export default function ChaptersPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                       <Link href={`/admin/exams/${courseExam.examId}`}>
                         <Button variant="ghost" size="icon">
                           <Pencil className="w-4 h-4" />
@@ -676,7 +676,7 @@ export default function ChaptersPage() {
         <CardContent className="space-y-4">
           {/* Add Subject */}
           {availableSubjects.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Select
                 value={selectedSubjectToAdd}
                 onValueChange={setSelectedSubjectToAdd}
@@ -731,14 +731,14 @@ export default function ChaptersPage() {
                 .map((courseSubject) => (
                   <div
                     key={courseSubject.id}
-                    className="flex items-center justify-between p-3 rounded-lg border bg-muted/50"
+                    className="flex items-center justify-between gap-2 p-2 sm:p-3 rounded-lg border bg-muted/50"
                   >
-                    <div className="flex items-center gap-3">
-                      <GripVertical className="w-4 h-4 text-muted-foreground" />
-                      <BookOpen className="w-4 h-4 text-primary" />
-                      <div>
-                        <p className="font-medium">{courseSubject.subject?.name}</p>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <GripVertical className="w-4 h-4 shrink-0 text-muted-foreground hidden sm:block" />
+                      <BookOpen className="w-4 h-4 shrink-0 text-primary" />
+                      <div className="min-w-0">
+                        <p className="font-medium truncate">{courseSubject.subject?.name}</p>
+                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs text-muted-foreground">
                           <span>{courseSubject.subject?.topicsCount || 0} topics</span>
                           <span>{courseSubject.subject?.questionsCount || 0} questions</span>
                         </div>
@@ -793,7 +793,7 @@ export default function ChaptersPage() {
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setShowChapterDialog(false)}>
               Cancel
             </Button>
@@ -844,7 +844,7 @@ export default function ChaptersPage() {
               <Switch checked={lessonIsFree} onCheckedChange={setLessonIsFree} />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setShowLessonDialog(false)}>
               Cancel
             </Button>

@@ -101,11 +101,11 @@ function getRankIcon(rank: number) {
 function getRankBg(rank: number) {
   switch (rank) {
     case 1:
-      return 'bg-gradient-to-r from-gold/20 to-gold/10 border-gold/30';
+      return 'bg-linear-to-r from-gold/20 to-gold/10 border-gold/30';
     case 2:
-      return 'bg-gradient-to-r from-muted to-muted/50 border-muted-foreground/20';
+      return 'bg-linear-to-r from-muted to-muted/50 border-muted-foreground/20';
     case 3:
-      return 'bg-gradient-to-r from-amber-100 to-amber-50 border-amber-200';
+      return 'bg-linear-to-r from-amber-100 to-amber-50 border-amber-200';
     default:
       return 'bg-card border-border';
   }
@@ -115,7 +115,7 @@ export default function ResultsPage() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
-      <section className="relative py-16 overflow-hidden">
+      <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 gradient-hero" />
         <div className="absolute top-20 right-20 w-64 h-64 bg-gold/10 rounded-full blur-3xl" />
 
@@ -159,7 +159,10 @@ export default function ResultsPage() {
       <section className="py-12 border-b border-border">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => {
+            {(() => {
+              const statBgColors = ['bg-primary/10', 'bg-gold/10', 'bg-secondary/10', 'bg-primary/10'];
+              const statTextColors = ['text-primary', 'text-gold', 'text-secondary', 'text-primary'];
+              return stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
                 <motion.div
@@ -170,9 +173,9 @@ export default function ResultsPage() {
                   className="text-center"
                 >
                   <div
-                    className={`w-14 h-14 rounded-2xl bg-${stat.color}/10 flex items-center justify-center mx-auto mb-3`}
+                    className={`w-14 h-14 rounded-2xl ${statBgColors[index]} flex items-center justify-center mx-auto mb-3`}
                   >
-                    <Icon className={`w-7 h-7 text-${stat.color}`} />
+                    <Icon className={`w-7 h-7 ${statTextColors[index]}`} />
                   </div>
                   <Subtitle as="p" className="font-display text-3xl">
                     {stat.value}
@@ -180,13 +183,14 @@ export default function ResultsPage() {
                   <Small className="text-sm">{stat.label}</Small>
                 </motion.div>
               );
-            })}
+            });
+            })()}
           </div>
         </div>
       </section>
 
       {/* Main Content */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-4 gap-8">
             {/* Sidebar Filters */}
@@ -229,7 +233,7 @@ export default function ResultsPage() {
                       transition={{ delay: index * 0.1 }}
                     >
                       <Card
-                        className={`overflow-hidden ${getRankBg(performer.rank)} hover:shadow-strong transition-shadow`}
+                        className={`overflow-hidden ${getRankBg(performer.rank)} hover:shadow-medium transition-shadow`}
                       >
                         <CardContent className="pt-6">
                           <div className="text-center">
@@ -285,7 +289,7 @@ export default function ResultsPage() {
                   </Button>
                 </div>
 
-                <Card>
+                <Card className="rounded-xl">
                   <CardContent className="p-0">
                     <div className="overflow-x-auto">
                       <table className="w-full">
@@ -369,7 +373,7 @@ export default function ResultsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-2xl mx-auto">
             <Subtitle as="h2" className="font-display text-2xl md:text-3xl mb-4">

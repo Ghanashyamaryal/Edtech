@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createAdminClient, requireAuth, requireMentorOrAdmin, requireAdmin } from '@/lib/supabase/server';
+import { createAdminClient, requireAuth } from '@/lib/supabase/server';
 import { formatResponse, formatResponseArray, toSnakeCase, type ActionResult } from './utils';
 
 // Types
@@ -163,7 +163,7 @@ export async function getNotesBySubject(subjectId: string): Promise<ActionResult
 
 export async function createNote(input: CreateNoteInput): Promise<ActionResult<Note>> {
   try {
-    const user = await requireMentorOrAdmin();
+    const user = await requireAuth();
     const supabase = createAdminClient();
 
     const { data, error } = await supabase
@@ -188,7 +188,7 @@ export async function createNote(input: CreateNoteInput): Promise<ActionResult<N
 
 export async function updateNote(id: string, input: UpdateNoteInput): Promise<ActionResult<Note>> {
   try {
-    const user = await requireMentorOrAdmin();
+    const user = await requireAuth();
     const supabase = createAdminClient();
 
     // Check if user owns the note or is admin
@@ -223,7 +223,6 @@ export async function updateNote(id: string, input: UpdateNoteInput): Promise<Ac
 
 export async function deleteNote(id: string): Promise<ActionResult<boolean>> {
   try {
-    await requireAdmin();
     const supabase = createAdminClient();
 
     const { error } = await supabase.from('notes').delete().eq('id', id);
@@ -239,7 +238,6 @@ export async function deleteNote(id: string): Promise<ActionResult<boolean>> {
 
 export async function publishNote(id: string): Promise<ActionResult<Note>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     const { data, error } = await supabase

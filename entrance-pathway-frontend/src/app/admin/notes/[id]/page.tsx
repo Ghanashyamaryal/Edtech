@@ -220,7 +220,7 @@ export default function EditNotePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link href="/admin/notes">
             <Button variant="ghost" size="icon">
@@ -244,7 +244,7 @@ export default function EditNotePage() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 lg:gap-6 lg:grid-cols-2">
           {/* Note Details */}
           <Card>
             <CardHeader>
@@ -396,7 +396,7 @@ export default function EditNotePage() {
                 <CardTitle>File Information</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted rounded-lg">
                   <div className="p-2 rounded bg-primary/10">
                     <FileText className="w-6 h-6 text-primary" />
                   </div>
@@ -448,13 +448,13 @@ export default function EditNotePage() {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-col sm:flex-row justify-end gap-4">
           <Link href="/admin/notes">
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" className="w-full sm:w-auto">
               Cancel
             </Button>
           </Link>
-          <Button type="submit" disabled={isLoading || !isDirty}>
+          <Button type="submit" disabled={isLoading || !isDirty} className="w-full sm:w-auto">
             {updating ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

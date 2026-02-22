@@ -7,8 +7,8 @@ const typographyVariants = cva(
   {
     variants: {
       variant: {
-        title: 'text-2xl md:text-3xl font-bold tracking-tight text-foreground',
-        subtitle: 'text-lg md:text-xl font-semibold text-foreground',
+        title: 'text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight leading-tight text-foreground',
+        subtitle: 'text-lg md:text-xl font-semibold tracking-tight text-foreground',
         paragraph: 'text-base font-normal text-muted-foreground',
         small: 'text-sm font-normal text-muted-foreground',
       },

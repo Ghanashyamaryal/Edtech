@@ -132,7 +132,7 @@ export default function NotesPage() {
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
-      <section className="relative py-16 overflow-hidden">
+      <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 gradient-hero" />
         <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
 
@@ -174,7 +174,7 @@ export default function NotesPage() {
       </section>
 
       {/* Subject Categories */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -244,7 +244,7 @@ export default function NotesPage() {
       </section>
 
       {/* Featured Notes */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -287,7 +287,7 @@ export default function NotesPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="h-full hover:shadow-strong transition-all hover:-translate-y-1 group">
+                  <Card className="h-full hover:shadow-medium hover:-translate-y-1 transition-all group">
                     <CardContent className="pt-6">
                       {/* Header badges */}
                       <div className="flex items-center justify-between mb-4">
@@ -367,7 +367,7 @@ export default function NotesPage() {
       </section>
 
       {/* Recent Uploads */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Recent Notes List */}
@@ -502,9 +502,9 @@ export default function NotesPage() {
       </section>
 
       {/* Request Notes Section */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
-          <Card className="bg-primary/5 border-primary/20">
+          <Card className="bg-accent border-primary/10">
             <CardContent className="py-8">
               <div className="text-center max-w-xl mx-auto">
                 <h2 className="font-display text-xl font-bold text-foreground mb-2">

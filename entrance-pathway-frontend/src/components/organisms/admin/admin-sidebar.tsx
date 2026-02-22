@@ -88,7 +88,7 @@ export function AdminSidebar({ isOpen, onClose, className }: AdminSidebarProps) 
           "flex flex-col transition-transform duration-300 ease-in-out",
           "lg:translate-x-0 lg:sticky",
           isOpen
-            ? "translate-x-0 shadow-strong"
+            ? "translate-x-0 shadow-medium"
             : "-translate-x-full lg:shadow-none",
           className,
         )}

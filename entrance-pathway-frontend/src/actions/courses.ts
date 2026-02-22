@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createAdminClient, requireAuth, requireMentorOrAdmin } from '@/lib/supabase/server';
+import { createAdminClient, requireAuth } from '@/lib/supabase/server';
 import { formatResponse, formatResponseArray, generateSlug, toSnakeCase, type ActionResult } from './utils';
 
 // Types
@@ -234,7 +234,7 @@ export async function getEnrolledCourses(userId: string): Promise<ActionResult<a
 
 export async function createCourse(input: CourseInput): Promise<ActionResult<Course>> {
   try {
-    const user = await requireMentorOrAdmin();
+    const user = await requireAuth();
     const supabase = createAdminClient();
 
     const slug = generateSlug(input.title);

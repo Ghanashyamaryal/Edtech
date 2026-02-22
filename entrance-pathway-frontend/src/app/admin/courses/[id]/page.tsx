@@ -219,7 +219,7 @@ export default function EditCoursePage() {
             <CardTitle>Basic Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Course Title *</Label>
                 <Input
@@ -278,7 +278,7 @@ export default function EditCoursePage() {
             <CardTitle>Pricing & Duration</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-3 gap-4 md:gap-6">
               <div className="space-y-2">
                 <Label htmlFor="price">Original Price (Rs.) *</Label>
                 <Input

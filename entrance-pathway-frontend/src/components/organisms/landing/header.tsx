@@ -136,7 +136,7 @@ function NotificationsDropdown() {
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="w-80 p-0 bg-popover border border-border rounded-lg shadow-lg z-[60] animate-fade-in"
+          className="w-80 p-0 bg-popover border border-border rounded-2xl shadow-medium z-[60] animate-fade-in"
           align="end"
           sideOffset={8}
         >
@@ -221,7 +221,7 @@ function ProfileDropdown() {
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="w-56 p-1 bg-popover border border-border rounded-lg shadow-lg z-[60] animate-fade-in"
+          className="w-56 p-1 bg-popover border border-border rounded-2xl shadow-medium z-[60] animate-fade-in"
           align="end"
           sideOffset={8}
         >
@@ -334,7 +334,7 @@ export function LandingHeader() {
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled
-          ? "bg-background/95 backdrop-blur-md shadow-medium border-b border-border"
+          ? "bg-background/80 backdrop-blur-xl shadow-sm border-b border-border/50"
           : "bg-transparent",
       )}
     >
@@ -369,12 +369,15 @@ export function LandingHeader() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "relative flex items-center gap-1 px-4 py-2 text-sm font-medium transition-colors",
                     pathname === item.href
-                      ? "text-primary bg-primary/10"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
+                  {pathname === item.href && (
+                    <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full" />
+                  )}
                   {item.name}
                   {item.hasDropdown && (
                     <ChevronDown
@@ -395,7 +398,7 @@ export function LandingHeader() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 mt-2 w-72 bg-card rounded-xl border border-border shadow-strong p-2"
+                        className="absolute top-full left-0 mt-2 w-72 bg-card rounded-2xl border border-border shadow-medium p-2"
                       >
                         {courses.length > 0 ? (
                           courses.map((course) => (
@@ -481,7 +484,7 @@ export function LandingHeader() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 top-16 bg-background z-40 lg:hidden"
+            className="fixed inset-0 top-16 bg-background/95 backdrop-blur-xl z-40 lg:hidden"
           >
             <motion.nav
               initial={{ opacity: 0, y: -20 }}
@@ -505,8 +508,8 @@ export function LandingHeader() {
                           className={cn(
                             "flex items-center justify-between w-full px-4 py-3 rounded-lg text-lg font-medium",
                             pathname === item.href
-                              ? "text-primary bg-primary/10"
-                              : "text-foreground hover:bg-muted",
+                              ? "text-primary bg-primary/5"
+                              : "text-foreground hover:bg-muted/50",
                           )}
                         >
                           {item.name}
@@ -530,8 +533,8 @@ export function LandingHeader() {
                         className={cn(
                           "block px-4 py-3 rounded-lg text-lg font-medium",
                           pathname === item.href
-                            ? "text-primary bg-primary/10"
-                            : "text-foreground hover:bg-muted",
+                            ? "text-primary bg-primary/5"
+                            : "text-foreground hover:bg-muted/50",
                         )}
                       >
                         {item.name}

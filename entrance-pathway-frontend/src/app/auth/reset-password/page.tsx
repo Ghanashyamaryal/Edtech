@@ -11,10 +11,11 @@ import { Button, Input, Label, Card, CardHeader, CardTitle, CardDescription, Car
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const { updatePassword, session } = useAuth();
+  const { updatePassword, session, isLoading: authLoading } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [linkExpired, setLinkExpired] = useState(false);
 
   const {
     register,
@@ -25,16 +26,19 @@ export default function ResetPasswordPage() {
   });
 
   useEffect(() => {
-    // Check if we have a valid session from the reset link
-    // Supabase automatically handles the token exchange
+    // Wait for auth to finish loading, then check for valid session
+    if (authLoading) return;
+
     if (!session) {
-      // Wait a moment for the session to be established
+      // Give a brief moment for the token exchange to complete
       const timer = setTimeout(() => {
-        // If still no session after waiting, the link might be invalid
-      }, 2000);
+        if (!session) {
+          setLinkExpired(true);
+        }
+      }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [session]);
+  }, [session, authLoading]);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     setLoading(true);
@@ -56,6 +60,46 @@ export default function ResetPasswordPage() {
       router.push('/auth/login?message=Password updated successfully. Please sign in.');
     }, 2000);
   };
+
+  if (linkExpired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 py-12">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-12 h-12 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
+              <svg
+                className="w-6 h-6 text-destructive"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </div>
+            <CardTitle className="text-2xl">Link Expired</CardTitle>
+            <CardDescription>
+              This password reset link is invalid or has expired. Please request a new one.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="flex flex-col gap-4">
+            <Link href="/auth/forgot-password" className="w-full">
+              <Button className="w-full">Request New Link</Button>
+            </Link>
+            <p className="text-sm text-muted-foreground text-center">
+              <Link href="/auth/login" className="text-primary hover:underline">
+                Back to Sign In
+              </Link>
+            </p>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
 
   if (success) {
     return (

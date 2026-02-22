@@ -71,8 +71,19 @@ const features = [
   },
 ];
 
-// Color palette for courses
-const courseColors = ['primary', 'secondary', 'gold', 'primary'];
+// Explicit color class maps (Tailwind requires static classes)
+const courseBgColors = [
+  'bg-primary/10',
+  'bg-secondary/10',
+  'bg-gold/10',
+  'bg-primary/10',
+];
+const courseTextColors = [
+  'text-primary',
+  'text-secondary',
+  'text-gold',
+  'text-primary',
+];
 
 // Success stories
 const testimonials = [
@@ -138,8 +149,8 @@ export default function HomePage() {
       <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
         {/* Background decorations */}
         <div className="absolute inset-0 gradient-hero" />
-        <div className="absolute top-40 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-gold/10 rounded-full blur-3xl" />
+        <div className="absolute top-40 left-10 w-48 h-48 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 w-64 h-64 bg-gold/5 rounded-full blur-3xl" />
 
         <div className="container mx-auto px-4 py-12 lg:py-20 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -163,7 +174,7 @@ export default function HomePage() {
               </motion.div>
 
               {/* Headline */}
-              <Title className="font-display text-4xl md:text-5xl lg:text-6xl leading-tight mb-6">
+              <Title className="font-display text-5xl md:text-6xl lg:text-7xl leading-[1.1] mb-6">
                 From <span className="text-gradient-primary">Preparation</span>
                 <br />
                 to <span className="text-gradient-accent">Celebration</span>
@@ -222,7 +233,7 @@ export default function HomePage() {
               className="relative"
             >
               {/* Main Card */}
-              <div className="relative bg-card rounded-3xl shadow-strong p-6 lg:p-8 border border-border">
+              <div className="relative bg-card rounded-3xl shadow-medium p-6 lg:p-8 border border-border/60">
                 {/* Dashboard Preview */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -308,7 +319,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-24 bg-muted/30">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -340,7 +351,7 @@ export default function HomePage() {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="h-full hover:shadow-medium transition-shadow border-border hover:border-primary/30">
+                  <Card className="h-full hover:shadow-medium hover:-translate-y-1 transition-all duration-200 hover:border-primary/30">
                     <CardContent className="pt-6">
                       <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
                         <Icon className="w-6 h-6 text-primary" />
@@ -359,7 +370,7 @@ export default function HomePage() {
       </section>
 
       {/* Courses Section */}
-      <section className="py-20">
+      <section className="py-24">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -398,7 +409,8 @@ export default function HomePage() {
               ))
             ) : courses.length > 0 ? (
               courses.map((course, index) => {
-                const color = courseColors[index % courseColors.length];
+                const bgColor = courseBgColors[index % courseBgColors.length];
+                const textColor = courseTextColors[index % courseTextColors.length];
                 return (
                   <motion.div
                     key={course.id}
@@ -408,12 +420,12 @@ export default function HomePage() {
                     transition={{ delay: index * 0.1 }}
                   >
                     <Link href={`/courses/${course.slug}`}>
-                      <Card className="h-full hover:shadow-strong transition-all hover:-translate-y-1 cursor-pointer group">
+                      <Card className="h-full hover:shadow-medium hover:-translate-y-1 transition-all duration-200 cursor-pointer group">
                         <CardContent className="pt-6">
                           <div
-                            className={`w-14 h-14 rounded-2xl bg-${color}/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+                            className={`w-14 h-14 rounded-2xl ${bgColor} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
                           >
-                            <span className={`font-display font-bold text-xl text-${color}`}>
+                            <span className={`font-display font-bold text-xl ${textColor}`}>
                               {course.title.charAt(0)}
                             </span>
                           </div>
@@ -461,7 +473,7 @@ export default function HomePage() {
       </section>
 
       {/* Celebration Wall */}
-      <section className="py-16 bg-gradient-to-r from-primary/5 via-gold/5 to-secondary/5">
+      <section className="py-16 bg-linear-to-r from-primary/5 via-gold/5 to-secondary/5">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
@@ -501,7 +513,7 @@ export default function HomePage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20">
+      <section className="py-24">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -568,8 +580,8 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80" />
+      <section className="py-24 relative overflow-hidden">
+        <div className="absolute inset-0 gradient-primary" />
         <div className="absolute top-10 left-10 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
         <div className="absolute bottom-10 right-10 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
 
@@ -601,7 +613,7 @@ export default function HomePage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="border-primary/30 text-primary hover:bg-primary/10 gap-2"
+                  className="border-white/30 text-white hover:bg-white/10 gap-2"
                 >
                   Talk to Us
                 </Button>

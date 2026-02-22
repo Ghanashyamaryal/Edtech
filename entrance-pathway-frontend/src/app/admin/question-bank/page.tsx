@@ -121,8 +121,8 @@ export default function QuestionBankPage() {
       key: "question",
       header: "Question",
       cell: (question) => (
-        <div className="max-w-md">
-          <p className="line-clamp-2">{question.questionText}</p>
+        <div className="max-w-50 sm:max-w-md">
+          <p className="line-clamp-2 wrap-break-word">{question.questionText}</p>
           <div className="flex gap-2 mt-1">
             {question.subject && (
               <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
@@ -252,7 +252,8 @@ export default function QuestionBankPage() {
 
       {/* Data Table */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-3 sm:p-6">
+          <div className="overflow-x-auto">
           <DataTable
             data={filteredQuestions}
             columns={columns}
@@ -262,6 +263,7 @@ export default function QuestionBankPage() {
             onSearchChange={setSearchValue}
             emptyMessage="No questions found. Add your first question!"
           />
+          </div>
         </CardContent>
       </Card>
 

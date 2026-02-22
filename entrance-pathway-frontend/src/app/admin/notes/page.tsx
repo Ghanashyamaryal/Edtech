@@ -298,8 +298,8 @@ export default function AdminNotesPage() {
       </div>
 
       {/* Data Table */}
-      <Card>
-        <CardContent className="p-6">
+      <Card className="overflow-x-auto">
+        <CardContent className="p-3 sm:p-6">
           <DataTable
             data={filteredNotes}
             columns={columns}

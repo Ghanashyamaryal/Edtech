@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
 import { Title, Subtitle, Paragraph, Small } from '@/components/atoms';
 import {
@@ -9,38 +10,146 @@ import {
   Clock,
   BookOpen,
   BarChart3,
-  PieChart,
   Activity,
+  CheckCircle2,
+  XCircle,
+  Loader2,
 } from 'lucide-react';
+import { getUserExamAttempts, getEnrolledCourses, type ExamAttempt } from '@/actions';
+import { useAuth } from '@/context/auth-context';
 
-// Mock data - replace with real API data
-const subjectPerformance = [
-  { subject: 'Physics', score: 78, change: 5, trend: 'up' },
-  { subject: 'Chemistry', score: 82, change: 3, trend: 'up' },
-  { subject: 'Mathematics', score: 71, change: -2, trend: 'down' },
-  { subject: 'Biology', score: 85, change: 8, trend: 'up' },
-];
+function getRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-const weeklyStudyHours = [
-  { day: 'Mon', hours: 4 },
-  { day: 'Tue', hours: 3 },
-  { day: 'Wed', hours: 5 },
-  { day: 'Thu', hours: 2 },
-  { day: 'Fri', hours: 6 },
-  { day: 'Sat', hours: 7 },
-  { day: 'Sun', hours: 4 },
-];
-
-const recentActivity = [
-  { type: 'test', title: 'Completed Physics Mock Test', time: '2 hours ago', score: '82%' },
-  { type: 'video', title: 'Watched Chemistry Lecture', time: '4 hours ago', duration: '45 min' },
-  { type: 'study', title: 'Studied Biology Notes', time: 'Yesterday', duration: '2 hours' },
-  { type: 'test', title: 'Completed Math Quiz', time: 'Yesterday', score: '76%' },
-];
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? 's' : ''} ago`;
+  return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? 's' : ''} ago`;
+}
 
 export default function AnalyticsPage() {
-  const maxHours = Math.max(...weeklyStudyHours.map((d) => d.hours));
-  const totalHours = weeklyStudyHours.reduce((sum, d) => sum + d.hours, 0);
+  const { user } = useAuth();
+  const [examAttempts, setExamAttempts] = React.useState<ExamAttempt[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function loadData() {
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      }
+
+      const [attemptsResult, coursesResult] = await Promise.all([
+        getUserExamAttempts(user.id),
+        getEnrolledCourses(user.id),
+      ]);
+
+      if (attemptsResult.success) setExamAttempts(attemptsResult.data);
+      if (coursesResult.success) setEnrolledCourses(coursesResult.data);
+      setLoading(false);
+    }
+    loadData();
+  }, [user?.id]);
+
+  // Completed attempts only
+  const completedAttempts = examAttempts.filter((a) => a.completedAt);
+
+  // Overall score
+  const overallScore =
+    completedAttempts.length > 0
+      ? Math.round(
+          completedAttempts.reduce((sum, a) => {
+            return sum + ((a.score || 0) / (a.exam.totalMarks || 100)) * 100;
+          }, 0) / completedAttempts.length
+        )
+      : 0;
+
+  // Monthly comparison
+  const now = new Date();
+  const thisMonth = completedAttempts.filter((a) => {
+    const d = new Date(a.completedAt!);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+  const lastMonth = completedAttempts.filter((a) => {
+    const d = new Date(a.completedAt!);
+    const lm = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    return d.getMonth() === lm.getMonth() && d.getFullYear() === lm.getFullYear();
+  });
+
+  const thisMonthAvg =
+    thisMonth.length > 0
+      ? Math.round(
+          thisMonth.reduce((s, a) => s + ((a.score || 0) / (a.exam.totalMarks || 100)) * 100, 0) / thisMonth.length
+        )
+      : 0;
+  const lastMonthAvg =
+    lastMonth.length > 0
+      ? Math.round(
+          lastMonth.reduce((s, a) => s + ((a.score || 0) / (a.exam.totalMarks || 100)) * 100, 0) / lastMonth.length
+        )
+      : 0;
+  const monthChange = thisMonth.length > 0 && lastMonth.length > 0 ? thisMonthAvg - lastMonthAvg : 0;
+
+  // Weekly study hours (from completed attempts in last 7 days)
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weeklyData = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (6 - i));
+    const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
+
+    const dayAttempts = completedAttempts.filter((a) => {
+      const d = new Date(a.completedAt!);
+      return d >= dayStart && d < dayEnd;
+    });
+
+    const minutes = dayAttempts.reduce((sum, a) => sum + (a.exam.durationMinutes || 0), 0);
+    return {
+      day: dayNames[dayStart.getDay()],
+      hours: Math.round((minutes / 60) * 10) / 10,
+    };
+  });
+
+  const weekTotalHours = Math.round(weeklyData.reduce((s, d) => s + d.hours, 0) * 10) / 10;
+  const maxHours = Math.max(...weeklyData.map((d) => d.hours), 1);
+
+  // Per-exam performance (group by exam ID)
+  const examPerformance = new Map<string, { title: string; scores: number[] }>();
+  completedAttempts.forEach((a) => {
+    const key = a.exam.id;
+    const pct = (a.exam.totalMarks || 100) > 0 ? ((a.score || 0) / (a.exam.totalMarks || 100)) * 100 : 0;
+    if (examPerformance.has(key)) {
+      examPerformance.get(key)!.scores.push(pct);
+    } else {
+      examPerformance.set(key, { title: a.exam.title, scores: [pct] });
+    }
+  });
+
+  const performanceData = Array.from(examPerformance.values())
+    .map((ep) => ({
+      title: ep.title,
+      avgScore: Math.round(ep.scores.reduce((s, v) => s + v, 0) / ep.scores.length),
+      attempts: ep.scores.length,
+      trend: ep.scores.length >= 2 ? (ep.scores[ep.scores.length - 1] > ep.scores[0] ? 'up' : 'down') : 'up',
+    }))
+    .sort((a, b) => b.attempts - a.attempts)
+    .slice(0, 6);
+
+  // Recent activity (latest completed attempts)
+  const recentActivity = completedAttempts.slice(0, 5);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-100">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -63,7 +172,9 @@ export default function AnalyticsPage() {
                 <Target className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <Subtitle as="p" className="text-2xl">79%</Subtitle>
+                <Subtitle as="p" className="text-2xl">
+                  {completedAttempts.length > 0 ? `${overallScore}%` : '--'}
+                </Subtitle>
                 <Small className="text-xs">Overall Score</Small>
               </div>
             </div>
@@ -73,10 +184,16 @@ export default function AnalyticsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-secondary/10">
-                <TrendingUp className="w-5 h-5 text-secondary" />
+                {monthChange >= 0 ? (
+                  <TrendingUp className="w-5 h-5 text-secondary" />
+                ) : (
+                  <TrendingDown className="w-5 h-5 text-destructive" />
+                )}
               </div>
               <div>
-                <Subtitle as="p" className="text-2xl">+4%</Subtitle>
+                <Subtitle as="p" className="text-2xl">
+                  {monthChange !== 0 ? `${monthChange > 0 ? '+' : ''}${monthChange}%` : '--'}
+                </Subtitle>
                 <Small className="text-xs">This Month</Small>
               </div>
             </div>
@@ -89,7 +206,7 @@ export default function AnalyticsPage() {
                 <Clock className="w-5 h-5 text-gold" />
               </div>
               <div>
-                <Subtitle as="p" className="text-2xl">{totalHours}h</Subtitle>
+                <Subtitle as="p" className="text-2xl">{weekTotalHours}h</Subtitle>
                 <Small className="text-xs">This Week</Small>
               </div>
             </div>
@@ -102,8 +219,8 @@ export default function AnalyticsPage() {
                 <BookOpen className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <Subtitle as="p" className="text-2xl">156</Subtitle>
-                <Small className="text-xs">Topics Covered</Small>
+                <Subtitle as="p" className="text-2xl">{completedAttempts.length}</Subtitle>
+                <Small className="text-xs">Tests Taken</Small>
               </div>
             </div>
           </CardContent>
@@ -111,51 +228,61 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Subject Performance */}
+        {/* Exam Performance */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="w-5 h-5 text-primary" />
-              Subject Performance
+              <Target className="w-5 h-5 text-primary" />
+              Exam Performance
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {subjectPerformance.map((subject) => (
-                <div key={subject.subject} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-foreground">{subject.subject}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold">{subject.score}%</span>
-                      <span
-                        className={`flex items-center text-sm ${
-                          subject.trend === 'up' ? 'text-secondary' : 'text-destructive'
-                        }`}
-                      >
-                        {subject.trend === 'up' ? (
-                          <TrendingUp className="w-4 h-4" />
-                        ) : (
-                          <TrendingDown className="w-4 h-4" />
+            {performanceData.length > 0 ? (
+              <div className="space-y-4">
+                {performanceData.map((exam) => (
+                  <div key={exam.title} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-foreground text-sm truncate mr-2">{exam.title}</span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="font-bold text-sm">{exam.avgScore}%</span>
+                        {exam.attempts >= 2 && (
+                          <span
+                            className={`flex items-center text-xs ${
+                              exam.trend === 'up' ? 'text-secondary' : 'text-destructive'
+                            }`}
+                          >
+                            {exam.trend === 'up' ? (
+                              <TrendingUp className="w-3 h-3" />
+                            ) : (
+                              <TrendingDown className="w-3 h-3" />
+                            )}
+                          </span>
                         )}
-                        {Math.abs(subject.change)}%
-                      </span>
+                      </div>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${
+                          exam.avgScore >= 80
+                            ? 'bg-secondary'
+                            : exam.avgScore >= 60
+                            ? 'bg-primary'
+                            : 'bg-gold'
+                        }`}
+                        style={{ width: `${exam.avgScore}%` }}
+                      />
                     </div>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${
-                        subject.score >= 80
-                          ? 'bg-secondary'
-                          : subject.score >= 60
-                          ? 'bg-primary'
-                          : 'bg-gold'
-                      }`}
-                      style={{ width: `${subject.score}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Target className="w-10 h-10 mx-auto text-muted-foreground/50 mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  Complete tests to see your performance
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -169,12 +296,14 @@ export default function AnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-end justify-between gap-2 h-40">
-              {weeklyStudyHours.map((day) => (
-                <div key={day.day} className="flex-1 flex flex-col items-center gap-2">
+              {weeklyData.map((day, i) => (
+                <div key={i} className="flex-1 flex flex-col items-center gap-2">
                   <div className="w-full flex items-end justify-center h-32">
                     <div
-                      className="w-full max-w-8 bg-primary/80 rounded-t-md transition-all hover:bg-primary"
-                      style={{ height: `${(day.hours / maxHours) * 100}%` }}
+                      className={`w-full max-w-8 rounded-t-md transition-all ${
+                        day.hours > 0 ? 'bg-primary/80 hover:bg-primary' : 'bg-muted'
+                      }`}
+                      style={{ height: day.hours > 0 ? `${(day.hours / maxHours) * 100}%` : '4px' }}
                     />
                   </div>
                   <span className="text-xs text-muted-foreground">{day.day}</span>
@@ -183,12 +312,44 @@ export default function AnalyticsPage() {
             </div>
             <div className="mt-4 pt-4 border-t border-border">
               <Small className="text-sm">
-                Total: <span className="font-semibold text-foreground">{totalHours} hours</span> this week
+                Total: <span className="font-semibold text-foreground">{weekTotalHours} hours</span> this week
               </Small>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Course Progress */}
+      {enrolledCourses.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-primary" />
+              Course Progress
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {enrolledCourses.map((enrollment: any) => (
+                <div key={enrollment.id} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-foreground text-sm truncate mr-2">
+                      {enrollment.course.title}
+                    </span>
+                    <span className="font-bold text-sm shrink-0">{enrollment.progress}%</span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full"
+                      style={{ width: `${enrollment.progress}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent Activity */}
       <Card>
@@ -199,41 +360,58 @@ export default function AnalyticsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {recentActivity.map((activity, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-4 pb-4 border-b border-border last:border-0 last:pb-0"
-              >
-                <div
-                  className={`p-2 rounded-lg ${
-                    activity.type === 'test'
-                      ? 'bg-primary/10'
-                      : activity.type === 'video'
-                      ? 'bg-secondary/10'
-                      : 'bg-gold/10'
-                  }`}
-                >
-                  {activity.type === 'test' ? (
-                    <Target className="w-5 h-5 text-primary" />
-                  ) : activity.type === 'video' ? (
-                    <BookOpen className="w-5 h-5 text-secondary" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-gold" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <Paragraph className="font-medium text-foreground">{activity.title}</Paragraph>
-                  <Small className="text-sm">{activity.time}</Small>
-                </div>
-                <div className="text-right">
-                  <Paragraph className="font-medium text-foreground">
-                    {activity.score || activity.duration}
-                  </Paragraph>
-                </div>
-              </div>
-            ))}
-          </div>
+          {recentActivity.length > 0 ? (
+            <div className="space-y-4">
+              {recentActivity.map((attempt) => {
+                const pct = attempt.exam.totalMarks > 0
+                  ? Math.round(((attempt.score || 0) / attempt.exam.totalMarks) * 100)
+                  : 0;
+                const passed = (attempt.score || 0) >= attempt.exam.passingMarks;
+
+                return (
+                  <div
+                    key={attempt.id}
+                    className="flex items-center gap-4 pb-4 border-b border-border last:border-0 last:pb-0"
+                  >
+                    <div
+                      className={`p-2 rounded-lg ${
+                        passed ? 'bg-secondary/10' : 'bg-destructive/10'
+                      }`}
+                    >
+                      {passed ? (
+                        <CheckCircle2 className="w-5 h-5 text-secondary" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-destructive" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <Paragraph className="font-medium text-foreground truncate">
+                        {attempt.exam.title}
+                      </Paragraph>
+                      <Small className="text-sm">
+                        {attempt.completedAt ? getRelativeTime(attempt.completedAt) : 'In progress'}
+                      </Small>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <Paragraph className={`font-bold ${passed ? 'text-secondary' : 'text-destructive'}`}>
+                        {pct}%
+                      </Paragraph>
+                      <Small className="text-xs">
+                        {attempt.score || 0}/{attempt.exam.totalMarks}
+                      </Small>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Activity className="w-10 h-10 mx-auto text-muted-foreground/50 mb-2" />
+              <p className="text-sm text-muted-foreground">
+                No activity yet. Start taking tests to see your progress!
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

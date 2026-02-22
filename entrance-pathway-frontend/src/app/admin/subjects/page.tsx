@@ -306,25 +306,29 @@ export default function SubjectsPage() {
                 open={expandedSubjects.has(subject.id)}
                 onOpenChange={() => toggleSubject(subject.id)}
               >
-                <CardHeader className="py-4">
-                  <div className="flex items-center justify-between">
+                <CardHeader className="py-4 px-4 sm:px-6">
+                  <div className="flex items-start sm:items-center justify-between gap-2">
                     <CollapsibleTrigger asChild>
-                      <Button variant="ghost" className="gap-2 p-0 h-auto hover:bg-transparent">
-                        {expandedSubjects.has(subject.id) ? (
-                          <ChevronDown className="w-4 h-4" />
-                        ) : (
-                          <ChevronRight className="w-4 h-4" />
-                        )}
-                        <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center mr-2">
-                          <Layers className="w-4 h-4 text-primary" />
+                      <Button variant="ghost" className="gap-2 p-0 h-auto hover:bg-transparent text-left flex-1 min-w-0">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {expandedSubjects.has(subject.id) ? (
+                            <ChevronDown className="w-4 h-4 shrink-0" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4 shrink-0" />
+                          )}
+                          <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                            <Layers className="w-4 h-4 text-primary" />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="font-semibold truncate block">{subject.name}</span>
+                            <span className="text-xs sm:text-sm text-muted-foreground">
+                              {subject.topicsCount || 0} topics, {subject.questionsCount || 0} questions
+                            </span>
+                          </div>
                         </div>
-                        <span className="font-semibold">{subject.name}</span>
-                        <span className="text-sm text-muted-foreground ml-2">
-                          ({subject.topicsCount || 0} topics, {subject.questionsCount || 0} questions)
-                        </span>
                       </Button>
                     </CollapsibleTrigger>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 shrink-0">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -349,23 +353,23 @@ export default function SubjectsPage() {
                   </div>
                 </CardHeader>
                 <CollapsibleContent>
-                  <CardContent className="pt-0">
-                    <div className="space-y-2 ml-8">
+                  <CardContent className="pt-0 px-4 sm:px-6">
+                    <div className="space-y-2 ml-2 sm:ml-8">
                       {getTopicsForSubject(subject.id).map((topic) => (
                         <div
                           key={topic.id}
-                          className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                          className="flex items-center justify-between gap-2 p-2 sm:p-3 rounded-lg bg-muted/50"
                         >
-                          <div className="flex items-center gap-3">
-                            <Tag className="w-4 h-4 text-primary" />
-                            <div>
-                              <p className="font-medium">{topic.name}</p>
-                              <p className="text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <Tag className="w-4 h-4 text-primary shrink-0" />
+                            <div className="min-w-0">
+                              <p className="font-medium truncate">{topic.name}</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground">
                                 {topic.questionsCount || 0} questions
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 shrink-0">
                             <Button
                               variant="ghost"
                               size="icon"

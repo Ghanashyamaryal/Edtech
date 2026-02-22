@@ -27,13 +27,13 @@ export function FeatureCard({
     <>
       <div
         className={cn(
-          'w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4',
+          'w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-4',
           variant === 'centered' && 'mx-auto'
         )}
       >
         <Icon className="w-8 h-8 text-primary" />
       </div>
-      <h3 className="font-display font-semibold text-xl text-foreground mb-2">
+      <h3 className="font-display font-semibold text-lg text-foreground mb-2">
         {title}
       </h3>
       <p className="text-muted-foreground">{description}</p>

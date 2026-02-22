@@ -58,7 +58,7 @@ export function SectionHeader({
   );
 
   const wrapperClassName = cn(
-    'mb-12',
+    'mb-16',
     align === 'center' && 'text-center',
     className
   );

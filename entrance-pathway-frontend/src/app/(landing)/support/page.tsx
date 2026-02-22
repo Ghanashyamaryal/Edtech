@@ -68,7 +68,7 @@ export default function SupportPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-primary/5 py-20">
+      <section className="bg-linear-to-br from-accent to-background py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <Title className="mb-4">Technical Support</Title>
@@ -81,7 +81,7 @@ export default function SupportPage() {
       </section>
 
       {/* Support Channels */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <Subtitle className="text-center mb-8">Contact Options</Subtitle>
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
@@ -114,7 +114,7 @@ export default function SupportPage() {
       </section>
 
       {/* Support Form */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <Subtitle className="text-center mb-2">Submit a Support Ticket</Subtitle>
@@ -177,7 +177,7 @@ export default function SupportPage() {
       </section>
 
       {/* Quick Links */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <Subtitle className="mb-4">Self-Help Resources</Subtitle>

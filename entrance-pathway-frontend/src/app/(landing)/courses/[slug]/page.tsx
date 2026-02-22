@@ -41,7 +41,7 @@ interface Chapter {
 function CourseDetailSkeleton() {
   return (
     <div className="min-h-screen">
-      <section className="bg-gradient-to-br from-primary/10 to-primary/5 py-16">
+      <section className="bg-linear-to-br from-accent to-background py-20">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
@@ -193,7 +193,7 @@ export default function CourseDetailPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-primary/5 py-16">
+      <section className="bg-linear-to-br from-accent to-background py-20">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
@@ -211,7 +211,7 @@ export default function CourseDetailPage() {
               <div className="flex flex-wrap gap-6 mb-6">
                 {course.rating && (
                   <div className="flex items-center gap-2">
-                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
+                    <Star className="w-5 h-5 text-gold fill-gold" />
                     <span className="font-semibold">{course.rating.toFixed(1)}</span>
                     {course.reviewsCount && (
                       <span className="text-muted-foreground">
@@ -259,7 +259,7 @@ export default function CourseDetailPage() {
             </div>
 
             {/* Pricing Card */}
-            <Card className="lg:sticky lg:top-8 h-fit">
+            <Card className="lg:sticky lg:top-8 h-fit rounded-xl shadow-medium">
               <CardContent className="pt-6">
                 <div className="mb-4">
                   <div className="flex items-center gap-3 mb-2">
@@ -273,7 +273,7 @@ export default function CourseDetailPage() {
                     )}
                   </div>
                   {hasDiscount && (
-                    <span className="text-sm text-green-600 font-medium">
+                    <span className="text-sm text-success font-medium">
                       {discountPercent}% off
                     </span>
                   )}
@@ -293,7 +293,7 @@ export default function CourseDetailPage() {
                     </Subtitle>
                     {course.features.map((feature, index) => (
                       <div key={index} className="flex items-center gap-2 text-sm">
-                        <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+                        <CheckCircle className="w-4 h-4 text-success shrink-0" />
                         <span>{feature}</span>
                       </div>
                     ))}
@@ -358,7 +358,7 @@ export default function CourseDetailPage() {
                               <BookOpen className="w-4 h-4 shrink-0" />
                               <span className="truncate">{lesson.title}</span>
                               {lesson.isFree && (
-                                <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                                <span className="text-xs bg-emerald-50 text-success px-1.5 py-0.5 rounded">
                                   Free
                                 </span>
                               )}
@@ -381,7 +381,7 @@ export default function CourseDetailPage() {
       )}
 
       {/* CTA Section */}
-      <section className="py-16 bg-primary/5">
+      <section className="py-20 bg-accent">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <Subtitle className="mb-4">Ready to Start Your Preparation?</Subtitle>

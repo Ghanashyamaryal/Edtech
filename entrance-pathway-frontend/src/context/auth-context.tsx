@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { User as SupabaseUser, Session, AuthChangeEvent, Provider } from '@supabase/supabase-js';
 import { supabase, AUTH_CONFIG } from '@/lib/supabase';
 import type { User, UserRole } from '@/types';
@@ -76,20 +77,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     let isMounted = true;
 
-    // Get initial session
+    // Get initial session using getUser() for server-side validation
     const initializeAuth = async () => {
       try {
-        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        const { data: { user: validatedUser }, error } = await supabase.auth.getUser();
 
         if (!isMounted) return;
 
-        if (initialSession?.user) {
-          setSession(initialSession);
-          setSupabaseUser(initialSession.user);
-          const profile = await fetchUserProfile(initialSession.user.id);
-          if (isMounted) {
-            setUser(profile);
-          }
+        if (error || !validatedUser) {
+          // No valid session - clear any stale state
+          setSession(null);
+          setSupabaseUser(null);
+          setUser(null);
+          return;
+        }
+
+        // User is validated, now get the session for token access
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+
+        if (!isMounted) return;
+
+        setSession(currentSession);
+        setSupabaseUser(validatedUser);
+        const profile = await fetchUserProfile(validatedUser.id);
+        if (isMounted) {
+          setUser(profile);
         }
       } catch (error) {
         // Ignore abort errors - these happen during navigation/unmount
@@ -111,23 +123,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
       async (event: AuthChangeEvent, currentSession: Session | null) => {
         if (!isMounted) return;
 
+        // Handle sign out first
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setSupabaseUser(null);
+          setSession(null);
+          return;
+        }
+
         setSession(currentSession);
         setSupabaseUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
-          const profile = await fetchUserProfile(currentSession.user.id);
+          let profile = await fetchUserProfile(currentSession.user.id);
+
+          // Create profile if it doesn't exist (e.g., after email confirmation)
+          if (!profile && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+            const meta = currentSession.user.user_metadata;
+            const { error } = await supabase.from('users').insert({
+              id: currentSession.user.id,
+              email: currentSession.user.email,
+              full_name: meta?.full_name || meta?.name || 'User',
+              avatar_url: meta?.avatar_url || meta?.picture,
+              role: meta?.role || 'student',
+            });
+            if (!error) {
+              profile = await fetchUserProfile(currentSession.user.id);
+            }
+          }
+
           if (isMounted) {
             setUser(profile);
           }
         } else {
           setUser(null);
-        }
-
-        // Handle specific auth events
-        if (event === 'SIGNED_OUT') {
-          setUser(null);
-          setSupabaseUser(null);
-          setSession(null);
         }
       }
     );
@@ -391,18 +420,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // Refresh session
   const refreshSession = useCallback(async () => {
     try {
-      const { data: { session: newSession } } = await supabase.auth.refreshSession();
-      if (newSession) {
-        setSession(newSession);
-        setSupabaseUser(newSession.user);
+      const { data: { session: newSession }, error } = await supabase.auth.refreshSession();
+      if (error || !newSession) {
+        // Refresh token is invalid/expired - clear stale state
+        setSession(null);
+        setSupabaseUser(null);
+        setUser(null);
+        return;
       }
+      setSession(newSession);
+      setSupabaseUser(newSession.user);
     } catch (error) {
       console.error('Error refreshing session:', error);
+      // Clear stale state on any error
+      setSession(null);
+      setSupabaseUser(null);
+      setUser(null);
     }
   }, []);
 
-  // Get access token
+  // Get access token (validates user server-side first)
   const getAccessToken = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
     const { data: { session: currentSession } } = await supabase.auth.getSession();
     return currentSession?.access_token ?? null;
   }, []);
@@ -477,15 +517,16 @@ export function useRole() {
   };
 }
 
-// Require auth hook - throws if not authenticated
+// Require auth hook - redirects if not authenticated
 export function useRequireAuth(redirectTo?: string) {
   const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated && redirectTo) {
-      window.location.href = redirectTo;
+      router.push(redirectTo);
     }
-  }, [isAuthenticated, isLoading, redirectTo]);
+  }, [isAuthenticated, isLoading, redirectTo, router]);
 
   return { isAuthenticated, isLoading };
 }
@@ -493,14 +534,28 @@ export function useRequireAuth(redirectTo?: string) {
 // Require role hook
 export function useRequireRole(allowedRoles: UserRole[], redirectTo?: string) {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
-      if (!allowedRoles.includes(user.role) && redirectTo) {
-        window.location.href = redirectTo;
-      }
+    if (isLoading) return;
+
+    // Not authenticated at all — redirect
+    if (!isAuthenticated && redirectTo) {
+      router.push(redirectTo);
+      return;
     }
-  }, [user, isAuthenticated, isLoading, allowedRoles, redirectTo]);
+
+    // Authenticated but no profile found (missing from DB) — redirect
+    if (isAuthenticated && !user && redirectTo) {
+      router.push(redirectTo);
+      return;
+    }
+
+    // Authenticated, profile loaded, but role doesn't match — redirect
+    if (isAuthenticated && user && !allowedRoles.includes(user.role) && redirectTo) {
+      router.push(redirectTo);
+    }
+  }, [user, isAuthenticated, isLoading, allowedRoles, redirectTo, router]);
 
   return {
     hasAccess: user ? allowedRoles.includes(user.role) : false,

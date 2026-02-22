@@ -400,7 +400,7 @@ export default function EditExamPage() {
         <CardContent className="space-y-4">
           {/* Add Course */}
           {availableCourses.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Select
                 value={selectedCourseToAdd}
                 onValueChange={setSelectedCourseToAdd}
@@ -444,10 +444,10 @@ export default function EditExamPage() {
                   key={course.id}
                   className="flex items-center justify-between p-3 rounded-lg border bg-muted/50"
                 >
-                  <div className="flex items-center gap-3">
-                    <BookOpen className="w-4 h-4 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">{course.title}</p>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <BookOpen className="w-4 h-4 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{course.title}</p>
                       {course.slug && (
                         <p className="text-xs text-muted-foreground">/{course.slug}</p>
                       )}

@@ -65,7 +65,7 @@ function CourseCard({ course, index }: { course: Course; index: number }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
     >
-      <Card className="h-full overflow-hidden hover:shadow-strong transition-all group">
+      <Card className="h-full overflow-hidden hover:shadow-medium hover:-translate-y-1 transition-all duration-200 group">
         <CardContent className="p-0">
           <div className="grid md:grid-cols-5">
             {/* Left - Course Info */}
@@ -268,7 +268,7 @@ export default function CoursesPage() {
       </section>
 
       {/* Why Choose Us - Now uses reusable components */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-muted/40">
         <div className="container mx-auto px-4">
           <SectionHeader
             title="Why Students Choose Us"
@@ -281,7 +281,7 @@ export default function CoursesPage() {
       {/* CTA */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <Card className="bg-primary border-0">
+          <Card className="bg-primary border-0 rounded-2xl">
             <CardContent className="py-12 text-center">
               <h2 className="font-display text-2xl md:text-3xl font-bold text-primary-foreground mb-4">
                 Not Sure Which Course to Choose?
@@ -301,7 +301,7 @@ export default function CoursesPage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="border-primary/30 text-primary hover:bg-primary/10"
+                  className="border-white/30 text-white hover:bg-white/10"
                 >
                   Compare Courses
                 </Button>

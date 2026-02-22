@@ -89,7 +89,7 @@ function LoginForm() {
       return;
     }
 
-    router.push(redirectTo);
+    // Redirect is handled by the useEffect watching isAuthenticated
   };
 
   const handleGoogleLogin = async () => {

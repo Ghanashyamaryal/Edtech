@@ -64,6 +64,8 @@ export {
   type CourseExam,
   type ExamInput,
   type ExamAttempt,
+  getExamAttemptWithAnswers,
+  type ExamAttemptWithAnswers,
 } from './exams';
 
 // Subjects & Topics

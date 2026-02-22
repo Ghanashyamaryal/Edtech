@@ -18,11 +18,11 @@ const routeConfigs: RouteConfig[] = [
   // Protected routes (any authenticated user)
   { path: '/dashboard', requireAuth: true },
   { path: '/profile', requireAuth: true },
-  { path: '/courses', requireAuth: true },
+  { path: '/courses', requireAuth: false },
   { path: '/exams', requireAuth: true },
 
-  // Role-restricted routes
-  { path: '/admin', requireAuth: true, allowedRoles: ['admin'] },
+  // Admin routes (public for now)
+  { path: '/admin', requireAuth: false },
   { path: '/mentor', requireAuth: true, allowedRoles: ['mentor', 'admin'] },
   { path: '/instructor', requireAuth: true, allowedRoles: ['mentor', 'admin'] },
 ];
@@ -72,6 +72,17 @@ export async function updateSession(request: NextRequest) {
   );
 
   const pathname = request.nextUrl.pathname;
+
+  // Always validate user server-side (also refreshes cookies)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Redirect authenticated users away from auth pages (except callback)
+  if (pathname.startsWith('/auth') && !pathname.startsWith('/auth/callback') && user) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
   const routeConfig = getRouteConfig(pathname);
 
   // If no specific config found, allow access
@@ -83,11 +94,6 @@ export async function updateSession(request: NextRequest) {
   if (!routeConfig.requireAuth) {
     return supabaseResponse;
   }
-
-  // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   // If route requires auth but user is not authenticated
   if (!user) {
@@ -108,18 +114,9 @@ export async function updateSession(request: NextRequest) {
     const userRole = (profile?.role as UserRole) || 'student';
 
     if (!routeConfig.allowedRoles.includes(userRole)) {
-      // Redirect to unauthorized page or dashboard
       const unauthorizedUrl = new URL('/unauthorized', request.url);
       unauthorizedUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(unauthorizedUrl);
-    }
-  }
-
-  // Redirect authenticated users away from auth pages
-  if (pathname.startsWith('/auth') && !pathname.startsWith('/auth/callback')) {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }
 

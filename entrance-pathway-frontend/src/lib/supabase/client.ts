@@ -21,10 +21,4 @@ export const AUTH_CONFIG = {
   },
   // Social providers
   socialProviders: ['google', 'facebook'] as const,
-  // Session settings
-  session: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-  },
 } as const;

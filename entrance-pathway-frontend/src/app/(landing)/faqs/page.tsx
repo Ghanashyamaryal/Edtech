@@ -95,7 +95,7 @@ export default function FAQsPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-linear-to-br from-primary/10 to-primary/5 py-20">
+      <section className="bg-linear-to-br from-accent to-background py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <Title className="mb-4">Frequently Asked Questions</Title>
@@ -107,7 +107,7 @@ export default function FAQsPage() {
       </section>
 
       {/* FAQ Content */}
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto space-y-12">
             {faqCategories.map((category) => (
@@ -116,7 +116,7 @@ export default function FAQsPage() {
                 <Accordion
                   type="single"
                   collapsible
-                  className="bg-background rounded-lg border"
+                  className="bg-background rounded-xl border"
                 >
                   {category.questions.map((faq, index) => (
                     <AccordionItem
@@ -140,7 +140,7 @@ export default function FAQsPage() {
       </section>
 
       {/* Contact CTA */}
-      <section className="py-16 bg-muted/30">
+      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <Subtitle className="mb-4">Still Have Questions?</Subtitle>
@@ -150,7 +150,7 @@ export default function FAQsPage() {
             </Paragraph>
             <a
               href="/contact"
-              className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               Contact Support
             </a>

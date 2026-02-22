@@ -273,10 +273,10 @@ export default function ExamQuestionsPage() {
                 .map((eq, index) => (
                   <div
                     key={eq.id}
-                    className="flex items-start justify-between p-4 rounded-lg border bg-card"
+                    className="flex items-start justify-between p-3 sm:p-4 rounded-lg border bg-card gap-2"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
                         <span className="text-sm font-medium text-muted-foreground">
                           Q{index + 1}
                         </span>
@@ -296,6 +296,7 @@ export default function ExamQuestionsPage() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="shrink-0"
                       onClick={() => setRemoveTarget(eq)}
                     >
                       <Trash2 className="w-4 h-4 text-destructive" />
@@ -309,13 +310,13 @@ export default function ExamQuestionsPage() {
 
       {/* Add Question Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>Add Question to Exam</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
             {/* Filters */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -326,7 +327,7 @@ export default function ExamQuestionsPage() {
                 />
               </div>
               <Select value={subjectFilter} onValueChange={setSubjectFilter}>
-                <SelectTrigger className="w-40">
+                <SelectTrigger className="w-full sm:w-40">
                   <SelectValue placeholder="Subject" />
                 </SelectTrigger>
                 <SelectContent>

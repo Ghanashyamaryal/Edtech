@@ -248,7 +248,7 @@ export default function NewNotePage() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 lg:gap-6 lg:grid-cols-2">
           {/* Note Details */}
           <Card>
             <CardHeader>
@@ -397,7 +397,7 @@ export default function NewNotePage() {
                 {!selectedFile ? (
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+                    className="border-2 border-dashed rounded-lg p-4 sm:p-8 text-center cursor-pointer hover:border-primary transition-colors"
                   >
                     <Upload className="w-10 h-10 mx-auto mb-4 text-muted-foreground" />
                     <p className="font-medium">Click to upload file</p>
@@ -452,13 +452,13 @@ export default function NewNotePage() {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-4">
+        <div className="flex flex-col sm:flex-row justify-end gap-4">
           <Link href="/admin/notes">
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" className="w-full sm:w-auto">
               Cancel
             </Button>
           </Link>
-          <Button type="submit" disabled={isLoading || !selectedFile}>
+          <Button type="submit" disabled={isLoading || !selectedFile} className="w-full sm:w-auto">
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

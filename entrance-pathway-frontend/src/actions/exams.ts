@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createAdminClient, requireAuth, requireMentorOrAdmin, requireAdmin } from '@/lib/supabase/server';
+import { createAdminClient, requireAuth } from '@/lib/supabase/server';
 import { formatResponse, formatResponseArray, toSnakeCase, type ActionResult } from './utils';
 
 // Types
@@ -260,7 +260,6 @@ export async function getCourseExams(courseId: string): Promise<ActionResult<Cou
 
 export async function createExam(input: ExamInput): Promise<ActionResult<Exam>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     const { courseId, ...examInput } = input;
@@ -304,7 +303,6 @@ export async function createExam(input: ExamInput): Promise<ActionResult<Exam>> 
 
 export async function updateExam(id: string, input: Partial<ExamInput>): Promise<ActionResult<Exam>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     const { courseId, ...examInput } = input;
@@ -328,7 +326,6 @@ export async function updateExam(id: string, input: Partial<ExamInput>): Promise
 
 export async function deleteExam(id: string): Promise<ActionResult<boolean>> {
   try {
-    await requireAdmin();
     const supabase = createAdminClient();
 
     const { error } = await supabase.from('exams').delete().eq('id', id);
@@ -348,7 +345,6 @@ export async function linkExamToCourse(
   options?: { displayOrder?: number; isRequired?: boolean }
 ): Promise<ActionResult<CourseExam>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     let order = options?.displayOrder;
@@ -388,7 +384,6 @@ export async function linkExamToCourse(
 
 export async function unlinkExamFromCourse(examId: string, courseId: string): Promise<ActionResult<boolean>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     const { error } = await supabase
@@ -408,7 +403,6 @@ export async function unlinkExamFromCourse(examId: string, courseId: string): Pr
 
 export async function reorderCourseExams(courseId: string, examIds: string[]): Promise<ActionResult<CourseExam[]>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     const updates = examIds.map((examId, index) =>
@@ -550,7 +544,6 @@ export async function addQuestionToExam(
   marks: number
 ): Promise<ActionResult<any>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     const { data: existing } = await supabase
@@ -584,7 +577,6 @@ export async function addQuestionToExam(
 
 export async function removeQuestionFromExam(examId: string, questionId: string): Promise<ActionResult<boolean>> {
   try {
-    await requireMentorOrAdmin();
     const supabase = createAdminClient();
 
     const { error } = await supabase
@@ -763,5 +755,96 @@ export async function completeExamAttempt(attemptId: string): Promise<ActionResu
     return { success: true, data: formatResponse(data) };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to complete exam' };
+  }
+}
+
+export interface ExamAttemptWithAnswers {
+  id: string;
+  examId: string;
+  userId: string;
+  startedAt: string;
+  completedAt?: string;
+  score?: number;
+  exam: {
+    id: string;
+    title: string;
+    description?: string;
+    durationMinutes: number;
+    totalMarks: number;
+    passingMarks: number;
+    examType?: string;
+  };
+  questions: {
+    id: string;
+    questionId: string;
+    marks: number;
+    position: number;
+    question: {
+      id: string;
+      questionText: string;
+      questionType: string;
+      options: { id: string; text: string; isCorrect: boolean }[];
+      correctAnswer: string;
+      explanation?: string;
+      difficulty: string;
+    };
+  }[];
+  answers: {
+    questionId: string;
+    selectedAnswer: string;
+    isCorrect: boolean;
+  }[];
+}
+
+export async function getExamAttemptWithAnswers(attemptId: string): Promise<ActionResult<ExamAttemptWithAnswers>> {
+  try {
+    const supabase = createAdminClient();
+
+    // Get attempt with exam
+    const { data: attempt, error: attemptError } = await supabase
+      .from('exam_attempts')
+      .select('*, exam:exams(*)')
+      .eq('id', attemptId)
+      .single();
+
+    if (attemptError) {
+      if (attemptError.code === 'PGRST116') throw new Error('Attempt not found');
+      throw new Error(attemptError.message);
+    }
+
+    // Get exam questions with full question data
+    const { data: examQuestions, error: questionsError } = await supabase
+      .from('exam_questions')
+      .select('*, question:questions(*)')
+      .eq('exam_id', attempt.exam_id)
+      .order('position');
+
+    if (questionsError) throw new Error(questionsError.message);
+
+    // Get user's answers for this attempt
+    const { data: answers, error: answersError } = await supabase
+      .from('exam_answers')
+      .select('*')
+      .eq('attempt_id', attemptId);
+
+    if (answersError) throw new Error(answersError.message);
+
+    const result: ExamAttemptWithAnswers = {
+      ...formatResponse(attempt),
+      exam: attempt.exam ? formatResponse(attempt.exam) : null,
+      questions: (examQuestions || []).map((eq: any) => ({
+        ...formatResponse(eq),
+        question: eq.question ? formatResponse(eq.question) : null,
+      })),
+      answers: (answers || []).map((a: any) => ({
+        questionId: a.question_id,
+        selectedAnswer: a.selected_answer,
+        isCorrect: a.is_correct,
+      })),
+    } as ExamAttemptWithAnswers;
+
+    return { success: true, data: result };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to fetch attempt details' };
   }
 }

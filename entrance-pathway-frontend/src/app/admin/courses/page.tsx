@@ -198,7 +198,7 @@ export default function AdminCoursesPage() {
       </div>
 
       <Card>
-        <CardContent className="p-6">
+        <CardContent className="p-3 sm:p-6">
           <DataTable
             data={filteredCourses}
             columns={columns}

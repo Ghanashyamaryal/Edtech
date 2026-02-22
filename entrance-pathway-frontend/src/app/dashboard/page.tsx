@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { getEnrolledCourses } from '@/actions';
+import { getEnrolledCourses, getUserExamAttempts, type ExamAttempt } from '@/actions';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Title, Subtitle, Paragraph, Small } from '@/components/atoms';
 import Link from 'next/link';
@@ -21,30 +21,64 @@ export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
   const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(true);
+  const [examAttempts, setExamAttempts] = useState<ExamAttempt[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadEnrolledCourses() {
+    async function loadData() {
       if (!user?.id) {
         setCoursesLoading(false);
+        setStatsLoading(false);
         return;
       }
-      setCoursesLoading(true);
-      const result = await getEnrolledCourses(user.id);
-      if (result.success) {
-        setEnrolledCourses(result.data);
+
+      const [coursesResult, attemptsResult] = await Promise.all([
+        getEnrolledCourses(user.id),
+        getUserExamAttempts(user.id),
+      ]);
+
+      if (coursesResult.success) {
+        setEnrolledCourses(coursesResult.data);
       }
+      if (attemptsResult.success) {
+        setExamAttempts(attemptsResult.data);
+      }
+
       setCoursesLoading(false);
+      setStatsLoading(false);
     }
-    loadEnrolledCourses();
+    loadData();
   }, [user?.id]);
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-100">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
   }
+
+  // Calculate real stats from exam attempts
+  const completedAttempts = examAttempts.filter((a) => a.completedAt);
+  const testsCompleted = completedAttempts.length;
+
+  const averageScore =
+    completedAttempts.length > 0
+      ? Math.round(
+          completedAttempts.reduce((acc, a) => {
+            const totalMarks = a.exam?.totalMarks || 100;
+            const percentage = ((a.score || 0) / totalMarks) * 100;
+            return acc + percentage;
+          }, 0) / completedAttempts.length
+        )
+      : 0;
+
+  // Estimate study hours from exam durations (completed attempts)
+  const totalStudyMinutes = completedAttempts.reduce(
+    (acc, a) => acc + (a.exam?.durationMinutes || 0),
+    0
+  );
+  const studyHours = Math.round(totalStudyMinutes / 60);
 
   // Daily tasks mock data - replace with real API data
   const dailyTasks = [
@@ -79,7 +113,7 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
+        <Card className="bg-linear-to-br from-primary/10 to-primary/5 border-primary/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/20">
@@ -95,42 +129,48 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20">
+        <Card className="bg-linear-to-br from-secondary/10 to-secondary/5 border-secondary/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-secondary/20">
                 <FileText className="w-5 h-5 text-secondary" />
               </div>
               <div>
-                <Subtitle as="p" className="text-2xl">12</Subtitle>
+                <Subtitle as="p" className="text-2xl">
+                  {statsLoading ? '...' : testsCompleted}
+                </Subtitle>
                 <Small className="text-xs">Tests Completed</Small>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-gold/10 to-gold/5 border-gold/20">
+        <Card className="bg-linear-to-br from-gold/10 to-gold/5 border-gold/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-gold/20">
                 <Clock className="w-5 h-5 text-gold" />
               </div>
               <div>
-                <Subtitle as="p" className="text-2xl">48h</Subtitle>
+                <Subtitle as="p" className="text-2xl">
+                  {statsLoading ? '...' : `${studyHours}h`}
+                </Subtitle>
                 <Small className="text-xs">Study Hours</Small>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-accent to-accent/50 border-primary/20">
+        <Card className="bg-linear-to-br from-accent to-accent/50 border-primary/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/20">
                 <TrendingUp className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <Subtitle as="p" className="text-2xl">76%</Subtitle>
+                <Subtitle as="p" className="text-2xl">
+                  {statsLoading ? '...' : `${averageScore}%`}
+                </Subtitle>
                 <Small className="text-xs">Average Score</Small>
               </div>
             </div>
@@ -153,7 +193,7 @@ export default function DashboardPage() {
             <div className="mb-6">
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-500"
+                  className="h-full bg-linear-to-r from-primary to-secondary rounded-full transition-all duration-500"
                   style={{ width: `${progressPercentage}%` }}
                 />
               </div>
