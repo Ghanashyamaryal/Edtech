@@ -30,7 +30,6 @@
     "@supabase/supabase-js": "^2.47.0",
     "@tanstack/react-query": "^5.62.0",
     "@tanstack/react-query-devtools": "^5.62.0",
-    "@zoom/videosdk": "^1.11.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "framer-motion": "^12.26.2",

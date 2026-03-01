@@ -1,75 +1,91 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '@/components/ui';
-import { PlayCircle, Clock, BookOpen, Filter, Search } from 'lucide-react';
+import * as React from 'react';
+import { Card, CardContent, Button, Input } from '@/components/ui';
+import { PlayCircle, Clock, Search, Loader2, Video, Eye, X } from 'lucide-react';
+import {
+  getPublishedLectures,
+  getSubjects,
+  incrementLectureView,
+  type RecordedLecture,
+  type Subject,
+} from '@/actions';
+import { extractYouTubeId, getYouTubeThumbnail } from '@/utils/youtube';
 
-// Mock data - replace with real API data
-const lectures = [
-  {
-    id: 1,
-    title: 'Introduction to Quantum Mechanics',
-    subject: 'Physics',
-    instructor: 'Dr. Ramesh Sharma',
-    duration: '45 min',
-    thumbnail: '/thumbnails/physics-1.jpg',
-    views: 1234,
-    uploadedAt: '2 days ago',
-  },
-  {
-    id: 2,
-    title: 'Chemical Bonding - Part 1',
-    subject: 'Chemistry',
-    instructor: 'Prof. Sita Devi',
-    duration: '38 min',
-    thumbnail: '/thumbnails/chemistry-1.jpg',
-    views: 892,
-    uploadedAt: '3 days ago',
-  },
-  {
-    id: 3,
-    title: 'Differential Equations Basics',
-    subject: 'Mathematics',
-    instructor: 'Mr. Binod Thapa',
-    duration: '52 min',
-    thumbnail: '/thumbnails/math-1.jpg',
-    views: 2156,
-    uploadedAt: '5 days ago',
-  },
-  {
-    id: 4,
-    title: 'Cell Biology: Introduction',
-    subject: 'Biology',
-    instructor: 'Dr. Anita Gurung',
-    duration: '41 min',
-    thumbnail: '/thumbnails/biology-1.jpg',
-    views: 1567,
-    uploadedAt: '1 week ago',
-  },
-  {
-    id: 5,
-    title: 'Thermodynamics Fundamentals',
-    subject: 'Physics',
-    instructor: 'Dr. Ramesh Sharma',
-    duration: '55 min',
-    thumbnail: '/thumbnails/physics-2.jpg',
-    views: 987,
-    uploadedAt: '1 week ago',
-  },
-  {
-    id: 6,
-    title: 'Organic Chemistry: Alkanes',
-    subject: 'Chemistry',
-    instructor: 'Prof. Sita Devi',
-    duration: '48 min',
-    thumbnail: '/thumbnails/chemistry-2.jpg',
-    views: 756,
-    uploadedAt: '2 weeks ago',
-  },
-];
+function getRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-const subjects = ['All', 'Physics', 'Chemistry', 'Mathematics', 'Biology'];
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? 's' : ''} ago`;
+  return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? 's' : ''} ago`;
+}
+
+function formatDuration(minutes?: number): string {
+  if (!minutes) return '';
+  if (minutes >= 60) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+  }
+  return `${minutes} min`;
+}
 
 export default function RecordedLecturesPage() {
+  const [lectures, setLectures] = React.useState<RecordedLecture[]>([]);
+  const [subjects, setSubjects] = React.useState<Subject[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [search, setSearch] = React.useState('');
+  const [selectedSubject, setSelectedSubject] = React.useState<string | null>(null);
+  const [playingLecture, setPlayingLecture] = React.useState<RecordedLecture | null>(null);
+
+  // Load data
+  React.useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      const [lecturesResult, subjectsResult] = await Promise.all([
+        getPublishedLectures(),
+        getSubjects(),
+      ]);
+
+      if (lecturesResult.success) setLectures(lecturesResult.data);
+      if (subjectsResult.success) setSubjects(subjectsResult.data);
+      setLoading(false);
+    }
+    loadData();
+  }, []);
+
+  // Reload on filter change
+  React.useEffect(() => {
+    async function filterLectures() {
+      const result = await getPublishedLectures({
+        subjectId: selectedSubject || undefined,
+        search: search || undefined,
+      });
+      if (result.success) setLectures(result.data);
+    }
+
+    const debounce = setTimeout(filterLectures, 300);
+    return () => clearTimeout(debounce);
+  }, [search, selectedSubject]);
+
+  function handlePlayLecture(lecture: RecordedLecture) {
+    setPlayingLecture(lecture);
+    incrementLectureView(lecture.id);
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-100">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -82,6 +98,48 @@ export default function RecordedLecturesPage() {
         </p>
       </div>
 
+      {/* Video Player Modal */}
+      {playingLecture && (
+        <Card className="border-2 border-primary/30">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-foreground truncate mr-4">
+                {playingLecture.title}
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPlayingLecture(null)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="aspect-video rounded-lg overflow-hidden bg-black">
+              {extractYouTubeId(playingLecture.videoUrl) ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${extractYouTubeId(playingLecture.videoUrl)}?autoplay=1`}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <video
+                  src={playingLecture.videoUrl}
+                  controls
+                  autoPlay
+                  className="w-full h-full"
+                />
+              )}
+            </div>
+            {playingLecture.description && (
+              <p className="text-sm text-muted-foreground mt-3">
+                {playingLecture.description}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
@@ -89,63 +147,106 @@ export default function RecordedLecturesPage() {
           <Input
             placeholder="Search lectures..."
             className="pl-10"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <div className="flex gap-2 flex-wrap">
+          <Button
+            variant={selectedSubject === null ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedSubject(null)}
+          >
+            All
+          </Button>
           {subjects.map((subject) => (
             <Button
-              key={subject}
-              variant={subject === 'All' ? 'default' : 'outline'}
+              key={subject.id}
+              variant={selectedSubject === subject.id ? 'default' : 'outline'}
               size="sm"
+              onClick={() => setSelectedSubject(subject.id)}
             >
-              {subject}
+              {subject.name}
             </Button>
           ))}
         </div>
       </div>
 
       {/* Lectures Grid */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {lectures.map((lecture) => (
-          <Card
-            key={lecture.id}
-            className="overflow-hidden hover:border-primary/30 transition-colors group cursor-pointer"
-          >
-            {/* Thumbnail */}
-            <div className="relative aspect-video bg-muted">
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="p-3 rounded-full bg-primary/90">
-                  <PlayCircle className="w-8 h-8 text-primary-foreground" />
+      {lectures.length > 0 ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {lectures.map((lecture) => {
+            const thumbnail = lecture.thumbnailUrl || getYouTubeThumbnail(lecture.videoUrl);
+
+            return (
+              <Card
+                key={lecture.id}
+                className="overflow-hidden hover:border-primary/30 transition-colors group cursor-pointer"
+                onClick={() => handlePlayLecture(lecture)}
+              >
+                {/* Thumbnail */}
+                <div className="relative aspect-video bg-muted">
+                  {thumbnail ? (
+                    <img
+                      src={thumbnail}
+                      alt={lecture.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Video className="w-12 h-12 text-muted-foreground/30" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="p-3 rounded-full bg-primary/90">
+                      <PlayCircle className="w-8 h-8 text-primary-foreground" />
+                    </div>
+                  </div>
+                  {lecture.durationMinutes && (
+                    <div className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-xs">
+                      {formatDuration(lecture.durationMinutes)}
+                    </div>
+                  )}
+                  {lecture.subject && (
+                    <div className="absolute top-2 left-2 px-2 py-1 rounded bg-primary/90 text-primary-foreground text-xs font-medium">
+                      {lecture.subject.name}
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-xs">
-                {lecture.duration}
-              </div>
-              <div className="absolute top-2 left-2 px-2 py-1 rounded bg-primary/90 text-primary-foreground text-xs font-medium">
-                {lecture.subject}
-              </div>
-            </div>
 
-            <CardContent className="pt-4">
-              <h3 className="font-semibold text-foreground line-clamp-2 mb-2">
-                {lecture.title}
-              </h3>
-              <p className="text-sm text-muted-foreground mb-2">
-                {lecture.instructor}
-              </p>
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{lecture.views.toLocaleString()} views</span>
-                <span>{lecture.uploadedAt}</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Load More */}
-      <div className="text-center">
-        <Button variant="outline">Load More</Button>
-      </div>
+                <CardContent className="pt-4">
+                  <h3 className="font-semibold text-foreground line-clamp-2 mb-2">
+                    {lecture.title}
+                  </h3>
+                  {lecture.instructor && (
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {lecture.instructor.fullName}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      {lecture.viewCount.toLocaleString()} views
+                    </span>
+                    <span>{getRelativeTime(lecture.createdAt)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <Video className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
+            <p className="text-muted-foreground">
+              {search || selectedSubject
+                ? 'No lectures found matching your filters'
+                : 'No recorded lectures available yet. Check back soon!'}
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

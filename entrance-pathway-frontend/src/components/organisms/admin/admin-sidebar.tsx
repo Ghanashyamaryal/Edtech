@@ -12,6 +12,8 @@ import {
   Layers,
   ClipboardList,
   FileText,
+  Video,
+  PlayCircle,
   X,
   ArrowLeft,
 } from "lucide-react";
@@ -53,6 +55,16 @@ const adminNavigationItems: AdminNavItem[] = [
     label: "Exams",
     href: "/admin/exams",
     icon: ClipboardList,
+  },
+  {
+    label: "Live Classes",
+    href: "/admin/live-classes",
+    icon: Video,
+  },
+  {
+    label: "Recorded Lectures",
+    href: "/admin/recorded-lectures",
+    icon: PlayCircle,
   },
   {
     label: "Notes & Materials",

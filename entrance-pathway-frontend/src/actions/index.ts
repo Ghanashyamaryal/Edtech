@@ -129,5 +129,34 @@ export {
   type UserRole,
 } from './users';
 
+// Live Classes
+export {
+  getLiveClasses,
+  getLiveClass,
+  getUpcomingLiveClasses,
+  getLiveNowClasses,
+  createLiveClass,
+  updateLiveClass,
+  deleteLiveClass,
+  type LiveClass,
+  type CreateLiveClassInput,
+  type UpdateLiveClassInput,
+} from './live-classes';
+
+// Recorded Lectures
+export {
+  getRecordedLectures,
+  getRecordedLecture,
+  getPublishedLectures,
+  createRecordedLecture,
+  updateRecordedLecture,
+  deleteRecordedLecture,
+  publishRecordedLecture,
+  incrementLectureView,
+  type RecordedLecture,
+  type CreateRecordedLectureInput,
+  type UpdateRecordedLectureInput,
+} from './recorded-lectures';
+
 // Utils
 export { type ActionResult } from './utils';

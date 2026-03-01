@@ -21,8 +21,8 @@ const routeConfigs: RouteConfig[] = [
   { path: '/courses', requireAuth: false },
   { path: '/exams', requireAuth: true },
 
-  // Admin routes (public for now)
-  { path: '/admin', requireAuth: false },
+  // Admin routes (admin only)
+  { path: '/admin', requireAuth: true, allowedRoles: ['admin'] },
   { path: '/mentor', requireAuth: true, allowedRoles: ['mentor', 'admin'] },
   { path: '/instructor', requireAuth: true, allowedRoles: ['mentor', 'admin'] },
 ];
