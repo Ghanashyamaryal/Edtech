@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useRole } from "@/context/auth-context";
 import {
   Home,
   Video,
@@ -13,6 +14,7 @@ import {
   BookOpen,
   MessageSquare,
   Settings,
+  Shield,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui";
@@ -75,6 +77,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
   const pathname = usePathname();
+  const { isAdmin } = useRole();
 
   return (
     <>
@@ -161,6 +164,24 @@ export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
             })}
           </ul>
         </nav>
+
+        {/* Admin Link */}
+        {isAdmin && (
+          <div className="px-3 pb-2">
+            <Link
+              href="/admin"
+              onClick={() => {
+                if (window.innerWidth < 1024) onClose();
+              }}
+              className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            >
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-primary-foreground">
+                <Shield className="w-5 h-5" />
+              </div>
+              <span>Admin Panel</span>
+            </Link>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="p-4 border-t border-border">

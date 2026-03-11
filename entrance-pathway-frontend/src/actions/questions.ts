@@ -178,6 +178,41 @@ export async function updateQuestion(id: string, input: CreateQuestionInput): Pr
   }
 }
 
+export async function bulkCreateQuestions(
+  questions: CreateQuestionInput[]
+): Promise<ActionResult<{ created: number; failed: number }>> {
+  try {
+    const supabase = createAdminClient();
+
+    const rows = questions.map((q) => {
+      const correctOption = q.options.find((opt) => opt.isCorrect);
+      return {
+        question_text: q.questionText,
+        question_type: q.questionType,
+        options: q.options,
+        correct_answer: correctOption?.text || '',
+        explanation: q.explanation,
+        difficulty: q.difficulty,
+        subject_id: q.subjectId,
+        topic_id: q.topicId,
+      };
+    });
+
+    const { data, error } = await supabase
+      .from('questions')
+      .insert(rows)
+      .select();
+
+    if (error) throw new Error(error.message);
+
+    revalidatePath('/admin/questions');
+    revalidatePath('/admin/question-bank');
+    return { success: true, data: { created: data?.length || 0, failed: 0 } };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to bulk create questions' };
+  }
+}
+
 export async function deleteQuestion(id: string): Promise<ActionResult<boolean>> {
   try {
     const supabase = createAdminClient();

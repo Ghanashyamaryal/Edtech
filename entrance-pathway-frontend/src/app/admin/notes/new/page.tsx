@@ -27,17 +27,14 @@ import Link from "next/link";
 import {
   getSubjects,
   getTopics,
+  getCourses,
   createNote,
+  uploadNoteFile,
   type Subject,
   type Topic,
+  type Course,
 } from "@/actions";
 import { useToast } from "@/hooks/use-toast";
-import { createClient } from "@supabase/supabase-js";
-
-// Initialize Supabase client for file upload
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const noteSchema = z.object({
   title: z.string().min(1, "Title is required").max(255),
@@ -45,6 +42,7 @@ const noteSchema = z.object({
   noteType: z.enum(["notes", "question_paper", "solution", "syllabus", "formula_sheet"]),
   subjectId: z.string().min(1, "Subject is required"),
   topicId: z.string().optional(),
+  courseId: z.string().optional(),
   year: z.number().optional(),
   isPremium: z.boolean().default(false),
 });
@@ -64,21 +62,23 @@ export default function NewNotePage() {
   const { toast } = useToast();
   const [subjects, setSubjects] = React.useState<Subject[]>([]);
   const [topics, setTopics] = React.useState<Topic[]>([]);
+  const [courses, setCourses] = React.useState<Course[]>([]);
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
   const [uploading, setUploading] = React.useState(false);
   const [uploadProgress, setUploadProgress] = React.useState(0);
-  const [creating, setCreating] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Load subjects
+  // Load subjects & courses
   React.useEffect(() => {
-    async function loadSubjects() {
-      const result = await getSubjects();
-      if (result.success) {
-        setSubjects(result.data);
-      }
+    async function loadData() {
+      const [subjectsResult, coursesResult] = await Promise.all([
+        getSubjects(),
+        getCourses({ limit: 100 }),
+      ]);
+      if (subjectsResult.success) setSubjects(subjectsResult.data);
+      if (coursesResult.success) setCourses(coursesResult.data);
     }
-    loadSubjects();
+    loadData();
   }, []);
 
   const {
@@ -92,11 +92,13 @@ export default function NewNotePage() {
     defaultValues: {
       noteType: "notes",
       isPremium: false,
+      courseId: "",
     },
   });
 
   const selectedSubjectId = watch("subjectId");
   const noteType = watch("noteType");
+  const courseId = watch("courseId");
 
   // Load topics when subject is selected
   React.useEffect(() => {
@@ -106,9 +108,7 @@ export default function NewNotePage() {
         return;
       }
       const result = await getTopics(selectedSubjectId);
-      if (result.success) {
-        setTopics(result.data);
-      }
+      if (result.success) setTopics(result.data);
     }
     loadTopics();
   }, [selectedSubjectId]);
@@ -116,7 +116,6 @@ export default function NewNotePage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       const allowedTypes = [
         "application/pdf",
         "application/msword",
@@ -133,7 +132,6 @@ export default function NewNotePage() {
         });
         return;
       }
-      // Validate file size (50MB max)
       if (file.size > 52428800) {
         toast({
           title: "File too large",
@@ -144,26 +142,6 @@ export default function NewNotePage() {
       }
       setSelectedFile(file);
     }
-  };
-
-  const uploadFile = async (file: File, subjectId: string): Promise<string> => {
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-    const filePath = `${subjectId}/${noteType}/${fileName}`;
-
-    const { error } = await supabase.storage
-      .from("notes")
-      .upload(filePath, file, {
-        cacheControl: "3600",
-        upsert: false,
-      });
-
-    if (error) {
-      throw new Error(`File upload failed: ${error.message}`);
-    }
-
-    const { data: urlData } = supabase.storage.from("notes").getPublicUrl(filePath);
-    return urlData.publicUrl;
   };
 
   const onSubmit = async (data: NoteFormData) => {
@@ -180,19 +158,28 @@ export default function NewNotePage() {
       setUploading(true);
       setUploadProgress(30);
 
-      // Upload file to Supabase Storage
-      const fileUrl = await uploadFile(selectedFile, data.subjectId);
+      // Upload file via server action (bypasses RLS)
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("subjectId", data.subjectId);
+      formData.append("noteType", data.noteType);
+
+      const uploadResult = await uploadNoteFile(formData);
+
+      if (!uploadResult.success) {
+        throw new Error(uploadResult.error);
+      }
+
       setUploadProgress(70);
 
       // Create note in database
-      setCreating(true);
       const result = await createNote({
         title: data.title,
         description: data.description || undefined,
-        fileUrl,
-        fileName: selectedFile.name,
-        fileSize: selectedFile.size,
-        fileType: selectedFile.type,
+        fileUrl: uploadResult.data.url,
+        fileName: uploadResult.data.fileName,
+        fileSize: uploadResult.data.fileSize,
+        fileType: uploadResult.data.fileType,
         noteType: data.noteType,
         subjectId: data.subjectId,
         topicId: data.topicId || undefined,
@@ -209,11 +196,7 @@ export default function NewNotePage() {
         });
         router.push("/admin/notes");
       } else {
-        toast({
-          title: "Error",
-          description: result.error,
-          variant: "destructive",
-        });
+        toast({ title: "Error", description: result.error, variant: "destructive" });
       }
     } catch (error: any) {
       toast({
@@ -223,12 +206,9 @@ export default function NewNotePage() {
       });
     } finally {
       setUploading(false);
-      setCreating(false);
       setUploadProgress(0);
     }
   };
-
-  const isLoading = uploading || creating;
 
   return (
     <div className="space-y-6">
@@ -326,20 +306,20 @@ export default function NewNotePage() {
             </CardContent>
           </Card>
 
-          {/* Subject & File */}
+          {/* Subject, Course & File */}
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Subject & Topic</CardTitle>
+                <CardTitle>Subject, Course & Topic</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="subject">Subject *</Label>
+                  <Label>Subject *</Label>
                   <Select
                     value={selectedSubjectId}
                     onValueChange={(value) => {
                       setValue("subjectId", value);
-                      setValue("topicId", ""); // Reset topic when subject changes
+                      setValue("topicId", "");
                     }}
                   >
                     <SelectTrigger>
@@ -358,17 +338,41 @@ export default function NewNotePage() {
                   )}
                 </div>
 
+                <div className="space-y-2">
+                  <Label>Course</Label>
+                  <Select
+                    value={courseId || "none"}
+                    onValueChange={(v) => setValue("courseId", v === "none" ? "" : v)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select course (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No course</SelectItem>
+                      {courses.map((course) => (
+                        <SelectItem key={course.id} value={course.id}>
+                          {course.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Link this note to a specific course
+                  </p>
+                </div>
+
                 {topics.length > 0 && (
                   <div className="space-y-2">
-                    <Label htmlFor="topic">Topic (Optional)</Label>
+                    <Label>Topic</Label>
                     <Select
-                      value={watch("topicId") || ""}
-                      onValueChange={(value) => setValue("topicId", value)}
+                      value={watch("topicId") || "none"}
+                      onValueChange={(v) => setValue("topicId", v === "none" ? "" : v)}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select topic" />
+                        <SelectValue placeholder="Select topic (optional)" />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="none">No topic</SelectItem>
                         {topics.map((topic) => (
                           <SelectItem key={topic.id} value={topic.id}>
                             {topic.name}
@@ -422,9 +426,7 @@ export default function NewNotePage() {
                       size="sm"
                       onClick={() => {
                         setSelectedFile(null);
-                        if (fileInputRef.current) {
-                          fileInputRef.current.value = "";
-                        }
+                        if (fileInputRef.current) fileInputRef.current.value = "";
                       }}
                     >
                       Remove
@@ -458,8 +460,8 @@ export default function NewNotePage() {
               Cancel
             </Button>
           </Link>
-          <Button type="submit" disabled={isLoading || !selectedFile} className="w-full sm:w-auto">
-            {isLoading ? (
+          <Button type="submit" disabled={uploading || !selectedFile} className="w-full sm:w-auto">
+            {uploading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Uploading...

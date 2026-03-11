@@ -159,6 +159,54 @@ export async function getNotesBySubject(subjectId: string): Promise<ActionResult
   }
 }
 
+// ============ FILE UPLOAD ============
+
+export async function uploadNoteFile(formData: FormData): Promise<ActionResult<{ url: string; fileName: string; fileSize: number; fileType: string }>> {
+  try {
+    await requireAuth();
+    const supabase = createAdminClient();
+
+    const file = formData.get('file') as File;
+    const subjectId = formData.get('subjectId') as string;
+    const noteType = formData.get('noteType') as string;
+
+    if (!file || !file.size) {
+      throw new Error('No file provided');
+    }
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `${subjectId || 'general'}/${noteType || 'notes'}/${fileName}`;
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = new Uint8Array(arrayBuffer);
+
+    const { error } = await supabase.storage
+      .from('notes')
+      .upload(filePath, buffer, {
+        contentType: file.type,
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (error) throw new Error(`Upload failed: ${error.message}`);
+
+    const { data: urlData } = supabase.storage.from('notes').getPublicUrl(filePath);
+
+    return {
+      success: true,
+      data: {
+        url: urlData.publicUrl,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+      },
+    };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to upload file' };
+  }
+}
+
 // ============ MUTATIONS ============
 
 export async function createNote(input: CreateNoteInput): Promise<ActionResult<Note>> {

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
 import { Subtitle, Paragraph, Small } from "@/components/atoms";
-import { useAuth } from "@/context/auth-context";
+import { useAuth, useRole } from "@/context/auth-context";
 import { getPublishedCourses, type Course } from "@/actions";
 import {
   GraduationCap,
@@ -20,6 +20,7 @@ import {
   LogOut,
   User,
   Settings,
+  Shield,
 } from "lucide-react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Avatar from "@radix-ui/react-avatar";
@@ -181,6 +182,7 @@ function NotificationsDropdown() {
 
 function ProfileDropdown() {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useRole();
 
   const displayName = user?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName
@@ -221,7 +223,7 @@ function ProfileDropdown() {
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="w-56 p-1 bg-popover border border-border rounded-2xl shadow-medium z-[60] animate-fade-in"
+          className="w-56 p-1 bg-popover border border-border rounded-2xl shadow-medium z-60 animate-fade-in"
           align="end"
           sideOffset={8}
         >
@@ -241,6 +243,18 @@ function ProfileDropdown() {
               <span>Dashboard</span>
             </Link>
           </DropdownMenu.Item>
+
+          {isAdmin && (
+            <DropdownMenu.Item asChild>
+              <Link
+                href="/admin"
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none hover:bg-accent focus:bg-accent text-primary"
+              >
+                <Shield className="w-4 h-4" />
+                <span>Admin Panel</span>
+              </Link>
+            </DropdownMenu.Item>
+          )}
 
           <DropdownMenu.Item asChild>
             <Link
@@ -264,6 +278,19 @@ function ProfileDropdown() {
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
+  );
+}
+
+function MobileAdminLink() {
+  const { isAdmin } = useRole();
+  if (!isAdmin) return null;
+  return (
+    <Link href="/admin" className="block">
+      <Button variant="outline" className="w-full gap-2" size="lg">
+        <Shield className="w-4 h-4" />
+        Admin Panel
+      </Button>
+    </Link>
   );
 }
 
@@ -560,6 +587,7 @@ export function LandingHeader() {
                         Go to Dashboard
                       </Button>
                     </Link>
+                    <MobileAdminLink />
                   </>
                 ) : (
                   <>

@@ -9,49 +9,87 @@ import {
   Users,
   Clock,
   ChevronRight,
-  Video,
-  FileText,
-  Award,
+  GraduationCap,
   CheckCircle2,
+  Sparkles,
+  TrendingUp,
+  Building2,
+  Calendar,
+  ArrowRight,
 } from 'lucide-react';
 import Link from 'next/link';
 import { getPublishedCourses, type Course } from '@/actions';
-import {
-  HeroSection,
-  SectionHeader,
-  FeatureGrid,
-  DataState,
-} from '@/components/molecules';
 
-// What's included
-const inclusions = [
-  { icon: Video, text: 'Live Classes' },
-  { icon: FileText, text: 'Study Notes' },
-  { icon: BookOpen, text: 'Mock Tests' },
-  { icon: Award, text: 'Certificate' },
+// Static course metadata for rich display
+const courseMetadata: Record<string, {
+  university: string;
+  duration: string;
+  stream: string;
+  examSubjects: string[];
+  highlights: string[];
+  gradient: string;
+  iconBg: string;
+  accent: string;
+}> = {
+  'bsc-csit': {
+    university: 'Tribhuvan University (IOST)',
+    duration: '4 Years / 8 Semesters',
+    stream: 'Science Only',
+    examSubjects: ['Mathematics', 'Physics', 'Chemistry', 'English', 'Computer'],
+    highlights: ['Most technical IT program', '133+ affiliated colleges', '100 MCQs in 2 hours'],
+    gradient: 'from-indigo-500/10 via-blue-500/5 to-transparent',
+    iconBg: 'bg-indigo-500',
+    accent: 'text-indigo-600',
+  },
+  'bit': {
+    university: 'Purbanchal University',
+    duration: '4 Years / 8 Semesters',
+    stream: 'Any Stream (Math 100 marks)',
+    examSubjects: ['Computer', 'English', 'Aptitude', 'Mathematics'],
+    highlights: ['Project every semester', 'Highly practical', '21+ affiliated colleges'],
+    gradient: 'from-violet-500/10 via-purple-500/5 to-transparent',
+    iconBg: 'bg-violet-500',
+    accent: 'text-violet-600',
+  },
+  'bca': {
+    university: 'Tribhuvan University (FoHSS)',
+    duration: '4 Years / 8 Semesters',
+    stream: 'Any Stream',
+    examSubjects: ['English', 'Mathematics', 'Logic', 'General Knowledge'],
+    highlights: ['Open to all streams', '127+ affiliated colleges', 'Widest accessibility'],
+    gradient: 'from-emerald-500/10 via-teal-500/5 to-transparent',
+    iconBg: 'bg-emerald-500',
+    accent: 'text-emerald-600',
+  },
+  'bim': {
+    university: 'Tribhuvan University (FoM)',
+    duration: '4 Years / 8 Semesters',
+    stream: 'Any Stream',
+    examSubjects: ['English', 'Mathematics', 'Logical Reasoning', 'General Awareness'],
+    highlights: ['IT + Management blend', 'Uses CMAT exam', '40+ affiliated colleges'],
+    gradient: 'from-amber-500/10 via-orange-500/5 to-transparent',
+    iconBg: 'bg-amber-500',
+    accent: 'text-amber-600',
+  },
+};
+
+// Comparison data
+const comparisonData = [
+  { label: 'University', csit: 'TU (IOST)', bit: 'PU', bca: 'TU (FoHSS)', bim: 'TU (FoM)' },
+  { label: '+2 Stream', csit: 'Science', bit: 'Any*', bca: 'Any', bim: 'Any' },
+  { label: 'Pass Marks', csit: '35%', bit: '35%', bca: '40%', bim: '40% (CMAT)' },
+  { label: 'Focus', csit: 'Pure CS & IT', bit: 'Practical IT', bca: 'Computer Apps', bim: 'IT + Business' },
+  { label: 'Colleges', csit: '133+', bit: '21+', bca: '127+', bim: '40+' },
 ];
 
-// Why choose us features
-const whyChooseUs = [
-  {
-    icon: Award,
-    title: '95% Selection Rate',
-    description: 'Our students consistently achieve top ranks in entrance exams across Nepal',
-  },
-  {
-    icon: Users,
-    title: 'Expert Instructors',
-    description: 'Learn from educators with 10+ years of experience in entrance preparation',
-  },
-  {
-    icon: BookOpen,
-    title: 'Complete Support',
-    description: 'Get doubt clearing sessions, mentor guidance, and 24/7 study support',
-  },
-];
+const fadeInUp = {
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
 
-// Course Card Component
 function CourseCard({ course, index }: { course: Course; index: number }) {
+  const meta = courseMetadata[course.slug] || courseMetadata['bsc-csit'];
   const originalPrice = course.price;
   const discountedPrice = course.discountedPrice ?? course.price;
   const hasDiscount = course.discountedPrice && course.discountedPrice < course.price;
@@ -61,125 +99,121 @@ function CourseCard({ course, index }: { course: Course; index: number }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 32 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
+      transition={{ delay: index * 0.1, duration: 0.5 }}
     >
-      <Card className="h-full overflow-hidden hover:shadow-medium hover:-translate-y-1 transition-all duration-200 group">
-        <CardContent className="p-0">
-          <div className="grid md:grid-cols-5">
-            {/* Left - Course Info */}
-            <div className="md:col-span-3 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <span className="font-display font-bold text-xl text-primary">
-                    {course.title.charAt(0)}
-                  </span>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
+      <Link href={`/courses/${course.slug}`} className="block group">
+        <Card className="h-full overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
+          {/* Gradient top accent */}
+          <div className={`h-1.5 bg-linear-to-r ${meta.gradient.replace('/10', '').replace('/5', '').replace('to-transparent', 'to-transparent')} ${meta.iconBg}`} />
+
+          <CardContent className="p-0">
+            <div className={`relative bg-linear-to-br ${meta.gradient} p-6 pb-8`}>
+              {/* Badge row */}
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <div className={`w-10 h-10 rounded-xl ${meta.iconBg} flex items-center justify-center shadow-md`}>
+                    <GraduationCap className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
                     <h3 className="font-display font-bold text-xl text-foreground">
                       {course.title}
                     </h3>
-                    {course.isBestseller && (
-                      <span className="px-2 py-0.5 rounded-full bg-gold/20 text-gold text-xs font-medium">
-                        Bestseller
-                      </span>
-                    )}
+                    <p className="text-xs text-muted-foreground">{meta.university}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {course.fullName || course.title}
-                  </p>
                 </div>
+                {course.isBestseller && (
+                  <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-semibold flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" />
+                    Popular
+                  </span>
+                )}
               </div>
 
-              <p className="text-muted-foreground mb-4 line-clamp-2">
+              {/* Full name & description */}
+              <p className="text-sm font-medium text-foreground/80 mb-2">
+                {course.fullName || course.title}
+              </p>
+              <p className="text-sm text-muted-foreground line-clamp-2 mb-5">
                 {course.description}
               </p>
 
-              {/* Features */}
-              {course.features && course.features.length > 0 && (
-                <div className="space-y-2 mb-4">
-                  {course.features.slice(0, 3).map((feature, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm">
-                      <CheckCircle2 className="w-4 h-4 text-secondary flex-shrink-0" />
-                      <span className="text-muted-foreground">{feature}</span>
-                    </div>
-                  ))}
-                  {course.features.length > 3 && (
-                    <span className="text-sm text-primary">
-                      +{course.features.length - 3} more
-                    </span>
-                  )}
-                </div>
-              )}
+              {/* Quick info chips */}
+              <div className="flex flex-wrap gap-2 mb-5">
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-background/80 backdrop-blur-sm border border-border/50 rounded-full px-3 py-1.5">
+                  <Clock className="w-3 h-3 text-muted-foreground" />
+                  {meta.duration}
+                </span>
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium bg-background/80 backdrop-blur-sm border border-border/50 rounded-full px-3 py-1.5">
+                  <BookOpen className="w-3 h-3 text-muted-foreground" />
+                  {meta.stream}
+                </span>
+              </div>
 
-              {/* Stats */}
-              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                {course.studentCount && (
-                  <span className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    {course.studentCount.toLocaleString()}
-                  </span>
-                )}
-                {course.rating && (
-                  <span className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-gold fill-gold" />
-                    {course.rating.toFixed(1)}
-                    {course.reviewsCount && ` (${course.reviewsCount})`}
-                  </span>
-                )}
-                {course.durationHours && (
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {course.durationHours} hours
-                  </span>
-                )}
+              {/* Entrance subjects */}
+              <div className="mb-1">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                  Entrance Subjects
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {meta.examSubjects.map((subject) => (
+                    <span
+                      key={subject}
+                      className="text-xs bg-background border border-border/60 rounded-md px-2 py-1 text-foreground/70"
+                    >
+                      {subject}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Right - Pricing & CTA */}
-            <div className="md:col-span-2 p-6 bg-muted/30 flex flex-col justify-between">
-              <div>
-                {/* Inclusions */}
-                <div className="grid grid-cols-2 gap-2 mb-6">
-                  {inclusions.map((item, i) => {
-                    const Icon = item.icon;
-                    return (
-                      <div
-                        key={i}
-                        className="flex items-center gap-2 text-sm text-muted-foreground"
-                      >
-                        <Icon className="w-4 h-4 text-primary" />
-                        <span>{item.text}</span>
-                      </div>
-                    );
-                  })}
+            {/* Bottom section */}
+            <div className="p-6 pt-4">
+              {/* Features checklist */}
+              {course.features && course.features.length > 0 && (
+                <div className="space-y-2 mb-5">
+                  {course.features.slice(0, 3).map((feature, i) => (
+                    <div key={i} className="flex items-start gap-2 text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">{feature}</span>
+                    </div>
+                  ))}
                 </div>
+              )}
 
-                {/* Course metrics */}
-                <div className="flex items-center gap-4 mb-6 text-sm">
-                  <div className="text-center">
-                    <p className="font-bold text-foreground">
-                      {course.lessonsCount ?? 0}+
-                    </p>
-                    <p className="text-xs text-muted-foreground">Lectures</p>
+              {/* Stats row */}
+              <div className="flex items-center gap-4 mb-5 pb-5 border-b border-border/50">
+                {course.studentCount && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Users className="w-4 h-4" />
+                    <span className="font-medium text-foreground">{course.studentCount.toLocaleString()}</span>
+                    <span className="hidden sm:inline">students</span>
                   </div>
-                  <div className="h-8 w-px bg-border" />
-                  <div className="text-center">
-                    <p className="font-bold text-foreground">
-                      {course.chaptersCount ?? 0}+
-                    </p>
-                    <p className="text-xs text-muted-foreground">Chapters</p>
+                )}
+                {course.rating && (
+                  <div className="flex items-center gap-1.5 text-sm">
+                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    <span className="font-medium text-foreground">{course.rating.toFixed(1)}</span>
+                    {course.reviewsCount && (
+                      <span className="text-muted-foreground">({course.reviewsCount})</span>
+                    )}
                   </div>
-                </div>
+                )}
+                {course.durationHours && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Clock className="w-4 h-4" />
+                    <span>{course.durationHours}h content</span>
+                  </div>
+                )}
               </div>
 
-              {/* Pricing */}
-              <div>
-                <div className="mb-4">
+              {/* Price & CTA */}
+              <div className="flex items-center justify-between">
+                <div>
                   <div className="flex items-baseline gap-2">
-                    <span className="font-display text-2xl font-bold text-foreground">
+                    <span className="text-2xl font-bold text-foreground">
                       Rs. {discountedPrice.toLocaleString()}
                     </span>
                     {hasDiscount && (
@@ -189,23 +223,20 @@ function CourseCard({ course, index }: { course: Course; index: number }) {
                     )}
                   </div>
                   {hasDiscount && (
-                    <span className="text-xs text-secondary font-medium">
-                      {discountPercent}% OFF
+                    <span className="text-xs font-semibold text-emerald-600">
+                      Save {discountPercent}%
                     </span>
                   )}
                 </div>
-
-                <Link href={`/courses/${course.slug}`}>
-                  <Button className="w-full gap-2">
-                    View Course
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </Link>
+                <div className="flex items-center gap-1.5 text-primary font-semibold text-sm group-hover:gap-2.5 transition-all">
+                  View Details
+                  <ArrowRight className="w-4 h-4" />
+                </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </Link>
     </motion.div>
   );
 }
@@ -213,101 +244,246 @@ function CourseCard({ course, index }: { course: Course; index: number }) {
 export default function CoursesPage() {
   const [courses, setCourses] = React.useState<Course[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     async function loadCourses() {
       setLoading(true);
-      setError(null);
       const result = await getPublishedCourses({ limit: 20 });
-      if (result.success) {
-        setCourses(result.data);
-      } else {
-        setError(result.error);
-      }
+      if (result.success) setCourses(result.data);
       setLoading(false);
     }
     loadCourses();
   }, []);
 
   return (
-    <div className="min-h-screen pt-20">
-      {/* Hero Section - Now uses reusable component */}
-      <HeroSection
-        badge={{ icon: BookOpen, text: 'Entrance Preparation Courses' }}
-        title="Choose Your"
-        highlightedText="Dream Course"
-        description="Comprehensive preparation packages designed by experts with proven track records. Join thousands of successful students."
-        showSearch
-        searchPlaceholder="Search courses..."
-        showFilter
-      />
+    <div className="min-h-screen">
+      {/* Hero */}
+      <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28">
+        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-background to-background" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
 
-      {/* Courses Grid - Now uses DataState for loading/error/empty */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <DataState
-            data={courses}
-            loading={loading}
-            error={error ? new Error(error) : undefined}
-            emptyIcon={BookOpen}
-            emptyTitle="No courses available"
-            emptyDescription="Check back later for new courses."
-            skeletonCount={4}
-            skeletonColumns={2}
-          >
-            {(courseList: Course[]) => (
-              <div className="grid lg:grid-cols-2 gap-8">
-                {courseList.map((course, index) => (
-                  <CourseCard key={course.id} course={course} index={index} />
-                ))}
+        <div className="container relative mx-auto px-4">
+          <motion.div {...fadeInUp} className="max-w-3xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
+              <GraduationCap className="w-4 h-4" />
+              Nepal&apos;s #1 Entrance Preparation Platform
+            </div>
+            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+              Your pathway to
+              <span className="text-primary"> top IT colleges</span>
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+              Expert-designed courses for BSc CSIT, BCA, BIT & BIM entrance exams.
+              Comprehensive study materials, live classes, and 10,000+ practice questions.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-emerald-600" />
+                </div>
+                <span><strong className="text-foreground">95%</strong> Success Rate</span>
               </div>
-            )}
-          </DataState>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Users className="w-4 h-4 text-blue-600" />
+                </div>
+                <span><strong className="text-foreground">5,000+</strong> Students</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
+                  <Building2 className="w-4 h-4 text-violet-600" />
+                </div>
+                <span><strong className="text-foreground">320+</strong> Partner Colleges</span>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Why Choose Us - Now uses reusable components */}
-      <section className="py-20 bg-muted/40">
+      {/* Courses Grid */}
+      <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
-          <SectionHeader
-            title="Why Students Choose Us"
-            description="Our courses are designed with one goal in mind - your success"
-          />
-          <FeatureGrid features={whyChooseUs} columns={3} />
+          <motion.div {...fadeInUp} className="text-center mb-12">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
+              Choose Your Program
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              Each course is tailored to the specific entrance exam syllabus with expert guidance
+            </p>
+          </motion.div>
+
+          {loading ? (
+            <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="rounded-2xl border bg-card overflow-hidden">
+                  <div className="h-1.5 bg-muted" />
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-muted animate-pulse" />
+                      <div className="space-y-2">
+                        <div className="h-5 w-24 bg-muted rounded animate-pulse" />
+                        <div className="h-3 w-40 bg-muted rounded animate-pulse" />
+                      </div>
+                    </div>
+                    <div className="h-4 w-full bg-muted rounded animate-pulse" />
+                    <div className="h-4 w-3/4 bg-muted rounded animate-pulse" />
+                    <div className="flex gap-2">
+                      {[1, 2, 3].map((j) => (
+                        <div key={j} className="h-7 w-20 bg-muted rounded-full animate-pulse" />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="p-6 pt-0">
+                    <div className="h-8 w-40 bg-muted rounded animate-pulse" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : courses.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
+              {courses.map((course, index) => (
+                <CourseCard key={course.id} course={course} index={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <BookOpen className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
+              <p className="text-lg font-medium text-foreground mb-2">Courses coming soon</p>
+              <p className="text-muted-foreground">Check back later for enrollment.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Quick Comparison Table */}
+      <section className="py-16 lg:py-24 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <motion.div {...fadeInUp} className="text-center mb-12">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
+              Quick Comparison
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              Not sure which program is right for you? Compare at a glance
+            </p>
+          </motion.div>
+
+          <motion.div {...fadeInUp} className="max-w-4xl mx-auto">
+            <Card className="overflow-hidden border-0 shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/50">
+                      <th className="text-left p-4 font-semibold text-muted-foreground min-w-[120px]">Feature</th>
+                      <th className="text-center p-4 font-bold text-indigo-600 min-w-[100px]">BSc CSIT</th>
+                      <th className="text-center p-4 font-bold text-violet-600 min-w-[100px]">BIT</th>
+                      <th className="text-center p-4 font-bold text-emerald-600 min-w-[100px]">BCA</th>
+                      <th className="text-center p-4 font-bold text-amber-600 min-w-[100px]">BIM</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {comparisonData.map((row, i) => (
+                      <tr key={row.label} className={i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                        <td className="p-4 font-medium text-foreground">{row.label}</td>
+                        <td className="p-4 text-center text-muted-foreground">{row.csit}</td>
+                        <td className="p-4 text-center text-muted-foreground">{row.bit}</td>
+                        <td className="p-4 text-center text-muted-foreground">{row.bca}</td>
+                        <td className="p-4 text-center text-muted-foreground">{row.bim}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-3 border-t bg-muted/30">
+                <p className="text-xs text-muted-foreground text-center">
+                  * BIT requires Mathematics of 100 marks at +2 level, any stream accepted
+                </p>
+              </div>
+            </Card>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="py-16 lg:py-24">
+        <div className="container mx-auto px-4">
+          <motion.div {...fadeInUp} className="text-center mb-14">
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
+              How It Works
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              Start preparing in three simple steps
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {[
+              {
+                step: '01',
+                title: 'Choose Your Course',
+                description: 'Pick the entrance exam you want to prepare for — BSc CSIT, BCA, BIT, or BIM',
+                icon: BookOpen,
+              },
+              {
+                step: '02',
+                title: 'Study & Practice',
+                description: 'Access video lectures, live classes, notes, and 10,000+ practice questions',
+                icon: GraduationCap,
+              },
+              {
+                step: '03',
+                title: 'Ace Your Entrance',
+                description: 'Take mock tests, track progress, and walk into the exam with confidence',
+                icon: TrendingUp,
+              },
+            ].map((item, i) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + i * 0.1, duration: 0.5 }}
+                className="relative text-center"
+              >
+                {i < 2 && (
+                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] border-t-2 border-dashed border-border/60" />
+                )}
+                <div className="relative z-10 w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
+                  <item.icon className="w-7 h-7 text-primary" />
+                </div>
+                <span className="text-xs font-bold text-primary/60 uppercase tracking-widest">
+                  Step {item.step}
+                </span>
+                <h3 className="font-display font-bold text-lg text-foreground mt-2 mb-2">{item.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-16">
+      <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
-          <Card className="bg-primary border-0 rounded-2xl">
-            <CardContent className="py-12 text-center">
-              <h2 className="font-display text-2xl md:text-3xl font-bold text-primary-foreground mb-4">
-                Not Sure Which Course to Choose?
+          <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-primary to-primary/80 p-10 md:p-16 text-center">
+            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+            <div className="relative">
+              <Calendar className="w-10 h-10 text-primary-foreground/80 mx-auto mb-4" />
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
+                Entrance exams are around the corner
               </h2>
-              <p className="text-primary-foreground/80 mb-6 max-w-xl mx-auto">
-                Talk to our counselors and get personalized guidance based on your goals
-                and academic background.
+              <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto mb-8">
+                Don&apos;t wait until the last minute. Start your preparation today and join thousands of successful students.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Button
-                  size="lg"
-                  className="bg-white text-primary hover:bg-white/90 gap-2"
-                >
-                  Get Free Counseling
-                  <ChevronRight className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-white/30 text-white hover:bg-white/10"
-                >
-                  Compare Courses
-                </Button>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Link href="/auth/signup">
+                  <Button size="lg" variant="secondary" className="gap-2 font-semibold">
+                    Start Free Today
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </Link>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </section>
     </div>

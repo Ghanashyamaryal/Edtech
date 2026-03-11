@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/context/auth-context";
+import { useAuth, useRole } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
 import { Subtitle, Paragraph, Small } from "@/components/atoms";
@@ -14,6 +14,7 @@ import {
   LogOut,
   User,
   Settings,
+  Shield,
   Calendar,
   GraduationCap,
   BookOpen,
@@ -280,6 +281,7 @@ function NotificationsDropdown() {
 
 function ProfileDropdown() {
   const { user, signOut } = useAuth();
+  const { isAdmin } = useRole();
 
   const displayName = user?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName
@@ -332,6 +334,18 @@ function ProfileDropdown() {
               {user?.email}
             </Small>
           </div>
+
+          {isAdmin && (
+            <DropdownMenu.Item asChild>
+              <Link
+                href="/admin"
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none hover:bg-accent focus:bg-accent text-primary"
+              >
+                <Shield className="w-4 h-4" />
+                <span>Admin Panel</span>
+              </Link>
+            </DropdownMenu.Item>
+          )}
 
           <DropdownMenu.Item asChild>
             <Link

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { DataTable, Column, ConfirmDialog } from "@/components/molecules/admin";
-import { HelpCircle, Plus, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { HelpCircle, Plus, Upload, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import {
   getQuestions,
   getSubjects,
@@ -210,12 +210,20 @@ export default function QuestionBankPage() {
             Manage questions for mock tests and exams
           </Paragraph>
         </div>
-        <Link href="/admin/question-bank/new">
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add Question
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/admin/question-bank/bulk-import">
+            <Button variant="outline" className="gap-2">
+              <Upload className="w-4 h-4" />
+              Bulk Import
+            </Button>
+          </Link>
+          <Link href="/admin/question-bank/new">
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add Question
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
