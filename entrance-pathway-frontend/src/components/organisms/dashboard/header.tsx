@@ -152,11 +152,14 @@ const mockNotifications: Notification[] = [
 function ExamCountdownTimer() {
   // Set exam date - this should come from user settings/API
   const examDate = React.useMemo(() => {
-    // Example: Medical entrance exam date
     return new Date("2026-03-15T10:00:00");
   }, []);
 
   const timeLeft = useExamCountdown(examDate);
+
+  // Don't render if exam has passed (all values are 0)
+  const hasTimeLeft = timeLeft.days > 0 || timeLeft.hours > 0 || timeLeft.minutes > 0 || timeLeft.seconds > 0;
+  if (!hasTimeLeft) return null;
 
   return (
     <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
@@ -391,8 +394,8 @@ export function Header({ onMenuClick, className }: HeaderProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 h-16 lg:h-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        "border-b border-border px-4",
+        "sticky top-0 z-40 h-16 lg:h-20 bg-white",
+        "border-b border-border/50 px-4",
         className,
       )}
     >

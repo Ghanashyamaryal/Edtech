@@ -138,14 +138,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
           let profile = await fetchUserProfile(currentSession.user.id);
 
           // Create profile if it doesn't exist (e.g., after email confirmation)
-          if (!profile && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          // Only auto-create on SIGNED_IN — not TOKEN_REFRESHED, which fires
+          // after updateUser() calls and can race with profile fetches
+          if (!profile && event === 'SIGNED_IN') {
             const meta = currentSession.user.user_metadata;
+            // Only allow 'student' or 'mentor' roles during auto-creation
+            // Never trust metadata for admin role assignment
+            const requestedRole = meta?.role;
+            const safeRole = (requestedRole === 'student' || requestedRole === 'mentor')
+              ? requestedRole
+              : 'student';
             const { error } = await supabase.from('users').insert({
               id: currentSession.user.id,
               email: currentSession.user.email,
               full_name: meta?.full_name || meta?.name || 'User',
               avatar_url: meta?.avatar_url || meta?.picture,
-              role: meta?.role || 'student',
+              role: safeRole,
             });
             if (!error) {
               profile = await fetchUserProfile(currentSession.user.id);
@@ -352,17 +360,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return { error: new Error('Not authenticated') };
       }
 
-      const { error } = await supabase
+      // Only include fields that were actually provided to avoid nullifying existing values
+      const updateData: Record<string, unknown> = {
+        updated_at: new Date().toISOString(),
+      };
+      if (data.full_name !== undefined) updateData.full_name = data.full_name;
+      if (data.phone !== undefined) updateData.phone = data.phone || null;
+      if (data.avatar_url !== undefined) updateData.avatar_url = data.avatar_url;
+      if (data.date_of_birth !== undefined) updateData.date_of_birth = data.date_of_birth || null;
+
+      const { error, status, statusText } = await supabase
         .from('users')
-        .update({
-          full_name: data.full_name,
-          phone: data.phone,
-          avatar_url: data.avatar_url,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updateData)
         .eq('id', supabaseUser.id);
 
       if (error) {
+        console.error('Profile update failed:', { error, status, statusText, updateData });
         return { error: new Error(error.message) };
       }
 
@@ -392,7 +405,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       const fileExt = file.name.split('.').pop();
       const fileName = `${supabaseUser.id}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      const filePath = fileName;
 
       // Upload file to Supabase Storage
       const { error: uploadError } = await supabase.storage

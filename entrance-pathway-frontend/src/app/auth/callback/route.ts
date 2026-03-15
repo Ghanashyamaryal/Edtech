@@ -6,7 +6,9 @@ import type { NextRequest } from 'next/server';
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
-  const next = requestUrl.searchParams.get('next') ?? '/dashboard';
+  const rawNext = requestUrl.searchParams.get('next') ?? '/dashboard';
+  // Prevent open redirect — only allow relative paths
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/dashboard';
 
   if (code) {
     const cookieStore = await cookies();
@@ -44,12 +46,17 @@ export async function GET(request: NextRequest) {
 
         if (!existingProfile) {
           // Create user profile for OAuth users
+          // Only allow safe roles — never trust metadata for admin
+          const requestedRole = user.user_metadata?.role;
+          const safeRole = (requestedRole === 'student' || requestedRole === 'mentor')
+            ? requestedRole
+            : 'student';
           await supabase.from('users').insert({
             id: user.id,
             email: user.email,
             full_name: user.user_metadata?.full_name || user.user_metadata?.name || 'User',
             avatar_url: user.user_metadata?.avatar_url || user.user_metadata?.picture,
-            role: user.user_metadata?.role || 'student',
+            role: safeRole,
           });
         }
       }

@@ -53,18 +53,23 @@ function LoginForm() {
     isLoading: authLoading,
   } = useAuth();
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<string | null>(null);
 
-  const redirectTo = searchParams.get("redirectTo") || "/dashboard";
-  const messageParam = searchParams.get("message");
+  // Validate redirectTo to prevent open redirect attacks
+  const rawRedirect = searchParams.get("redirectTo") || "/dashboard";
+  const redirectTo = rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+    ? rawRedirect
+    : "/dashboard";
 
-  useEffect(() => {
-    if (messageParam) {
-      setMessage(messageParam);
-    }
-  }, [messageParam]);
+  // Only allow known safe messages to prevent phishing via URL
+  const SAFE_MESSAGES: Record<string, string> = {
+    "email-confirmed": "Your email has been confirmed. You can now sign in.",
+    "password-reset": "Your password has been reset. Please sign in with your new password.",
+    "check-email": "Check your email to confirm your account.",
+  };
+  const messageParam = searchParams.get("message");
+  const safeMessage = messageParam ? SAFE_MESSAGES[messageParam] ?? null : null;
 
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
@@ -79,7 +84,6 @@ function LoginForm() {
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     setError(null);
-    setMessage(null);
 
     const { error } = await signIn(data.email, data.password);
 
@@ -95,7 +99,6 @@ function LoginForm() {
   const handleGoogleLogin = async () => {
     setSocialLoading("google");
     setError(null);
-    setMessage(null);
 
     const { error } = await signInWithProvider("google");
 
@@ -114,7 +117,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center px-4 py-12 bg-linear-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex items-center justify-center px-4 pt-20 pb-12 bg-linear-to-br from-gray-50 to-gray-100">
       <Card className="w-full max-w-md border border-indigo-50 bg-white">
         <CardHeader className="text-center space-y-2 pb-2">
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-2">
@@ -144,9 +147,9 @@ function LoginForm() {
                 {error}
               </div>
             )}
-            {message && (
+            {safeMessage && (
               <div className="bg-green-100 text-green-800 text-sm p-3 rounded-md">
-                {message}
+                {safeMessage}
               </div>
             )}
 

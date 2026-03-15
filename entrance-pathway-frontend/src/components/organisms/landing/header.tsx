@@ -137,7 +137,7 @@ function NotificationsDropdown() {
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="w-80 p-0 bg-popover border border-border rounded-2xl shadow-medium z-[60] animate-fade-in"
+          className="w-80 p-0 bg-popover border border-border rounded-2xl shadow-medium z-60 animate-fade-in"
           align="end"
           sideOffset={8}
         >
@@ -359,16 +359,14 @@ export function LandingHeader() {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        isScrolled
-          ? "bg-background/80 backdrop-blur-xl shadow-sm border-b border-border/50"
-          : "bg-transparent",
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-white",
+        isScrolled && "shadow-sm border-b border-border/50",
       )}
     >
       <nav className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 z-50">
+          <Link href="/" className="flex items-center gap-2 z-50 shrink-0">
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary shadow-glow-primary">
               <GraduationCap className="w-6 h-6 text-primary-foreground" />
             </div>
@@ -469,7 +467,7 @@ export function LandingHeader() {
           </div>
 
           {/* Right side - Auth state dependent */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
             {!isMounted || isLoading ? (
               <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
             ) : isAuthenticated ? (
@@ -478,14 +476,18 @@ export function LandingHeader() {
                 <ProfileDropdown />
               </>
             ) : (
-              <>
+              <div className="flex items-center gap-2">
                 <Link href="/auth/login">
-                  <Button variant="ghost">Log In</Button>
+                  <Button variant="outline" className="px-5 font-medium border-primary/30 text-primary hover:bg-primary/5">
+                    Log In
+                  </Button>
                 </Link>
                 <Link href="/auth/signup">
-                  <Button>Get Started</Button>
+                  <Button className="px-5 font-medium">
+                    Get Started
+                  </Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
 

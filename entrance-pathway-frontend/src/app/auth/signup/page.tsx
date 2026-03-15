@@ -164,7 +164,7 @@ export default function SignupPage() {
       return;
     }
 
-    router.push("/auth/login?message=Check your email to confirm your account");
+    router.push("/auth/login?message=check-email");
   };
 
   const handleGoogleLogin = async () => {
@@ -188,7 +188,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center px-4 py-12 bg-linear-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen flex items-center justify-center px-4 pt-20 pb-12 bg-linear-to-br from-gray-50 to-gray-100">
       <Card className="w-full max-w-md border-indigo-50 bg-white">
         <CardHeader className="text-center space-y-2 pb-2">
           <CardTitle className="text-2xl font-bold">

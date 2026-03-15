@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -20,10 +20,7 @@ import {
 import { Title, Subtitle, Paragraph, Small } from '@/components/atoms';
 import {
   User,
-  Calendar,
-  Bell,
   Shield,
-  Globe,
   Camera,
   Loader2,
   Eye,
@@ -38,6 +35,16 @@ export default function SettingsPage() {
   // Form state
   const [fullName, setFullName] = useState(user?.full_name || '');
   const [phone, setPhone] = useState(user?.phone || '');
+  const [dateOfBirth, setDateOfBirth] = useState(user?.date_of_birth || '');
+
+  // Sync form state when user data loads asynchronously
+  useEffect(() => {
+    if (user) {
+      setFullName(user.full_name || '');
+      setPhone(user.phone || '');
+      setDateOfBirth(user.date_of_birth || '');
+    }
+  }, [user]);
 
   // Password change state
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
@@ -69,7 +76,8 @@ export default function SettingsPage() {
     try {
       const { error } = await updateProfile({
         full_name: fullName.trim(),
-        phone: phone.trim() || undefined,
+        phone: phone.trim(),
+        date_of_birth: dateOfBirth,
       });
 
       if (error) {
@@ -263,7 +271,8 @@ export default function SettingsPage() {
                 <Input
                   id="dob"
                   type="date"
-                  defaultValue=""
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
                 />
               </div>
             </div>
@@ -274,139 +283,6 @@ export default function SettingsPage() {
               {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               {saving ? 'Saving...' : 'Save Changes'}
             </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Exam Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            Exam Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="examType">Target Exam</Label>
-              <select
-                id="examType"
-                className="w-full h-10 px-3 rounded-md border border-input bg-background text-foreground"
-                defaultValue="csit"
-              >
-                <option value="csit">BSc CSIT Entrance</option>
-                <option value="bit">BIT Entrance</option>
-                <option value="bca">BCA Entrance</option>
-                <option value="bim">BIM Entrance</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="examDate">Expected Exam Date</Label>
-              <Input id="examDate" type="date" defaultValue="2026-03-15" />
-            </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-border flex justify-end">
-            <Button variant="outline">Update Exam Settings</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Notification Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-primary" />
-            Notification Preferences
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[
-              {
-                id: 'liveClass',
-                label: 'Live Class Reminders',
-                description: 'Get notified before live classes start',
-              },
-              {
-                id: 'mockTest',
-                label: 'Mock Test Reminders',
-                description: 'Reminders for scheduled mock tests',
-              },
-              {
-                id: 'mentorFeedback',
-                label: 'Mentor Feedback',
-                description: 'Notifications when mentors respond',
-              },
-              {
-                id: 'dailyTasks',
-                label: 'Daily Task Updates',
-                description: 'Daily study reminders and task updates',
-              },
-              {
-                id: 'announcements',
-                label: 'Announcements',
-                description: 'Important updates and announcements',
-              },
-            ].map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between py-2"
-              >
-                <div>
-                  <Subtitle as="p" className="text-base">{item.label}</Subtitle>
-                  <Small className="text-sm">{item.description}</Small>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    defaultChecked
-                  />
-                  <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-ring after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-                </label>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Preferences */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="w-5 h-5 text-primary" />
-            Preferences
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <Subtitle as="p" className="text-base">Language</Subtitle>
-                <Small className="text-sm">
-                  Choose your preferred language
-                </Small>
-              </div>
-              <select className="h-9 px-3 rounded-md border border-input bg-background text-foreground">
-                <option value="en">English</option>
-                <option value="ne">नेपाली</option>
-              </select>
-            </div>
-
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <Subtitle as="p" className="text-base">Dark Mode</Subtitle>
-                <Small className="text-sm">
-                  Toggle dark theme
-                </Small>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" className="sr-only peer" />
-                <div className="w-11 h-6 bg-muted rounded-full peer peer-checked:bg-primary peer-focus:ring-2 peer-focus:ring-ring after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-              </label>
-            </div>
           </div>
         </CardContent>
       </Card>
