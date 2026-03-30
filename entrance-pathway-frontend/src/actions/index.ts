@@ -125,6 +125,7 @@ export {
   getUser,
   getCurrentUserProfile,
   updateUserRole,
+  updateUserVerification,
   updateProfile,
   getDashboardStats,
   type User,

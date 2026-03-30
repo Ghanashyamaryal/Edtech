@@ -8,6 +8,7 @@ export interface User {
   date_of_birth?: string;
   phone_verified?: boolean;
   email_verified?: boolean;
+  is_verified?: boolean;
   role: UserRole;
   created_at: string;
   updated_at: string;

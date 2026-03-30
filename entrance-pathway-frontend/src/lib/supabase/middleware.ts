@@ -21,6 +21,9 @@ const routeConfigs: RouteConfig[] = [
   { path: '/courses', requireAuth: false },
   { path: '/exams', requireAuth: true },
 
+  // Pending verification (auth required, but no verification check)
+  { path: '/pending-verification', requireAuth: true },
+
   // Admin routes (admin only)
   { path: '/admin', requireAuth: true, allowedRoles: ['admin'] },
   { path: '/mentor', requireAuth: true, allowedRoles: ['mentor', 'admin'] },
@@ -102,22 +105,39 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  // Get user profile to check role and verification status
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role, is_verified')
+    .eq('id', user.id)
+    .single();
+
+  // If profile fetch failed (e.g. column doesn't exist yet), allow access
+  if (!profile) {
+    return supabaseResponse;
+  }
+
+  const userRole = (profile.role as UserRole) || 'student';
+  const isVerified = profile.is_verified ?? false;
+
   // If route has role restrictions, check user role
   if (routeConfig.allowedRoles && routeConfig.allowedRoles.length > 0) {
-    // Get user profile to check role
-    const { data: profile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    const userRole = (profile?.role as UserRole) || 'student';
-
     if (!routeConfig.allowedRoles.includes(userRole)) {
       const unauthorizedUrl = new URL('/unauthorized', request.url);
       unauthorizedUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(unauthorizedUrl);
     }
+  }
+
+  // Block unverified non-admin users from accessing protected routes
+  // Allow access to /pending-verification page itself
+  if (
+    routeConfig.requireAuth &&
+    userRole !== 'admin' &&
+    !isVerified &&
+    !pathname.startsWith('/pending-verification')
+  ) {
+    return NextResponse.redirect(new URL('/pending-verification', request.url));
   }
 
   return supabaseResponse;
