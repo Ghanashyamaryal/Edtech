@@ -15,6 +15,7 @@ export interface User {
   phone?: string;
   phoneVerified?: boolean;
   emailVerified?: boolean;
+  isVerified?: boolean;
   role: UserRole;
   createdAt: string;
   updatedAt: string;
@@ -101,6 +102,29 @@ export async function updateUserRole(userId: string, role: UserRole): Promise<Ac
     return { success: true, data: formatResponse(data) as User };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to update user role' };
+  }
+}
+
+export async function updateUserVerification(
+  userId: string,
+  isVerified: boolean
+): Promise<ActionResult<User>> {
+  try {
+    const supabase = createAdminClient();
+
+    const { data, error } = await supabase
+      .from('users')
+      .update({ is_verified: isVerified })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+
+    revalidatePath('/admin/users');
+    return { success: true, data: formatResponse(data) as User };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to update verification status' };
   }
 }
 

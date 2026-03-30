@@ -154,6 +154,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
               full_name: meta?.full_name || meta?.name || 'User',
               avatar_url: meta?.avatar_url || meta?.picture,
               role: safeRole,
+              is_verified: false,
             });
             if (!error) {
               profile = await fetchUserProfile(currentSession.user.id);

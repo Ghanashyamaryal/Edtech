@@ -20,8 +20,8 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { DataTable, Column, ConfirmDialog } from "@/components/molecules/admin";
-import { Users, MoreHorizontal, Shield, UserCheck, GraduationCap } from "lucide-react";
-import { getUsers, updateUserRole, type User, type UserRole } from "@/actions";
+import { Users, MoreHorizontal, Shield, UserCheck, GraduationCap, CheckCircle, XCircle } from "lucide-react";
+import { getUsers, updateUserRole, updateUserVerification, type User, type UserRole } from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminUsersPage() {
@@ -34,6 +34,11 @@ export default function AdminUsersPage() {
   const [newRole, setNewRole] = React.useState<string>("");
   const [showRoleDialog, setShowRoleDialog] = React.useState(false);
   const [updatingRole, setUpdatingRole] = React.useState(false);
+  const [selectedVerifyUser, setSelectedVerifyUser] = React.useState<User | null>(null);
+  const [verifyAction, setVerifyAction] = React.useState<boolean>(false);
+  const [showVerifyDialog, setShowVerifyDialog] = React.useState(false);
+  const [updatingVerification, setUpdatingVerification] = React.useState(false);
+  const [verificationFilter, setVerificationFilter] = React.useState<string>("all");
 
   const loadUsers = React.useCallback(async () => {
     setLoading(true);
@@ -59,6 +64,29 @@ export default function AdminUsersPage() {
     setShowRoleDialog(true);
   };
 
+  const handleVerificationChange = (user: User, verify: boolean) => {
+    setSelectedVerifyUser(user);
+    setVerifyAction(verify);
+    setShowVerifyDialog(true);
+  };
+
+  const confirmVerificationChange = async () => {
+    if (!selectedVerifyUser) return;
+    setUpdatingVerification(true);
+    const result = await updateUserVerification(selectedVerifyUser.id, verifyAction);
+    if (result.success) {
+      toast({
+        title: verifyAction ? "Student Verified" : "Verification Revoked",
+        description: `${selectedVerifyUser.fullName} has been ${verifyAction ? "verified" : "unverified"}`,
+      });
+      setShowVerifyDialog(false);
+      loadUsers();
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setUpdatingVerification(false);
+  };
+
   const confirmRoleChange = async () => {
     if (!selectedUser || !newRole) return;
     setUpdatingRole(true);
@@ -80,12 +108,17 @@ export default function AdminUsersPage() {
     setUpdatingRole(false);
   };
 
-  // Filter by search
-  const filteredUsers = users.filter(
-    (user) =>
+  // Filter by search and verification status
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
       user.fullName?.toLowerCase().includes(searchValue.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchValue.toLowerCase())
-  );
+      user.email?.toLowerCase().includes(searchValue.toLowerCase());
+    const matchesVerification =
+      verificationFilter === "all" ||
+      (verificationFilter === "verified" && user.isVerified) ||
+      (verificationFilter === "pending" && !user.isVerified);
+    return matchesSearch && matchesVerification;
+  });
 
   const columns: Column<User>[] = [
     {
@@ -126,6 +159,25 @@ export default function AdminUsersPage() {
       ),
     },
     {
+      key: "status",
+      header: "Status",
+      cell: (user) => (
+        <div className="flex items-center gap-1.5">
+          {user.isVerified ? (
+            <>
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              <span className="text-sm text-green-600 font-medium">Verified</span>
+            </>
+          ) : (
+            <>
+              <XCircle className="w-4 h-4 text-amber-500" />
+              <span className="text-sm text-amber-600 font-medium">Pending</span>
+            </>
+          )}
+        </div>
+      ),
+    },
+    {
       key: "phone",
       header: "Phone",
       cell: (user) => user.phone || "-",
@@ -147,6 +199,24 @@ export default function AdminUsersPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            {user.isVerified ? (
+              <DropdownMenuItem
+                onClick={() => handleVerificationChange(user, false)}
+                className="text-amber-600"
+              >
+                <XCircle className="w-4 h-4 mr-2" />
+                Revoke Verification
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                onClick={() => handleVerificationChange(user, true)}
+                className="text-green-600"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Verify Student
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => handleRoleChange(user, "student")}
               disabled={user.role === "student"}
@@ -206,6 +276,16 @@ export default function AdminUsersPage() {
                 <SelectItem value="admin">Admins</SelectItem>
               </SelectContent>
             </Select>
+            <Select value={verificationFilter} onValueChange={setVerificationFilter}>
+              <SelectTrigger className="w-full sm:w-44">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="verified">Verified</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -234,6 +314,21 @@ export default function AdminUsersPage() {
         confirmLabel="Change Role"
         onConfirm={confirmRoleChange}
         loading={updatingRole}
+      />
+
+      {/* Verification Confirmation Dialog */}
+      <ConfirmDialog
+        open={showVerifyDialog}
+        onOpenChange={setShowVerifyDialog}
+        title={verifyAction ? "Verify Student" : "Revoke Verification"}
+        description={
+          verifyAction
+            ? `Are you sure you want to verify ${selectedVerifyUser?.fullName}? They will gain access to the student dashboard.`
+            : `Are you sure you want to revoke verification for ${selectedVerifyUser?.fullName}? They will lose access to the dashboard.`
+        }
+        confirmLabel={verifyAction ? "Verify" : "Revoke"}
+        onConfirm={confirmVerificationChange}
+        loading={updatingVerification}
       />
     </div>
   );
