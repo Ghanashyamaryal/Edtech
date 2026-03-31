@@ -37,13 +37,10 @@ export function AdminHeader({ onMenuClick, className }: AdminHeaderProps) {
         </Button>
 
         {/* Logo / Title */}
-        <Link href="/admin" className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-primary-foreground">
-            <Shield className="w-5 h-5" />
+        <Link href="/admin" className="flex items-center">
+          <div className="flex items-center justify-center h-8 w-32 overflow-hidden">
+            <img src="/assets/logo.png" alt="Entrance Pathway Logo" className="w-full h-full object-contain object-left" />
           </div>
-          <span className="font-display font-bold text-lg text-foreground hidden sm:block">
-            Admin Panel
-          </span>
         </Link>
       </div>
 

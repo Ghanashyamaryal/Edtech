@@ -92,17 +92,9 @@ export function LandingFooter() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-8">
           {/* Brand Section */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary">
-                <GraduationCap className="w-6 h-6 text-primary-foreground" />
-              </div>
-              <div>
-                <span className="font-display font-bold text-xl text-background">
-                  Entrance
-                </span>
-                <span className="font-display font-bold text-xl text-primary">
-                  Pathway
-                </span>
+            <Link href="/" className="flex items-center mb-8 group">
+              <div className="flex items-center justify-center h-16 w-56 overflow-hidden transform transition-all duration-700 p-2 rounded-2xl group-hover:scale-105">
+                 <img src="/assets/logo.png" alt="Entrance Pathway Logo" className="w-full h-full object-contain filter drop-shadow-xl brightness-105" />
               </div>
             </Link>
             <Paragraph className="mb-6 max-w-sm">

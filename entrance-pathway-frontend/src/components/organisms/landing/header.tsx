@@ -365,18 +365,9 @@ export function LandingHeader() {
     >
       <nav className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 lg:h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 z-50 shrink-0">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary shadow-glow-primary">
-              <GraduationCap className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <div className="hidden sm:block">
-              <span className="font-display font-bold text-xl text-foreground">
-                Entrance
-              </span>
-              <span className="font-display font-bold text-xl text-primary">
-                Pathway
-              </span>
+          <Link href="/" className="flex items-center shrink-0 group">
+            <div className="flex items-center justify-center h-10 md:h-12 w-28 md:w-36 overflow-hidden transform transition-all duration-500 group-hover:scale-105">
+              <img src="/assets/logo.png" alt="Entrance Pathway Logo" className="w-full h-full object-contain object-left drop-shadow-md" />
             </div>
           </Link>
 
