@@ -670,7 +670,7 @@ export default function HomePage() {
       {/* ====== CTA ====== */}
       <section className="py-16 lg:py-20">
         <div className="container mx-auto px-4">
-          <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-primary to-indigo-700 p-10 md:p-16 text-center">
+          <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-primary to-indigo-700 p-4 md:p-10 text-center">
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
             <div className="relative max-w-2xl mx-auto">
               <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-5 leading-tight">
@@ -690,11 +690,6 @@ export default function HomePage() {
                     Talk to Us
                   </Button>
                 </Link>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-5 text-sm text-primary-foreground/70">
-                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> 7-day free trial</span>
-                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> No credit card needed</span>
-                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> Cancel anytime</span>
               </div>
             </div>
           </div>

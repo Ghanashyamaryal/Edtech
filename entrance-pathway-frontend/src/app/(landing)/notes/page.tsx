@@ -136,7 +136,7 @@ export default function NotesPage() {
         <div className="absolute inset-0 gradient-hero" />
         <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-4 relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -176,7 +176,7 @@ export default function NotesPage() {
       {/* Subject Categories */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <h2 className="font-display text-2xl font-bold text-foreground">
                 Browse by Subject
@@ -185,7 +185,7 @@ export default function NotesPage() {
                 Find notes organized by subject for easy access
               </p>
             </div>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 w-fit shrink-0">
               <Filter className="w-4 h-4" />
               All Subjects
             </Button>
@@ -403,19 +403,19 @@ export default function NotesPage() {
                     >
                       <Card className="hover:shadow-medium transition-shadow">
                         <CardContent className="py-4">
-                          <div className="flex items-center gap-4">
-                            <div className="p-3 rounded-xl bg-primary/10">
+                          <div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
+                            <div className="p-3 rounded-xl bg-primary/10 shrink-0">
                               <FileText className="w-6 h-6 text-primary" />
                             </div>
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-foreground truncate">
                                 {note.title}
                               </h3>
-                              <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground mt-1">
                                 <span>{note.subject?.name || 'General'}</span>
-                                <span>•</span>
+                                <span className="hidden sm:inline">•</span>
                                 <span>{formatFileSize(note.fileSize)}</span>
-                                <span>•</span>
+                                <span className="hidden sm:inline">•</span>
                                 <span className="flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
                                   {getRelativeTime(note.createdAt)}
@@ -425,7 +425,7 @@ export default function NotesPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="gap-2"
+                              className="gap-2 w-full sm:w-auto mt-2 sm:mt-0 shrink-0"
                               onClick={() => handleDownload(note)}
                             >
                               <Download className="w-4 h-4" />

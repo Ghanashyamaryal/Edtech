@@ -33,7 +33,6 @@ const landingNavItems = [
     href: "/courses",
     hasDropdown: true,
   },
-  { name: "Results", href: "/results" },
   { name: "Notes", href: "/notes" },
   { name: "Online Classes", href: "/online-classes" },
   { name: "Mock Tests", href: "/mock-tests" },
@@ -302,6 +301,9 @@ export function LandingHeader() {
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(
     null,
   );
+  const [mobileDropdown, setMobileDropdown] = React.useState<string | null>(
+    null,
+  );
   const [isMounted, setIsMounted] = React.useState(false);
   const [courses, setCourses] = React.useState<Course[]>([]);
 
@@ -463,7 +465,6 @@ export function LandingHeader() {
               <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
             ) : isAuthenticated ? (
               <>
-                <NotificationsDropdown />
                 <ProfileDropdown />
               </>
             ) : (
@@ -522,9 +523,13 @@ export function LandingHeader() {
                     transition={{ delay: 0.1 + index * 0.05 }}
                   >
                     {item.hasDropdown ? (
-                      <div className="space-y-2">
-                        <Link
-                          href={item.href}
+                      <div className="space-y-1">
+                        <button
+                          onClick={() =>
+                            setMobileDropdown(
+                              mobileDropdown === item.name ? null : item.name,
+                            )
+                          }
                           className={cn(
                             "flex items-center justify-between w-full px-4 py-3 rounded-lg text-lg font-medium",
                             pathname === item.href
@@ -533,19 +538,44 @@ export function LandingHeader() {
                           )}
                         >
                           {item.name}
-                        </Link>
-                        <div className="ml-4 space-y-1 border-l-2 border-border pl-4">
-                          {courses.map((course) => (
-                            <Link
-                              key={course.id}
-                              href={`/courses/${course.slug}`}
-                              className="flex items-center gap-3 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                          <ChevronDown
+                            className={cn(
+                              "w-5 h-5 transition-transform duration-200",
+                              mobileDropdown === item.name && "rotate-180",
+                            )}
+                          />
+                        </button>
+                        <AnimatePresence>
+                          {mobileDropdown === item.name && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
                             >
-                              <BookOpen className="w-4 h-4" />
-                              {course.title}
-                            </Link>
-                          ))}
-                        </div>
+                              <div className="ml-4 space-y-1 border-l-2 border-border pl-4 pb-1">
+                                {courses.map((course) => (
+                                  <Link
+                                    key={course.id}
+                                    href={`/courses/${course.slug}`}
+                                    className="flex items-center gap-3 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                                  >
+                                    <BookOpen className="w-4 h-4" />
+                                    {course.title}
+                                  </Link>
+                                ))}
+                                <Link
+                                  href="/courses"
+                                  className="flex items-center gap-3 px-4 py-2 rounded-lg text-primary hover:bg-primary/10 font-medium"
+                                >
+                                  <BookOpen className="w-4 h-4" />
+                                  View All Courses
+                                </Link>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     ) : (
                       <Link
