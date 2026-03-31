@@ -1,6 +1,7 @@
-# Entrance Pathway - Frontend
+# Entrance Pathway - Frontend and supabase
 
 Next.js 14 frontend for the Entrance Pathway EdTech platform.
+
 
 ## Quick Start
 
