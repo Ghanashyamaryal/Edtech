@@ -573,7 +573,7 @@ export default function MockTestsPage() {
                     <Button
                       variant="outline"
                       size="lg"
-                      className="border-white/30 text-white hover:bg-white/10"
+                      className="border-white/30 text-black hover:bg-white/10"
                     >
                       View Pricing
                     </Button>
