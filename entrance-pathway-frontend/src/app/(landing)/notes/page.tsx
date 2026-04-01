@@ -130,24 +130,24 @@ export default function NotesPage() {
   const isLoading = loadingSubjects || loadingNotes;
 
   return (
-    <div className="min-h-screen pt-20">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
+      <section className="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden">
         <div className="absolute inset-0 gradient-hero" />
         <div className="absolute top-20 left-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl" />
 
-        <div className="container mx-auto px-4 relative">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center max-w-3xl mx-auto"
+            className="max-w-3xl mx-auto text-center"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium mb-4">
               <BookOpen className="w-4 h-4" />
               Study Materials
             </span>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Comprehensive <span className="text-gradient-primary">Study Notes</span>
+              Comprehensive <span className="text-brand-primary">Study Notes</span>
             </h1>
             <p className="text-muted-foreground text-lg mb-8">
               Access well-structured notes, formula sheets, and study materials prepared
@@ -174,8 +174,8 @@ export default function NotesPage() {
       </section>
 
       {/* Subject Categories */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <h2 className="font-display text-2xl font-bold text-foreground">
@@ -244,11 +244,11 @@ export default function NotesPage() {
       </section>
 
       {/* Featured Notes */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 text-gold text-sm font-medium mb-2">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/10 text-brand-orange text-sm font-medium mb-2">
                 <Sparkles className="w-4 h-4" />
                 Featured
               </span>
@@ -367,8 +367,8 @@ export default function NotesPage() {
       </section>
 
       {/* Recent Uploads */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Recent Notes List */}
             <div className="lg:col-span-2">
@@ -454,8 +454,8 @@ export default function NotesPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-center py-4">
-                    <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center mx-auto mb-4">
-                      <BookOpen className="w-8 h-8 text-gold" />
+                    <div className="w-16 h-16 rounded-full bg-brand-orange/10 flex items-center justify-center mx-auto mb-4">
+                      <BookOpen className="w-8 h-8 text-brand-orange" />
                     </div>
                     <h3 className="font-display font-semibold text-foreground mb-2">
                       Unlock All Notes
@@ -502,8 +502,8 @@ export default function NotesPage() {
       </section>
 
       {/* Request Notes Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <Card className="bg-accent border-primary/10">
             <CardContent className="py-8">
               <div className="text-center max-w-xl mx-auto">

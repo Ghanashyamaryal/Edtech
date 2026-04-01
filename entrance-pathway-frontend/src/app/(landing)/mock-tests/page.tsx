@@ -140,19 +140,20 @@ export default function MockTestsPage() {
   const totalQuestions = exams.reduce((sum, exam) => sum + (exam.questionsCount || 0), 0);
 
   return (
-    <div className="min-h-screen pt-20">
+    <div className="min-h-screen ">
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
+      <section className="relative bg-linear-to-br from-brand-primary/5 to-background pt-24 pb-10 lg:pt-32 lg:pb-16 overflow-hidden">
         <div className="absolute inset-0 gradient-hero" />
         <div className="absolute top-20 left-20 w-64 h-64 bg-gold/10 rounded-full blur-3xl" />
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             className="text-center max-w-3xl mx-auto"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 text-gold text-sm font-medium mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-orange/10 text-brand-orange text-sm font-medium mb-4">
               <FileText className="w-4 h-4" />
               Practice Makes Perfect
             </span>
@@ -180,13 +181,13 @@ export default function MockTestsPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 border-b border-border">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16 border-b border-border">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { icon: FileText, value: totalTests > 0 ? `${totalTests}+` : '0', label: 'Practice Tests', color: 'primary' },
               { icon: Users, value: '50,000+', label: 'Tests Taken', color: 'secondary' },
-              { icon: Target, value: totalQuestions > 0 ? `${totalQuestions}+` : '0', label: 'Questions', color: 'gold' },
+              { icon: Target, value: totalQuestions > 0 ? `${totalQuestions}+` : '0', label: 'Questions', color: 'brand-orange' },
               { icon: Trophy, value: '10,000+', label: 'Top Rankers', color: 'primary' },
             ].map((stat, index) => {
               const statBgColors = ['bg-primary/10', 'bg-secondary/10', 'bg-gold/10', 'bg-primary/10'];
@@ -195,20 +196,20 @@ export default function MockTestsPage() {
               return (
                 <motion.div
                   key={stat.label}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="text-center"
+                  transition={{ delay: index * 0.1, duration: 0.4 }}
+                  className="flex flex-col items-center text-center"
                 >
                   <div
-                    className={`w-14 h-14 rounded-2xl ${statBgColors[index]} flex items-center justify-center mx-auto mb-3`}
+                    className={`w-14 h-14 rounded-2xl ${statBgColors[index] || 'bg-brand-primary/10'} flex items-center justify-center mb-4`}
                   >
-                    <Icon className={`w-7 h-7 ${statTextColors[index]}`} />
+                    <Icon className={`w-7 h-7 ${statTextColors[index] || 'text-brand-primary'}`} />
                   </div>
-                  <Subtitle as="p" className="font-display text-3xl">
+                  <p className="font-display text-2xl font-bold text-foreground leading-tight">
                     {stat.value}
-                  </Subtitle>
-                  <Small className="text-sm">{stat.label}</Small>
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
                 </motion.div>
               );
             })}
@@ -217,21 +218,23 @@ export default function MockTestsPage() {
       </section>
 
       {/* Test Categories */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <Title as="h2" className="font-display text-3xl mb-4">
-              Choose Your Test Type
-            </Title>
-            <Paragraph className="max-w-2xl mx-auto">
-              We offer various types of tests to match your preparation needs
-            </Paragraph>
-          </motion.div>
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="text-center mb-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-2xl mx-auto"
+            >
+              <Title as="h2" className="font-display text-3xl mb-4">
+                Choose Your Test Type
+              </Title>
+              <Paragraph>
+                We offer various types of tests to match your preparation needs
+              </Paragraph>
+            </motion.div>
+          </div>
 
           {loading ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -295,8 +298,8 @@ export default function MockTestsPage() {
       </section>
 
       {/* Featured Tests */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="flex items-center justify-between mb-8">
             <div>
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-2">
@@ -437,8 +440,8 @@ export default function MockTestsPage() {
       </section>
 
       {/* Features */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -486,8 +489,8 @@ export default function MockTestsPage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 bg-accent">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16 bg-accent">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -546,8 +549,8 @@ export default function MockTestsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <Card className="gradient-primary rounded-2xl border-0">
             <CardContent className="py-12">
               <div className="text-center max-w-2xl mx-auto">
@@ -573,7 +576,7 @@ export default function MockTestsPage() {
                     <Button
                       variant="outline"
                       size="lg"
-                      className="border-white/30 text-black hover:bg-white/10"
+                      className="border-white/30 text-black hover:bg-10"
                     >
                       View Pricing
                     </Button>
