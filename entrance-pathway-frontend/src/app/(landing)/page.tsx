@@ -141,7 +141,7 @@ export default function HomePage() {
   return (
     <>
       {/* ====== HERO ====== */}
-      <section className="relative overflow-hidden pt-16 pb-8 lg:pt-28 lg:pb-14">
+      <section className="relative overflow-hidden pt-24 pb-12 lg:pt-32 lg:pb-16">
         {/* Background decoration */}
         <div className="absolute inset-0 bg-linear-to-b from-brand-primary/[0.03] via-transparent to-transparent" />
         <div className="absolute top-0 right-0 w-150 h-150 bg-brand-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
