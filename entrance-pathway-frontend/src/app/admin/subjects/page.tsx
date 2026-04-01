@@ -435,7 +435,7 @@ export default function SubjectsPage() {
               <Input
                 value={subjectIcon}
                 onChange={(e) => setSubjectIcon(e.target.value)}
-                placeholder="e.g., calculator"
+              // placeholder="e.g., calculator"
               />
             </div>
           </div>

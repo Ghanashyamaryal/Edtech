@@ -9,10 +9,12 @@ import * as Avatar from "@radix-ui/react-avatar";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowRight,
   Bell,
   BookOpen,
   Calendar,
   ChevronDown,
+  GraduationCap,
   LogOut,
   Menu,
   Settings,
@@ -99,84 +101,7 @@ function ExamCountdownTimer() {
   );
 }
 
-function NotificationsDropdown() {
-  const notifications = [
-    {
-      id: "1",
-      title: "Live Class Starting",
-      message: "Physics class starts in 30 minutes",
-      read: false,
-    },
-    {
-      id: "2",
-      title: "Assignment Submitted",
-      message: "Your Math assignment was successfully submitted",
-      read: false,
-    },
-  ];
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
-  return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative"
-          aria-label="Notifications"
-        >
-          <Bell className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-medium bg-destructive text-destructive-foreground rounded-full">
-              {unreadCount}
-            </span>
-          )}
-        </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          className="w-80 p-0 bg-popover border border-border rounded-2xl shadow-medium z-60 animate-fade-in"
-          align="end"
-          sideOffset={8}
-        >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <h3 className="font-display font-medium text-foreground">Notifications</h3>
-            {unreadCount > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {unreadCount} unread
-              </span>
-            )}
-          </div>
-          <div className="max-h-80 overflow-y-auto">
-            {notifications.map((notification) => (
-              <DropdownMenu.Item
-                key={notification.id}
-                className={cn(
-                  "flex flex-col gap-1 px-4 py-3 cursor-pointer outline-none",
-                  "hover:bg-accent focus:bg-accent border-b border-border last:border-0",
-                  !notification.read && "bg-accent/50",
-                )}
-              >
-                <Subtitle as="span" className="text-sm font-normal text-foreground">
-                  {notification.title}
-                </Subtitle>
-                <Small className="text-xs font-normal text-muted-foreground">{notification.message}</Small>
-              </DropdownMenu.Item>
-            ))}
-          </div>
-          <div className="px-4 py-3 border-t border-border">
-            <Link
-              href="/dashboard/notifications"
-              className="text-sm font-normal text-brand-primary hover:underline"
-            >
-              View all notifications
-            </Link>
-          </div>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
-  );
-}
 
 function ProfileDropdown() {
   const { user, signOut } = useAuth();
@@ -414,39 +339,57 @@ export function LandingHeader() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 mt-2 w-72 bg-card rounded-2xl border border-border shadow-medium p-2"
+                        className="absolute top-full left-0 mt-2 w-[480px] bg-white rounded-2xl border border-border shadow-medium p-3 z-50"
                       >
-                        {courses.length > 0 ? (
-                          courses.map((course) => (
-                            <Link
-                              key={course.id}
-                              href={`/courses/${course.slug}`}
-                              className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors group"
-                            >
-                              <div className="flex-1 min-w-0">
-                                <Subtitle as="p" className="text-base">
-                                  {course.title}
-                                </Subtitle>
-                                <Paragraph className="text-sm truncate">
-                                  {course.fullName ||
-                                    course.description ||
-                                    course.title}
-                                </Paragraph>
-                              </div>
-                            </Link>
-                          ))
-                        ) : (
-                          <div className="p-3 text-center text-muted-foreground text-sm">
-                            Loading courses...
-                          </div>
-                        )}
-                        <div className="border-t border-border mt-2 pt-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          {courses.length > 0 ? (
+                            courses.map((course) => {
+                              const slug = course.slug;
+                              const style = slug === 'bsc-csit' ? 'bg-indigo-500' : 
+                                            slug === 'bit' ? 'bg-violet-500' :
+                                            slug === 'bca' ? 'bg-emerald-500' :
+                                            slug === 'bim' ? 'bg-amber-500' : 'bg-brand-primary';
+                              
+                              return (
+                                <Link
+                                  key={course.id}
+                                  href={`/courses/${slug}`}
+                                  className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted transition-all group"
+                                >
+                                  <div className={cn(
+                                    "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white shadow-sm transition-transform group-hover:scale-110",
+                                    style
+                                  )}>
+                                    <GraduationCap className="w-5 h-5" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-foreground mb-0.5">
+                                      {course.title}
+                                    </p>
+                                    <p className="text-[11px] text-muted-foreground leading-tight line-clamp-1">
+                                      {course.fullName || "Entrance Preparation"}
+                                    </p>
+                                  </div>
+                                </Link>
+                              );
+                            })
+                          ) : (
+                            <div className="col-span-2 p-4 text-center text-muted-foreground text-sm flex flex-col items-center gap-2">
+                               <div className="w-5 h-5 border-2 border-brand-primary border-t-transparent rounded-full animate-spin" />
+                               Loading courses...
+                            </div>
+                          )}
+                        </div>
+                        <div className="mt-3 pt-2 border-t border-border">
                           <Link
                             href="/courses"
-                            className="flex items-center justify-center gap-2 p-3 rounded-lg text-brand-primary hover:bg-brand-primary/10 transition-colors font-medium"
+                            className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-brand-primary hover:bg-brand-primary/5 transition-all group"
                           >
-                            <BookOpen className="w-4 h-4" />
-                            View All Courses
+                            <span className="flex items-center gap-2">
+                              <BookOpen className="w-4 h-4" />
+                              Explore all programs
+                            </span>
+                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                           </Link>
                         </div>
                       </motion.div>
@@ -463,7 +406,7 @@ export function LandingHeader() {
               <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
             ) : isAuthenticated ? (
               <div className="flex items-center gap-2">
-                <NotificationsDropdown />
+                {/* <NotificationsDropdown /> */}
                 <ProfileDropdown />
               </div>
             ) : (
@@ -614,7 +557,7 @@ export function LandingHeader() {
                           <p className="text-xs font-normal text-muted-foreground">Stay updated with your progress</p>
                         </div>
                       </div>
-                      <NotificationsDropdown />
+                      {/* <NotificationsDropdown /> */}
                     </div>
                     <Link href="/dashboard" className="block">
                       <Button className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white" size="lg">
