@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Title, Subtitle, Paragraph, Small } from "@/components/atoms";
-import { Card, CardContent } from "@/components/ui";
+import { Card, CardContent, Button } from "@/components/ui";
 import { Calendar, User, ArrowRight } from "lucide-react";
 
 const featuredPost = {
@@ -84,22 +85,32 @@ export default function BlogPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-linear-to-br from-accent to-background py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <Title className="mb-4">Blog</Title>
+      <section className="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-br from-brand-primary/5 via-background to-background" />
+        <div className="absolute top-20 left-20 w-64 h-64 bg-brand-primary/10 rounded-full blur-3xl opacity-50" />
+
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-3xl mx-auto text-center"
+          >
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium mb-6">
+              Latest Insights
+            </span>
+            <Title className="mb-4">Our Blog</Title>
             <Paragraph className="text-lg text-muted-foreground">
               Tips, guides, and insights to help you succeed in your entrance
               exam preparation.
             </Paragraph>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Categories */}
-      <section className="py-8 border-b">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap gap-2 justify-center">
+      <section className="py-6 border-b">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="flex flex-wrap gap-2 justify-start">
             {categories.map((category) => (
               <button
                 key={category}
@@ -117,8 +128,8 @@ export default function BlogPage() {
       </section>
 
       {/* Featured Post */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-12">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <Link href={featuredPost.href}>
             <Card className="overflow-hidden hover:shadow-medium transition-shadow">
               <div className="grid md:grid-cols-2">
@@ -155,9 +166,9 @@ export default function BlogPage() {
       </section>
 
       {/* Blog Posts Grid */}
-      <section className="py-12 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <Subtitle className="mb-8">Latest Posts</Subtitle>
+      <section className="py-10 lg:py-16 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <Subtitle className="mb-8 text-left">Latest Posts</Subtitle>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.map((post) => (
               <Link key={post.title} href={post.href}>
@@ -202,19 +213,23 @@ export default function BlogPage() {
       </section>
 
       {/* Newsletter CTA */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
+      <section className="py-10 lg:py-16 bg-background">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="max-w-2xl text-left">
             <Subtitle className="mb-4">Subscribe to Our Newsletter</Subtitle>
-            <Paragraph className="text-muted-foreground mb-6">
-              Get the latest articles, study tips, and exam updates delivered to
+            <Paragraph className="text-muted-foreground mb-8">
+              Get the latest articles, study tips, and exam updates delivered directly to
               your inbox.
             </Paragraph>
-            <form className="flex gap-2 max-w-md mx-auto">
-              <input type="email" placeholder="Enter your email" className="flex-1 px-4 py-2 border border-input rounded-lg bg-background text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20" />
-              <button type="submit" className="px-6 py-2 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors">
+            <form className="flex flex-col sm:flex-row gap-3 max-w-md">
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                className="flex-1 px-4 py-3 border border-border/60 rounded-xl bg-card text-sm focus:outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10" 
+              />
+              <Button type="submit" className="px-8 shadow-glow-primary">
                 Subscribe
-              </button>
+              </Button>
             </form>
           </div>
         </div>
