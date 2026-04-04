@@ -141,19 +141,19 @@ const features = [
 
 export default function OnlineClassesPage() {
   return (
-    <div className="min-h-screen pt-20">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
+      <section className="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden">
         <div className="absolute inset-0 gradient-hero" />
         <div className="absolute bottom-20 right-20 w-64 h-64 bg-secondary/10 rounded-full blur-3xl" />
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center max-w-3xl mx-auto"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/10 text-secondary text-sm font-medium mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium mb-4">
               <Video className="w-4 h-4" />
               Live & Interactive
             </span>
@@ -181,8 +181,8 @@ export default function OnlineClassesPage() {
       </section>
 
       {/* Live Now Section */}
-      <section className="py-12 bg-destructive/5 border-y border-destructive/20">
-        <div className="container mx-auto px-4">
+      <section className="py-8 lg:py-10 bg-destructive/5 border-y border-destructive/20">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="flex flex-col lg:flex-row items-center gap-8">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -233,8 +233,8 @@ export default function OnlineClassesPage() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => {
               const Icon = feature.icon;
@@ -266,8 +266,8 @@ export default function OnlineClassesPage() {
       </section>
 
       {/* Upcoming Classes */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="flex items-center justify-between mb-8">
             <div>
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-2">
@@ -347,22 +347,22 @@ export default function OnlineClassesPage() {
       </section>
 
       {/* Instructors */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-left mb-12"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 text-gold text-sm font-medium mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-orange/10 text-brand-orange text-sm font-medium mb-4">
               <Award className="w-4 h-4" />
               Expert Educators
             </span>
-            <h2 className="font-display text-3xl font-bold text-foreground mb-4">
-              Learn from the <span className="text-gradient-accent">Best Instructors</span>
+            <h2 className="font-display text-3xl font-bold text-foreground mb-4 text-left">
+              Learn from the <span className="text-brand-primary">Best Instructors</span>
             </h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-muted-foreground max-w-2xl text-left">
               Our instructors are experienced educators with proven track records of
               helping students achieve top ranks.
             </p>
@@ -395,7 +395,7 @@ export default function OnlineClassesPage() {
                     </p>
 
                     <div className="flex items-center justify-center gap-1 mb-4">
-                      <Star className="w-4 h-4 text-gold fill-gold" />
+                      <Star className="w-4 h-4 text-brand-orange fill-brand-orange" />
                       <span className="font-medium">{instructor.rating}</span>
                     </div>
 
@@ -412,8 +412,8 @@ export default function OnlineClassesPage() {
       </section>
 
       {/* Why Live Classes */}
-      <section className="py-20 bg-accent">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16 bg-accent">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -498,7 +498,7 @@ export default function OnlineClassesPage() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.3 }}
-                className="absolute -bottom-4 -left-4 bg-gold text-gold-foreground px-4 py-2 rounded-xl shadow-glow-accent font-semibold text-sm"
+                className="absolute -bottom-4 -left-4 bg-brand-orange text-white px-4 py-2 rounded-xl shadow-glow-accent font-semibold text-sm"
               >
                 500+ Hours of Live Content
               </motion.div>

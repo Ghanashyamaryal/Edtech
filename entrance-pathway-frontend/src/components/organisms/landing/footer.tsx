@@ -86,9 +86,9 @@ export function LandingFooter() {
   }
 
   return (
-    <footer className="bg-gray-900 bottom-0 text-background">
+    <footer className="bg-[#1C1B4B] bottom-0 text-white">
       {/* Main Footer */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 py-16">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-8">
           {/* Brand Section */}
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
@@ -135,7 +135,7 @@ export function LandingFooter() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                    className="p-2 rounded-lg bg-white/5 hover:bg-brand-primary/20 hover:text-white transition-all"
                     aria-label={social.name}
                   >
                     <Icon className="w-5 h-5" />
@@ -156,7 +156,7 @@ export function LandingFooter() {
                   <li key={link.name}>
                     <Link
                       href={link.href}
-                      className="text-gray-400 hover:text-background transition-colors text-sm"
+                      className="text-white/60 hover:text-brand-orange transition-colors text-sm"
                     >
                       {link.name}
                     </Link>
@@ -182,9 +182,9 @@ export function LandingFooter() {
               <Input
                 type="email"
                 placeholder="Enter your email"
-                className="bg-muted/10 border-muted/20 text-background placeholder:text-muted-foreground w-full md:w-64"
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/40 w-full md:w-64 focus:ring-brand-primary"
               />
-              <Button type="submit" className="gap-2 flex-shrink-0">
+              <Button type="submit" className="bg-brand-primary hover:bg-brand-primary/90 text-white gap-2 flex-shrink-0">
                 Subscribe
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -198,7 +198,7 @@ export function LandingFooter() {
         <div className="container  mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <Small className="text-sm">
-              &copy; {currentYear} Entrance Pathway. All rights reserved.
+              &copy; {currentYear} <Link href="https://itpro-entrance.com/">itpro-entrance</Link>. All rights reserved.
             </Small>
             <div className="flex items-center gap-6">
               <Link

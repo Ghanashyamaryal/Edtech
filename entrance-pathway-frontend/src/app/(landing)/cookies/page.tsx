@@ -76,9 +76,12 @@ export default function CookiesPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-linear-to-br from-accent to-background py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
+      <section className="bg-linear-to-br from-brand-primary/5 to-background pt-24 pb-12 lg:pt-32 lg:pb-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="max-w-3xl text-left">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium mb-6">
+              Legal Information
+            </span>
             <Title className="mb-4">Cookie Policy</Title>
             <Paragraph className="text-muted-foreground">
               Last updated: January 2026
@@ -88,9 +91,9 @@ export default function CookiesPage() {
       </section>
 
       {/* Content */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="max-w-3xl text-left">
             <Paragraph className="mb-8">
               This Cookie Policy explains how Entrance Pathway uses cookies and
               similar technologies to recognize you when you visit our platform.
