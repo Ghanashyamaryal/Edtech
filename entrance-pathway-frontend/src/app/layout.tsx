@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { Suspense } from "react";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/atoms/toaster";
 import { ProgressBar } from "@/components/atoms/progress-bar";
-
-const inter = Inter({ subsets: ["latin"] });
 
 const SITE_URL = "https://itpro-entrance.com";
 const SITE_NAME = "IT Pro Entrance";
@@ -83,8 +80,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className="font-sans antialiased">
         <Suspense fallback={null}>
           <ProgressBar />
         </Suspense>

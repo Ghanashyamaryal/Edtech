@@ -58,34 +58,41 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-linear-to-br from-accent to-background py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-linear-to-br from-brand-primary/5 to-background pt-24 pb-12 lg:pt-32 lg:pb-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="max-w-3xl mx-auto text-center">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium mb-6">
+              <Mail className="w-4 h-4" />
+              Get in Touch
+            </span>
             <Title className="mb-4">Contact Us</Title>
             <Paragraph className="text-lg text-muted-foreground">
-              Have questions? We'd love to hear from you. Send us a message and
-              we'll respond as soon as possible.
+              Have questions or need support? We&apos;d love to hear from you. Send us a message and
+              our team will respond as soon as possible.
             </Paragraph>
           </div>
         </div>
       </section>
 
       {/* Contact Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+      <section className="py-10 lg:py-16 bg-background">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="grid lg:grid-cols-2 gap-16">
             {/* Contact Form */}
-            <Card className="rounded-xl shadow-medium">
-              <CardContent className="pt-6">
+            <Card className="rounded-2xl border-border/60 shadow-medium overflow-hidden">
+              <CardContent className="p-8">
                 <Subtitle className="mb-6">Send us a Message</Subtitle>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <RHFInput name="name" control={control} label="Your Name" />
-                  <RHFInput
-                    name="email"
-                    control={control}
-                    label="Email Address"
-                    type="email"
-                  />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <RHFInput name="name" control={control} label="Your Name" placeholder="John Doe" />
+                    <RHFInput
+                      name="email"
+                      control={control}
+                      label="Email Address"
+                      type="email"
+                      placeholder="john@example.com"
+                    />
+                  </div>
                   <RHFInput
                     name="subject"
                     control={control}
@@ -96,10 +103,10 @@ export default function ContactPage() {
                     name="message"
                     control={control}
                     label="Message"
-                    placeholder="Your message..."
-                    className="min-h-[120px]"
+                    placeholder="Your message details..."
+                    className="min-h-[150px]"
                   />
-                  <Button type="submit" className="w-full">
+                  <Button type="submit" className="w-full py-6 text-base font-semibold shadow-glow-brand">
                     Send Message
                   </Button>
                 </form>
@@ -107,37 +114,37 @@ export default function ContactPage() {
             </Card>
 
             {/* Contact Info */}
-            <div>
-              <Subtitle className="mb-6">Get in Touch</Subtitle>
-              <div className="space-y-6">
+            <div className="flex flex-col justify-center">
+              <Subtitle className="mb-8">Contact Information</Subtitle>
+              <div className="grid sm:grid-cols-2 gap-6 mb-10">
                 {contactInfo.map((item) => {
                   const Icon = item.icon;
                   const content = (
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
+                    <Card key={item.title} className="group hover:bg-muted/30 transition-colors border-border/40 text-left">
+                      <CardContent className="p-5">
+                        <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                          <Icon className="w-5 h-5 text-brand-primary" />
+                        </div>
                         <Subtitle as="h3" className="text-base mb-1">
                           {item.title}
                         </Subtitle>
-                        <Paragraph className="text-muted-foreground">
+                        <Paragraph className="text-sm text-muted-foreground break-all">
                           {item.value}
                         </Paragraph>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   );
 
                   return item.href ? (
                     <a
                       key={item.title}
                       href={item.href}
-                      className="block hover:bg-muted/30 p-4 -m-4 rounded-lg transition-colors"
+                      className="block"
                     >
                       {content}
                     </a>
                   ) : (
-                    <div key={item.title} className="p-4 -m-4">
+                    <div key={item.title}>
                       {content}
                     </div>
                   );
@@ -145,10 +152,13 @@ export default function ContactPage() {
               </div>
 
               {/* Map Placeholder */}
-              <div className="mt-8 bg-muted/30 rounded-xl h-64 flex items-center justify-center">
-                <Paragraph className="text-muted-foreground">
-                  Map coming soon
-                </Paragraph>
+              <div className="relative rounded-2xl overflow-hidden bg-muted/40 h-48 flex items-center justify-center border-2 border-dashed border-border/60">
+                <div className="text-center group cursor-default">
+                  <MapPin className="w-8 h-8 text-muted-foreground mx-auto mb-2 group-hover:text-brand-primary transition-colors" />
+                  <Paragraph className="text-muted-foreground font-medium text-sm">
+                    Kathmandu, Nepal
+                  </Paragraph>
+                </div>
               </div>
             </div>
           </div>

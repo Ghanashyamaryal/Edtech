@@ -53,12 +53,12 @@ const scaleIn = {
 
 // Course accent styles - using primary/secondary family only
 const courseStyles: Record<string, { accent: string; iconBg: string; text: string }> = {
-  'bsc-csit': { accent: 'bg-primary/10', iconBg: 'bg-primary', text: 'text-primary' },
-  'bit': { accent: 'bg-indigo-50', iconBg: 'bg-indigo-500', text: 'text-indigo-600' },
-  'bca': { accent: 'bg-secondary/10', iconBg: 'bg-secondary', text: 'text-secondary' },
-  'bim': { accent: 'bg-teal-50', iconBg: 'bg-teal-600', text: 'text-teal-600' },
+  'bsc-csit': { accent: 'bg-brand-primary/10', iconBg: 'bg-brand-primary', text: 'text-brand-primary' },
+  'bit': { accent: 'bg-brand-orange/10', iconBg: 'bg-brand-orange', text: 'text-brand-orange' },
+  'bca': { accent: 'bg-brand-accent-yellow/10', iconBg: 'bg-brand-accent-yellow', text: 'text-brand-accent-yellow' },
+  'bim': { accent: 'bg-brand-muted-yellow/10', iconBg: 'bg-brand-muted-yellow', text: 'text-brand-muted-yellow' },
 };
-const defaultStyle = { accent: 'bg-primary/10', iconBg: 'bg-primary', text: 'text-primary' };
+const defaultStyle = { accent: 'bg-brand-primary/10', iconBg: 'bg-brand-primary', text: 'text-brand-primary' };
 
 const features = [
   {
@@ -141,65 +141,65 @@ export default function HomePage() {
   return (
     <>
       {/* ====== HERO ====== */}
-      <section className="relative overflow-hidden pt-28 pb-16 lg:pt-40 lg:pb-28">
+      <section className="relative overflow-hidden pt-24 pb-12 lg:pt-32 lg:pb-16">
         {/* Background decoration */}
-        <div className="absolute inset-0 bg-linear-to-b from-accent/40 via-transparent to-transparent" />
-        <div className="absolute top-0 right-0 w-150 h-150 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-100 h-100 bg-secondary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-b from-brand-primary/[0.03] via-transparent to-transparent" />
+        <div className="absolute top-0 right-0 w-150 h-150 bg-brand-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-100 h-100 bg-brand-orange/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none" />
 
-        <div className="container relative mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="w-full max-w-[1600px] relative px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-10 items-center">
             {/* Left — Text */}
             <motion.div initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
-                <GraduationCap className="w-4 h-4" />
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/5 border border-brand-primary/10 text-brand-primary text-sm font-medium mb-6">
+                <Sparkles className="w-4 h-4 text-brand-orange" />
                 Nepal&apos;s #1 Entrance Preparation Platform
               </div>
 
-              <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[3.5rem] xl:text-6xl font-bold text-foreground leading-[1.1] mb-6">
+              <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[3.5rem] xl:text-6xl font-bold text-foreground leading-[1.1] mb-5">
                 Your pathway from
                 <br />
-                <span className="text-primary">preparation</span> to{' '}
-                <span className="text-secondary">celebration</span>
+                <span className="text-brand-primary">preparation</span> to{' '}
+                <span className="text-brand-orange">celebration</span>
               </h1>
 
-              <p className="text-lg text-muted-foreground max-w-lg mb-8 leading-relaxed">
+              <p className="text-lg text-muted-foreground max-w-lg mb-6 leading-relaxed">
                 Comprehensive preparation for BSc CSIT, BCA, BIT & BIM entrance exams.
                 Expert video lectures, live classes, 10,000+ practice questions, and real mock tests.
               </p>
 
-              <div className="flex flex-wrap gap-3 mb-10">
+              <div className="flex flex-wrap gap-3 mb-8">
                 <Link href="/auth/signup">
-                  <Button size="lg" className="gap-2 font-semibold">
+                  <Button size="lg" className="bg-brand-primary hover:bg-brand-primary/90 text-white gap-2 font-semibold shadow-glow-primary">
                     Start Free Trial
                     <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
                 <Link href="/courses">
-                  <Button variant="outline" size="lg" className="gap-2">
+                  <Button variant="outline" size="lg" className="border-brand-primary/20 text-brand-primary hover:bg-brand-primary/5 gap-2">
                     <BookOpen className="w-4 h-4" />
                     Explore Courses
                   </Button>
                 </Link>
               </div>
 
-              {/* Trust bar — unified with primary/secondary */}
+              {/* Trust bar — Clean and professional */}
               <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-secondary" />
+                  <div className="w-8 h-8 rounded-full bg-brand-orange/10 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-brand-orange" />
                   </div>
                   <span><strong className="text-foreground">95%</strong> Success Rate</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Users className="w-4 h-4 text-primary" />
+                  <div className="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-brand-primary" />
                   </div>
                   <span><strong className="text-foreground">5,000+</strong> Students</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Star className="w-4 h-4 text-primary" />
+                  <div className="w-8 h-8 rounded-full bg-brand-yellow/10 flex items-center justify-center">
+                    <Star className="w-4 h-4 text-brand-accent-yellow fill-brand-accent-yellow" />
                   </div>
                   <span><strong className="text-foreground">4.8</strong> Rating</span>
                 </div>
@@ -236,29 +236,29 @@ export default function HomePage() {
                   />
                 </div>
 
-                {/* Stats grid — consistent primary/secondary */}
+                {/* Stats grid — unified brand colors */}
                 <div className="grid grid-cols-3 gap-3 mb-6">
-                  <div className="text-center p-3 rounded-xl bg-primary/5 border border-primary/10">
-                    <p className="text-2xl font-bold text-primary">85%</p>
+                  <div className="text-center p-3 rounded-xl bg-brand-primary/5 border border-brand-primary/10">
+                    <p className="text-2xl font-bold text-brand-primary">85%</p>
                     <p className="text-xs text-muted-foreground">Accuracy</p>
                   </div>
-                  <div className="text-center p-3 rounded-xl bg-secondary/5 border border-secondary/10">
-                    <p className="text-2xl font-bold text-secondary">45</p>
+                  <div className="text-center p-3 rounded-xl bg-brand-orange/5 border border-brand-orange/10">
+                    <p className="text-2xl font-bold text-brand-orange">45</p>
                     <p className="text-xs text-muted-foreground">Days Left</p>
                   </div>
-                  <div className="text-center p-3 rounded-xl bg-primary/5 border border-primary/10">
-                    <p className="text-2xl font-bold text-primary">#23</p>
+                  <div className="text-center p-3 rounded-xl bg-brand-primary/5 border border-brand-primary/10">
+                    <p className="text-2xl font-bold text-brand-primary">#20</p>
                     <p className="text-xs text-muted-foreground">Your Rank</p>
                   </div>
                 </div>
 
-                {/* Subject progress bars — indigo/teal shades only */}
+                {/* Subject progress bars — brand colors */}
                 <div className="space-y-3">
                   {[
                     { name: 'Mathematics', pct: 88, color: 'bg-primary' },
-                    { name: 'Computer Science', pct: 72, color: 'bg-secondary' },
-                    { name: 'Physics', pct: 65, color: 'bg-indigo-400' },
-                    { name: 'English', pct: 50, color: 'bg-teal-400' },
+                    { name: 'Computer Science', pct: 72, color: 'bg-brand-orange' },
+                    { name: 'Physics', pct: 65, color: 'bg-brand-accent-yellow' },
+                    { name: 'English', pct: 50, color: 'bg-brand-muted-yellow' },
                   ].map((s) => (
                     <div key={s.name}>
                       <div className="flex justify-between text-xs mb-1">
@@ -283,7 +283,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.2 }}
-                className="absolute -top-3 -right-3 bg-primary text-primary-foreground px-3.5 py-1.5 rounded-xl shadow-lg text-sm font-semibold flex items-center gap-1.5"
+                className="absolute -top-3 -right-3 bg-brand-primary text-white px-3.5 py-1.5 rounded-xl shadow-glow-primary text-sm font-semibold flex items-center gap-1.5"
               >
                 <Trophy className="w-3.5 h-3.5" />
                 23 Selected Today!
@@ -294,10 +294,10 @@ export default function HomePage() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 1.4 }}
-                className="absolute -bottom-3 -left-3 bg-card border border-border px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-3"
+                className="absolute -bottom-10 -left-10 bg-card border border-border px-4 py-2.5 rounded-xl shadow-medium flex items-center gap-3"
               >
-                <div className="w-9 h-9 rounded-full bg-secondary/10 flex items-center justify-center">
-                  <Award className="w-5 h-5 text-secondary" />
+                <div className="w-9 h-9 rounded-full bg-brand-orange/10 flex items-center justify-center">
+                  <Award className="w-5 h-5 text-brand-orange" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-foreground">Top 10 Rank</p>
@@ -310,8 +310,8 @@ export default function HomePage() {
       </section>
 
       {/* ====== STATS BAR ====== */}
-      <section className="py-6 border-y border-border/50 bg-card">
-        <div className="container mx-auto px-4">
+      <section className="py-4 border-y border-border/50 bg-card">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <motion.div
             variants={staggerContainer}
             initial="initial"
@@ -330,13 +330,13 @@ export default function HomePage() {
                   <motion.div
                     whileHover={{ scale: 1.1, rotate: 5 }}
                     transition={{ type: 'spring', stiffness: 300 }}
-                    className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0"
+                    className="w-10 h-10 rounded-xl bg-brand-primary/5 flex items-center justify-center shrink-0"
                   >
-                    <Icon className="w-5 h-5 text-primary" />
+                    <Icon className="w-5 h-5 text-brand-primary" />
                   </motion.div>
                   <div>
                     <p className="text-xl md:text-2xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</p>
                   </div>
                 </motion.div>
               );
@@ -346,17 +346,17 @@ export default function HomePage() {
       </section>
 
       {/* ====== COURSES ====== */}
-      <section className="py-16 lg:py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <motion.div {...fadeUp} className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-xs font-semibold uppercase tracking-wider mb-4">
+      <section className="py-10 lg:py-12 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <motion.div {...fadeUp} className="text-left mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-4">
               <BookOpen className="w-3.5 h-3.5" />
               Our Programs
             </div>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
               Prepare for your dream course
             </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            <p className="text-muted-foreground text-lg max-w-xl">
               Tailored preparation for each entrance exam with expert-designed materials
             </p>
           </motion.div>
@@ -403,7 +403,7 @@ export default function HomePage() {
                               )}
                               {course.rating != null && (
                                 <span className="flex items-center gap-1">
-                                  <Star className="w-3.5 h-3.5 text-primary fill-primary/80" />
+                                  <Star className="w-3.5 h-3.5 text-brand-orange fill-brand-orange/80" />
                                   {course.rating.toFixed(1)}
                                 </span>
                               )}
@@ -426,7 +426,7 @@ export default function HomePage() {
           </div>
 
           {courses.length > 0 && (
-            <div className="text-center mt-10">
+            <div className="text-left mt-10">
               <Link href="/courses">
                 <Button variant="outline" size="lg" className="gap-2">
                   View All Courses <ArrowRight className="w-4 h-4" />
@@ -438,17 +438,17 @@ export default function HomePage() {
       </section>
 
       {/* ====== FEATURES ====== */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <motion.div {...fadeUp} className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-4">
+      <section className="py-10 lg:py-12">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <motion.div {...fadeUp} className="text-left mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-4">
               <Sparkles className="w-3.5 h-3.5" />
               Platform Features
             </div>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
               Everything you need to succeed
             </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            <p className="text-muted-foreground text-lg max-w-xl">
               A comprehensive toolkit designed for entrance exam success
             </p>
           </motion.div>
@@ -468,13 +468,13 @@ export default function HomePage() {
                   variants={staggerItem}
                   whileHover={{ y: -6, transition: { duration: 0.2 } }}
                 >
-                  <div className="h-full p-6 rounded-2xl border border-border/50 bg-card hover:border-primary/20 hover:shadow-md transition-all duration-200 group cursor-default">
+                  <div className="h-full p-6 rounded-2xl border border-border/50 bg-card hover:border-brand-primary/20 hover:shadow-medium transition-all duration-200 group cursor-default">
                     <motion.div
                       whileHover={{ scale: 1.15, rotate: -5 }}
                       transition={{ type: 'spring', stiffness: 300 }}
-                      className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+                      className="w-11 h-11 rounded-xl bg-brand-primary/5 flex items-center justify-center mb-4 group-hover:bg-brand-primary group-hover:text-white transition-colors"
                     >
-                      <Icon className="w-5 h-5 text-primary group-hover:text-primary-foreground transition-colors" />
+                      <Icon className="w-5 h-5 text-brand-primary group-hover:text-white transition-colors" />
                     </motion.div>
                     <h3 className="font-display font-bold text-foreground mb-1.5">{feature.title}</h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
@@ -487,10 +487,10 @@ export default function HomePage() {
       </section>
 
       {/* ====== HOW IT WORKS ====== */}
-      <section className="py-16 lg:py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <motion.div {...fadeUp} className="text-center mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-xs font-semibold uppercase tracking-wider mb-4">
+      <section className="py-10 lg:py-12 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <motion.div {...fadeUp} className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/10 text-brand-orange text-xs font-semibold uppercase tracking-wider mb-4">
               <Zap className="w-3.5 h-3.5" />
               How It Works
             </div>
@@ -517,16 +517,16 @@ export default function HomePage() {
                 className="text-center relative"
               >
                 {i < 2 && (
-                  <div className="hidden md:block absolute top-8 left-[60%] w-[80%] border-t-2 border-dashed border-primary/20" />
+                  <div className="hidden md:block absolute top-8 left-[60%] w-[80%] border-t-2 border-dashed border-brand-primary/20" />
                 )}
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 5 }}
                   transition={{ type: 'spring', stiffness: 300 }}
-                  className="relative z-10 w-16 h-16 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center mx-auto mb-5 shadow-glow-primary cursor-default"
+                  className="relative z-10 w-16 h-16 rounded-2xl bg-brand-primary text-white flex items-center justify-center mx-auto mb-5 shadow-glow-primary cursor-default"
                 >
                   <item.icon className="w-7 h-7" />
                 </motion.div>
-                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-2">Step {item.step}</p>
+                <p className="text-xs font-bold text-brand-primary uppercase tracking-widest mb-2">Step {item.step}</p>
                 <h3 className="font-display font-bold text-lg text-foreground mb-2">{item.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
               </motion.div>
@@ -536,10 +536,10 @@ export default function HomePage() {
       </section>
 
       {/* ====== TESTIMONIALS ====== */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <motion.div {...fadeUp} className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold uppercase tracking-wider mb-4">
+      <section className="py-10 lg:py-12">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <motion.div {...fadeUp} className="text-left mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-4">
               <Award className="w-3.5 h-3.5" />
               Success Stories
             </div>
@@ -548,6 +548,8 @@ export default function HomePage() {
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
               Real students, real results — see how ITpro Entrance made the difference
+            <p className="text-muted-foreground text-lg max-w-xl">
+              Real students, real results — see how Entrance Pathway made the difference
             </p>
           </motion.div>
 
@@ -556,7 +558,7 @@ export default function HomePage() {
             initial="initial"
             whileInView="whileInView"
             viewport={{ once: true }}
-            className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+            className="grid md:grid-cols-3 gap-6 max-w-5xl"
           >
             {testimonials.map((t) => (
               <motion.div
@@ -569,7 +571,7 @@ export default function HomePage() {
                     {/* Stars */}
                     <div className="flex gap-0.5 mb-4">
                       {[...Array(5)].map((_, j) => (
-                        <Star key={j} className="w-4 h-4 text-primary fill-primary" />
+                        <Star key={j} className="w-4 h-4 text-brand-accent-yellow fill-brand-accent-yellow" />
                       ))}
                     </div>
 
@@ -578,8 +580,8 @@ export default function HomePage() {
                     </p>
 
                     <div className="flex items-center gap-3 pt-4 border-t border-border/50">
-                      <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                        <span className="text-sm font-bold text-primary-foreground">
+                      <div className="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center">
+                        <span className="text-sm font-bold text-white">
                           {t.avatar}
                         </span>
                       </div>
@@ -597,16 +599,16 @@ export default function HomePage() {
       </section>
 
       {/* ====== WHY CHOOSE US ====== */}
-      <section className="py-16 lg:py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+      <section className="py-10 lg:py-12 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl">
             <motion.div {...fadeUp}>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-xs font-semibold uppercase tracking-wider mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-4">
                 <Shield className="w-3.5 h-3.5" />
-                Why Choose Us
+                Why Entrance Pathway
               </div>
               <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
-                Built by educators, trusted by thousands
+                Built by educators, <span className="text-brand-primary">trusted</span> by thousands
               </h2>
               <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
                 We combine technology with expert teaching to create the most effective entrance
@@ -628,8 +630,8 @@ export default function HomePage() {
                     transition={{ delay: i * 0.08 }}
                     className="flex gap-3"
                   >
-                    <div className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 className="w-4 h-4 text-secondary" />
+                    <div className="w-6 h-6 rounded-full bg-brand-orange/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-4 h-4 text-brand-orange" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-foreground text-sm">{item.title}</h4>
@@ -650,10 +652,10 @@ export default function HomePage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { value: '47', label: 'Top 100 Rankers', color: 'text-primary' },
-                    { value: '12', label: 'Top 10 Ranks', color: 'text-secondary' },
-                    { value: '95%', label: 'Pass Rate', color: 'text-primary' },
-                    { value: '4.8/5', label: 'Student Rating', color: 'text-secondary' },
+                    { value: '47', label: 'Top 100 Rankers', color: 'text-brand-primary' },
+                    { value: '12', label: 'Top 10 Ranks', color: 'text-brand-orange' },
+                    { value: '95%', label: 'Pass Rate', color: 'text-brand-primary' },
+                    { value: '4.8/5', label: 'Student Rating', color: 'text-brand-orange' },
                   ].map((item) => (
                     <div key={item.label} className="text-center p-4 rounded-xl bg-muted/50">
                       <p className={`text-3xl font-bold ${item.color} mb-1`}>{item.value}</p>
@@ -668,33 +670,32 @@ export default function HomePage() {
       </section>
 
       {/* ====== CTA ====== */}
-      <section className="py-16 lg:py-20">
-        <div className="container mx-auto px-4">
-          <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-primary to-indigo-700 p-10 md:p-16 text-center">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+      <section className="py-10 lg:py-12">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="relative overflow-hidden rounded-3xl bg-brand-primary p-8 md:p-16 text-center shadow-glow-primary">
+            {/* Background elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-yellow/20 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+            
             <div className="relative max-w-2xl mx-auto">
-              <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-5 leading-tight">
-                Ready to start your journey?
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-5 leading-tight">
+                Ready to secure your <span className="text-brand-orange">future</span>?
               </h2>
-              <p className="text-primary-foreground/80 text-lg mb-8">
-                Join thousands of students already on their pathway to top IT colleges in Nepal.
+              <p className="text-white/80 text-lg mb-8 leading-relaxed">
+                Join 5,000+ students already on their pathway to top IT colleges in Nepal.
+                Start your preparation today for free.
               </p>
-              <div className="flex flex-wrap gap-4 justify-center mb-8">
+              <div className="flex flex-wrap gap-4 justify-center">
                 <Link href="/auth/signup">
-                  <Button size="lg" className="gap-2 font-semibold bg-white text-primary hover:bg-white/90">
-                    Start Free Trial <ArrowRight className="w-4 h-4" />
+                  <Button size="lg" className="bg-brand-orange hover:bg-brand-orange/90 text-white gap-2 font-bold px-8 h-14 rounded-xl shadow-glow-brand transition-all hover:scale-105 active:scale-95">
+                    Start Free Trial <ArrowRight className="w-5 h-5" />
                   </Button>
                 </Link>
                 <Link href="/contact">
-                  <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 hover:text-white gap-2">
+                  <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 hover:text-white gap-2 px-8 h-14 rounded-xl">
                     Talk to Us
                   </Button>
                 </Link>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-5 text-sm text-primary-foreground/70">
-                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> 7-day free trial</span>
-                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> No credit card needed</span>
-                <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4" /> Cancel anytime</span>
               </div>
             </div>
           </div>
