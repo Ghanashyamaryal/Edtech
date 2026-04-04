@@ -380,7 +380,7 @@ export default function ResultsPage() {
               Want to See Your Name Here?
             </Subtitle>
             <Paragraph className="mb-6">
-              Join Entrance Pathway and start your preparation journey today. Our
+              Join ITpro Entrance and start your preparation journey today. Our
               comprehensive courses and expert guidance have helped thousands achieve
               their dreams.
             </Paragraph>

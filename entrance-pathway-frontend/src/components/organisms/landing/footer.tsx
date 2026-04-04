@@ -41,7 +41,6 @@ const footerLinks = {
     title: "Company",
     links: [
       { name: "About Us", href: "/about" },
-      { name: "Careers", href: "/careers" },
       { name: "Contact", href: "/contact" },
       { name: "Privacy Policy", href: "/privacy" },
       { name: "Terms of Service", href: "/terms" },
@@ -62,17 +61,17 @@ const socialLinks = [
   {
     name: "Facebook",
     icon: Facebook,
-    href: "https://facebook.com/entrancepathway",
+    href: "https://facebook.com/itproentrance",
   },
   {
     name: "Instagram",
     icon: Instagram,
-    href: "https://instagram.com/entrancepathway",
+    href: "https://instagram.com/itproentrance",
   },
   {
     name: "YouTube",
     icon: Youtube,
-    href: "https://youtube.com/@entrancepathway",
+    href: "https://youtube.com/@itproentrance",
   },
 ];
 
@@ -94,7 +93,7 @@ export function LandingFooter() {
           <div className="col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" className="flex items-center mb-8 group">
               <div className="flex items-center justify-center h-16 w-56 overflow-hidden transform transition-all duration-700 p-2 rounded-2xl group-hover:scale-105">
-                 <img src="/assets/logo.png" alt="Entrance Pathway Logo" className="w-full h-full object-contain filter drop-shadow-xl brightness-105" />
+                 <img src="/assets/logo.png" alt="ITpro Entrance Logo" className="w-full h-full object-contain filter drop-shadow-xl brightness-105" />
               </div>
             </Link>
             <Paragraph className="mb-6 max-w-sm">
@@ -106,11 +105,11 @@ export function LandingFooter() {
             {/* Contact Info */}
             <div className="space-y-3 mb-4">
               <a
-                href="mailto:info@entrancepathway.com"
+                href="mailto:info@itproentrance.com"
                 className="flex items-center gap-3 text-muted-foreground hover:text-background transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                info@entrancepathway.com
+                info@itproentrance.com
               </a>
               <a
                 href="tel:+9779800000000"
@@ -198,7 +197,7 @@ export function LandingFooter() {
         <div className="container  mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <Small className="text-sm">
-              &copy; {currentYear} Entrance Pathway. All rights reserved.
+              &copy; {currentYear} ITpro Entrance. All rights reserved.
             </Small>
             <div className="flex items-center gap-6">
               <Link

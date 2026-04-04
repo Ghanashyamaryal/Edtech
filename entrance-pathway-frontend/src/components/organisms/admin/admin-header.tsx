@@ -39,7 +39,7 @@ export function AdminHeader({ onMenuClick, className }: AdminHeaderProps) {
         {/* Logo / Title */}
         <Link href="/admin" className="flex items-center">
           <div className="flex items-center justify-center h-8 w-32 overflow-hidden">
-            <img src="/assets/logo.png" alt="Entrance Pathway Logo" className="w-full h-full object-contain object-left" />
+            <img src="/assets/logo.png" alt="ITpro Entrance Logo" className="w-full h-full object-contain object-left" />
           </div>
         </Link>
       </div>

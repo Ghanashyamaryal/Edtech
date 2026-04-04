@@ -104,7 +104,7 @@ export default function GuidePage() {
             <Title className="mb-4">Student Guide</Title>
             <Paragraph className="text-lg text-muted-foreground">
               Everything you need to know to make the most of your learning
-              journey with Entrance Pathway.
+              journey with ITpro Entrance.
             </Paragraph>
           </div>
         </div>

@@ -92,7 +92,7 @@ export default function CookiesPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
             <Paragraph className="mb-8">
-              This Cookie Policy explains how Entrance Pathway uses cookies and
+              This Cookie Policy explains how ITpro Entrance uses cookies and
               similar technologies to recognize you when you visit our platform.
               It explains what these technologies are and why we use them, as
               well as your rights to control our use of them.
@@ -161,10 +161,10 @@ export default function CookiesPage() {
                 If you have any questions about our use of cookies or other
                 technologies, please email us at{" "}
                 <a
-                  href="mailto:privacy@entrancepathway.com"
+                  href="mailto:privacy@itproentrance.com"
                   className="text-primary hover:underline"
                 >
-                  privacy@entrancepathway.com
+                  privacy@itproentrance.com
                 </a>
                 .
               </Paragraph>
