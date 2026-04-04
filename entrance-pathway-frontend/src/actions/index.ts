@@ -161,5 +161,17 @@ export {
   type UpdateRecordedLectureInput,
 } from './recorded-lectures';
 
+// Site Settings & Contact
+export {
+  getContactInfo,
+  updateContactInfo,
+  submitContactMessage,
+  getContactMessages,
+  markMessageRead,
+  deleteContactMessage,
+  type ContactInfo,
+  type ContactMessage,
+} from './site-settings';
+
 // Utils
 export { type ActionResult } from './utils';

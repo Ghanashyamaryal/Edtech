@@ -106,7 +106,6 @@ export default function FAQsPage() {
             <Title className="mb-4">Frequently Asked Questions</Title>
             <Paragraph className="text-lg text-muted-foreground">
               Find answers to common questions about ITpro Entrance.
-              Everything you need to know about Entrance Pathway. Find answers to common questions.
             </Paragraph>
           </div>
         </div>

@@ -48,9 +48,9 @@ const supportChannels = [
     icon: Mail,
     title: "Email Support",
     description: "Send us an email and we'll respond within 24 hours.",
-    availability: "support@itproentrance.com",
+    availability: "itproentrance@gmail.com",
     action: "Send Email",
-    href: "mailto:support@itproentrance.com",
+    href: "mailto:itproentrance@gmail.com",
   },
 ];
 

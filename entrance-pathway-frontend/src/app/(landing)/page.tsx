@@ -548,8 +548,6 @@ export default function HomePage() {
             </h2>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
               Real students, real results — see how ITpro Entrance made the difference
-            <p className="text-muted-foreground text-lg max-w-xl">
-              Real students, real results — see how Entrance Pathway made the difference
             </p>
           </motion.div>
 
@@ -605,7 +603,7 @@ export default function HomePage() {
             <motion.div {...fadeUp}>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-4">
                 <Shield className="w-3.5 h-3.5" />
-                Why Entrance Pathway
+                Why ITpro Entrance
               </div>
               <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-4">
                 Built by educators, <span className="text-brand-primary">trusted</span> by thousands

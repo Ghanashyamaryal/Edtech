@@ -46,8 +46,12 @@ const DEFAULT_SUBJECT_ICONS: Record<string, string> = {
   'default': '📚',
 };
 
+function isEmoji(str: string): boolean {
+  return /^\p{Emoji}/u.test(str) && str.length <= 4;
+}
+
 function getSubjectIcon(name: string, icon: string | null | undefined): string {
-  if (icon) return icon;
+  if (icon && isEmoji(icon)) return icon;
   const normalizedName = name.toLowerCase();
   return DEFAULT_SUBJECT_ICONS[normalizedName] || DEFAULT_SUBJECT_ICONS['default'];
 }
@@ -215,7 +219,7 @@ export default function NotesPage() {
                   <Link href={`/notes/subject/${subject.id}`}>
                     <Card className="h-full hover:shadow-medium hover:border-primary/30 transition-all cursor-pointer group">
                       <CardContent className="pt-6 text-center">
-                        <div className="text-4xl mb-3">
+                        <div className="text-3xl mb-3">
                           {getSubjectIcon(subject.name, subject.icon)}
                         </div>
                         <h3 className="font-display font-semibold text-foreground mb-1">
@@ -246,7 +250,7 @@ export default function NotesPage() {
       {/* Featured Notes */}
       <section className="py-10 lg:py-16">
         <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/10 text-brand-orange text-sm font-medium mb-2">
                 <Sparkles className="w-4 h-4" />
@@ -425,7 +429,7 @@ export default function NotesPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="gap-2 w-full sm:w-auto mt-2 sm:mt-0 shrink-0"
+                              className="gap-2 w-full sm:w-auto shrink-0"
                               onClick={() => handleDownload(note)}
                             >
                               <Download className="w-4 h-4" />

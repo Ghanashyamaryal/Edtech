@@ -381,8 +381,6 @@ export default function ResultsPage() {
             </Subtitle>
             <Paragraph className="mb-6">
               Join ITpro Entrance and start your preparation journey today. Our
-            <Paragraph className="mb-8">
-              Join Entrance Pathway and start your preparation journey today. Our
               comprehensive courses and expert guidance have helped thousands achieve
               their dreams.
             </Paragraph>

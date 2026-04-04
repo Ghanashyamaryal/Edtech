@@ -33,7 +33,6 @@ const footerLinks = {
       { name: "Study Notes", href: "/notes" },
       { name: "Mock Tests", href: "/mock-tests" },
       { name: "Online Classes", href: "/online-classes" },
-      { name: "Results", href: "/results" },
       { name: "Blog", href: "/blog" },
     ],
   },
@@ -61,17 +60,12 @@ const socialLinks = [
   {
     name: "Facebook",
     icon: Facebook,
-    href: "https://facebook.com/itproentrance",
+    href: "https://www.facebook.com/itproentrance1",
   },
   {
     name: "Instagram",
     icon: Instagram,
     href: "https://instagram.com/itproentrance",
-  },
-  {
-    name: "YouTube",
-    icon: Youtube,
-    href: "https://youtube.com/@itproentrance",
   },
 ];
 
@@ -105,18 +99,11 @@ export function LandingFooter() {
             {/* Contact Info */}
             <div className="space-y-3 mb-4">
               <a
-                href="mailto:info@itproentrance.com"
+                href="mailto:itproentrance@gmail.com"
                 className="flex items-center gap-3 text-muted-foreground hover:text-background transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                info@itproentrance.com
-              </a>
-              <a
-                href="tel:+9779800000000"
-                className="flex items-center gap-3 text-muted-foreground hover:text-background transition-colors"
-              >
-                <Phone className="w-4 h-4" />
-                +977 980-0000-000
+                itproentrance@gmail.com
               </a>
               <div className="flex items-start gap-3 text-muted-foreground">
                 <MapPin className="w-4 h-4 mt-0.5" />

@@ -9,54 +9,45 @@ import {
   Video,
   FileText,
   HelpCircle,
-  ArrowRight,
 } from "lucide-react";
 
 const helpCategories = [
   {
-    icon: User,
-    title: "Account & Profile",
-    description: "Manage your account settings, password, and profile information.",
-    href: "/help/account",
-  },
-  {
     icon: BookOpen,
-    title: "Courses & Enrollment",
-    description: "Learn how to browse, enroll, and access your courses.",
-    href: "/help/courses",
-  },
-  {
-    icon: CreditCard,
-    title: "Payments & Billing",
-    description: "Payment methods, invoices, and subscription management.",
-    href: "/help/billing",
-  },
-  {
-    icon: Video,
-    title: "Live Classes",
-    description: "Join live sessions, recordings, and technical requirements.",
-    href: "/help/live-classes",
+    title: "Courses",
+    description: "Browse available courses and start your preparation journey.",
+    href: "/courses",
   },
   {
     icon: FileText,
-    title: "Study Materials",
-    description: "Download notes, access resources, and study guides.",
-    href: "/help/materials",
+    title: "Study Notes",
+    description: "Download notes, formula sheets, and study materials.",
+    href: "/notes",
+  },
+  {
+    icon: Video,
+    title: "Online Classes",
+    description: "Join live sessions and access recorded lectures.",
+    href: "/online-classes",
   },
   {
     icon: HelpCircle,
-    title: "Technical Support",
-    description: "Troubleshooting common issues and technical problems.",
+    title: "Mock Tests",
+    description: "Practice with realistic mock tests to boost your confidence.",
+    href: "/mock-tests",
+  },
+  {
+    icon: User,
+    title: "FAQs",
+    description: "Find answers to frequently asked questions.",
+    href: "/faqs",
+  },
+  {
+    icon: CreditCard,
+    title: "Contact Support",
+    description: "Get in touch with our team for any issues or queries.",
     href: "/support",
   },
-];
-
-const popularArticles = [
-  { title: "How to reset your password", href: "/help/reset-password" },
-  { title: "Enrolling in a new course", href: "/help/enroll-course" },
-  { title: "Accessing course materials", href: "/help/access-materials" },
-  { title: "Payment methods accepted", href: "/help/payment-methods" },
-  { title: "Joining live classes", href: "/help/join-live-class" },
 ];
 
 export default function HelpPage() {
@@ -92,8 +83,8 @@ export default function HelpPage() {
       {/* Categories */}
       <section className="py-10 lg:py-16 bg-background">
         <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
-          <Subtitle className="text-left mb-8">Browse by Category</Subtitle>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Subtitle className="text-center mb-8">Browse by Category</Subtitle>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
             {helpCategories.map((category) => {
               const Icon = category.icon;
               return (
@@ -118,37 +109,16 @@ export default function HelpPage() {
         </div>
       </section>
 
-      {/* Popular Articles */}
-      <section className="py-10 lg:py-16 bg-muted/30">
-        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
-          <div className="max-w-3xl text-left">
-            <Subtitle className="mb-8">Popular Articles</Subtitle>
-            <div className="space-y-3">
-              {popularArticles.map((article) => (
-                <Link
-                  key={article.title}
-                  href={article.href}
-                  className="flex items-center justify-between p-4 bg-background rounded-lg hover:shadow-md transition-shadow"
-                >
-                  <Paragraph>{article.title}</Paragraph>
-                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Contact CTA */}
-      <section className="py-10 lg:py-16 bg-muted/30">
+      <section className="py-10 lg:py-16">
         <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
-          <div className="max-w-2xl text-left">
+          <div className="max-w-2xl mx-auto text-center">
             <Subtitle className="mb-4">Still Need Help?</Subtitle>
             <Paragraph className="text-muted-foreground mb-8">
               Can&apos;t find what you&apos;re looking for? Our support team is here to
               help you every step of the way.
             </Paragraph>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap justify-center gap-4">
               <Button asChild>
                 <Link href="/contact">Contact Support</Link>
               </Button>

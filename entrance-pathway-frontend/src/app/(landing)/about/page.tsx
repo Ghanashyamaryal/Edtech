@@ -48,7 +48,7 @@ export default function AboutPage() {
               <GraduationCap className="w-4 h-4" />
               Empowering Students
             </span>
-            <Title className="mb-4">About Entrance Pathway</Title>
+            <Title className="mb-4">About ITpro Entrance</Title>
             <Paragraph className="text-lg text-muted-foreground">
               Nepal's leading platform for IT entrance exam preparation. We're
               dedicated to helping students achieve their dreams of pursuing IT
