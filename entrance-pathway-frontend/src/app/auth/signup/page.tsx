@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/context";
 import { signupSchema, type SignupFormData } from "@/utils/validation";
+import { sendWelcomeEmail, sendSignupNotificationToAdmin } from "@/actions/email";
 import {
   Button,
   Card,
@@ -163,6 +164,14 @@ export default function SignupPage() {
       setLoading(false);
       return;
     }
+
+    // Send emails (non-blocking — don't wait for delivery)
+    sendWelcomeEmail(data.email, data.fullName);
+    sendSignupNotificationToAdmin({
+      name: data.fullName,
+      email: data.email,
+      role: data.role,
+    });
 
     router.push("/auth/login?message=check-email");
   };

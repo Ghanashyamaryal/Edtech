@@ -60,7 +60,7 @@ We are not responsible for the accuracy of educational content or for any outcom
   },
   {
     title: "Contact Information",
-    content: `If you have any questions about these Terms, please contact us at legal@itproentrance.com.`,
+    content: `If you have any questions about these Terms, please contact us at itproentrance@gmail.com.`,
   },
 ];
 

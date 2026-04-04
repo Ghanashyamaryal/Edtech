@@ -51,7 +51,7 @@ We also automatically collect certain information when you use our platform, inc
   },
   {
     title: "Contact Us",
-    content: `If you have any questions about this Privacy Policy, please contact us at privacy@itproentrance.com.`,
+    content: `If you have any questions about this Privacy Policy, please contact us at itproentrance@gmail.com.`,
   },
 ];
 

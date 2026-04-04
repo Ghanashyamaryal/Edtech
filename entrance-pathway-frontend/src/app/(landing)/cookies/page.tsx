@@ -161,10 +161,10 @@ export default function CookiesPage() {
                 If you have any questions about our use of cookies or other
                 technologies, please email us at{" "}
                 <a
-                  href="mailto:privacy@itproentrance.com"
+                  href="mailto:itproentrance@gmail.com"
                   className="text-primary hover:underline"
                 >
-                  privacy@itproentrance.com
+                  itproentrance@gmail.com
                 </a>
                 .
               </Paragraph>
