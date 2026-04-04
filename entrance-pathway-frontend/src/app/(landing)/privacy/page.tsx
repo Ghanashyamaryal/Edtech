@@ -51,7 +51,7 @@ We also automatically collect certain information when you use our platform, inc
   },
   {
     title: "Contact Us",
-    content: `If you have any questions about this Privacy Policy, please contact us at privacy@entrancepathway.com.`,
+    content: `If you have any questions about this Privacy Policy, please contact us at privacy@itproentrance.com.`,
   },
 ];
 
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
         <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="max-w-3xl text-left">
             <Paragraph className="mb-8">
-              At Entrance Pathway, we are committed to protecting your privacy.
+              At ITpro Entrance, we are committed to protecting your privacy.
               This Privacy Policy explains how we collect, use, disclose, and
               safeguard your information when you use our platform.
             </Paragraph>

@@ -43,6 +43,7 @@ export default function AboutPage() {
       <section className="bg-linear-to-br from-brand-primary/5 to-background pt-24 pb-12 lg:pt-32 lg:pb-16">
         <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="max-w-3xl mx-auto text-center">
+            <Title className="mb-4">About ITpro Entrance</Title>
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium mb-6">
               <GraduationCap className="w-4 h-4" />
               Empowering Students
@@ -130,7 +131,7 @@ export default function AboutPage() {
             <Subtitle className="text-left mb-8">Our Story</Subtitle>
             <div className="space-y-4">
               <Paragraph>
-                Entrance Pathway was founded with a simple yet powerful vision:
+                ITpro Entrance was founded with a simple yet powerful vision:
                 to make quality IT entrance exam preparation accessible to every
                 student in Nepal, regardless of their location or background.
               </Paragraph>

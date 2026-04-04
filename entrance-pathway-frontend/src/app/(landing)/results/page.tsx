@@ -379,6 +379,8 @@ export default function ResultsPage() {
             <Subtitle as="h2" className="font-display text-2xl md:text-3xl mb-4">
               Want to See Your Name Here?
             </Subtitle>
+            <Paragraph className="mb-6">
+              Join ITpro Entrance and start your preparation journey today. Our
             <Paragraph className="mb-8">
               Join Entrance Pathway and start your preparation journey today. Our
               comprehensive courses and expert guidance have helped thousands achieve

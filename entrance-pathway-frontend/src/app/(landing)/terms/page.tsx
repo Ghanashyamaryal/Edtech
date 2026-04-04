@@ -3,7 +3,7 @@ import { Title, Subtitle, Paragraph } from "@/components/atoms";
 const sections = [
   {
     title: "Acceptance of Terms",
-    content: `By accessing or using Entrance Pathway's services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.`,
+    content: `By accessing or using ITpro Entrance's services, you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.`,
   },
   {
     title: "Use of Services",
@@ -28,7 +28,7 @@ We reserve the right to change our prices at any time. Price changes will not af
   },
   {
     title: "Intellectual Property",
-    content: `All content on our platform, including courses, videos, text, graphics, and logos, is the property of Entrance Pathway or its content suppliers and is protected by intellectual property laws.
+    content: `All content on our platform, including courses, videos, text, graphics, and logos, is the property of ITpro Entrance or its content suppliers and is protected by intellectual property laws.
 
 You may not reproduce, distribute, modify, or create derivative works from our content without our express written permission.`,
   },
@@ -44,7 +44,7 @@ We are not responsible for the accuracy of educational content or for any outcom
   },
   {
     title: "Limitation of Liability",
-    content: `To the maximum extent permitted by law, Entrance Pathway shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of our services.`,
+    content: `To the maximum extent permitted by law, ITpro Entrance shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of our services.`,
   },
   {
     title: "Termination",
@@ -60,7 +60,7 @@ We are not responsible for the accuracy of educational content or for any outcom
   },
   {
     title: "Contact Information",
-    content: `If you have any questions about these Terms, please contact us at legal@entrancepathway.com.`,
+    content: `If you have any questions about these Terms, please contact us at legal@itproentrance.com.`,
   },
 ];
 
@@ -87,7 +87,7 @@ export default function TermsPage() {
         <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="max-w-3xl text-left">
             <Paragraph className="mb-8">
-              Welcome to Entrance Pathway. These Terms of Service govern your
+              Welcome to ITpro Entrance. These Terms of Service govern your
               use of our website and services. Please read them carefully.
             </Paragraph>
 

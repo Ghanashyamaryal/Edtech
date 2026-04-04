@@ -15,12 +15,12 @@ const faqCategories = [
     category: "General",
     questions: [
       {
-        question: "What is Entrance Pathway?",
+        question: "What is ITpro Entrance?",
         answer:
-          "Entrance Pathway is Nepal's leading platform for IT entrance exam preparation. We provide comprehensive courses, study materials, mock tests, and live classes to help students prepare for entrance exams like BSc CSIT, BIT, BCA, and BIM.",
+          "ITpro Entrance is Nepal's leading platform for IT entrance exam preparation. We provide comprehensive courses, study materials, mock tests, and live classes to help students prepare for entrance exams like BSc CSIT, BIT, BCA, and BIM.",
       },
       {
-        question: "Who can use Entrance Pathway?",
+        question: "Who can use ITpro Entrance?",
         answer:
           "Anyone preparing for IT entrance exams in Nepal can use our platform. Whether you're a +2 student, a graduate, or someone looking to pursue IT education, our courses are designed for all levels.",
       },
@@ -105,6 +105,7 @@ export default function FAQsPage() {
             </span>
             <Title className="mb-4">Frequently Asked Questions</Title>
             <Paragraph className="text-lg text-muted-foreground">
+              Find answers to common questions about ITpro Entrance.
               Everything you need to know about Entrance Pathway. Find answers to common questions.
             </Paragraph>
           </div>

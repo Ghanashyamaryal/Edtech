@@ -21,8 +21,8 @@ const contactInfo = [
   {
     icon: Mail,
     title: "Email",
-    value: "info@entrancepathway.com",
-    href: "mailto:info@entrancepathway.com",
+    value: "info@itproentrance.com",
+    href: "mailto:info@itproentrance.com",
   },
   {
     icon: Phone,

@@ -292,7 +292,7 @@ export function LandingHeader() {
       <nav className="w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">        <div className="flex items-center justify-between h-16 lg:h-20">
           <Link href="/" className="flex items-center shrink-0 group">
             <div className="flex items-center justify-center h-10 md:h-12 w-28 md:w-36 overflow-hidden transform transition-all duration-500 group-hover:scale-105">
-              <img src="/assets/logo.png" alt="Entrance Pathway Logo" className="w-full h-full object-contain object-left drop-shadow-md" />
+              <img src="/assets/logo.png" alt="ITpro Entrance Logo" className="w-full h-full object-contain object-left drop-shadow-md" />
             </div>
           </Link>
 

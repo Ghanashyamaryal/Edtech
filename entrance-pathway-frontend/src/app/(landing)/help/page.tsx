@@ -72,7 +72,7 @@ export default function HelpPage() {
             <Title className="mb-4">Help Center</Title>
             <Paragraph className="text-lg text-muted-foreground mb-8">
               Find answers to your questions and learn how to get the most out
-              of Entrance Pathway.
+              of ITpro Entrance.
             </Paragraph>
             {/* Search placeholder */}
             <div className="max-w-md mx-auto bg-background rounded-2xl border border-border/60 shadow-sm p-1.5 flex items-center group focus-within:border-brand-primary/50 transition-colors">

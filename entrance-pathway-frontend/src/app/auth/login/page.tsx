@@ -121,11 +121,11 @@ function LoginForm() {
       <Card className="w-full max-w-md border border-indigo-50 bg-white">
         <CardHeader className="text-center space-y-2 pb-2">
           <div className="mx-auto w-20 h-20 mb-4 overflow-hidden">
-            <img src="/assets/logo.png" alt="Entrance Pathway Logo" className="w-full h-full object-contain" />
+            <img src="/assets/logo.png" alt="ITpro Entrance Logo" className="w-full h-full object-contain" />
           </div>
           <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
           <CardDescription className="text-gray-500">
-            Sign in to your Entrance Pathway account
+            Sign in to your ITpro Entrance account
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>

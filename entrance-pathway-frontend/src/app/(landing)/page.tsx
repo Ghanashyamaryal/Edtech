@@ -98,7 +98,7 @@ const testimonials = [
     name: 'Aarav Sharma',
     course: 'BSc CSIT',
     achievement: 'Rank #3 — TU Entrance 2025',
-    quote: 'Entrance Pathway transformed my preparation. The structured approach and realistic mock tests helped me crack a top-3 rank.',
+    quote: 'ITpro Entrance transformed my preparation. The structured approach and realistic mock tests helped me crack a top-3 rank.',
     avatar: 'AS',
   },
   {
@@ -546,6 +546,8 @@ export default function HomePage() {
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
               Hear from our top performers
             </h2>
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+              Real students, real results — see how ITpro Entrance made the difference
             <p className="text-muted-foreground text-lg max-w-xl">
               Real students, real results — see how Entrance Pathway made the difference
             </p>
