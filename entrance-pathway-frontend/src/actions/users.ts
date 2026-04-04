@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createAdminClient, requireAdmin, requireAuth } from '@/lib/supabase/server';
 import { formatResponse, formatResponseArray, type ActionResult } from './utils';
+import { sendWelcomeEmail } from './email';
 
 // Types
 export type UserRole = 'student' | 'mentor' | 'admin';
@@ -120,6 +121,11 @@ export async function updateUserVerification(
       .single();
 
     if (error) throw new Error(error.message);
+
+    // Send welcome email when admin verifies the user
+    if (isVerified && data) {
+      sendWelcomeEmail(data.email, data.full_name || 'User').catch(() => {});
+    }
 
     revalidatePath('/admin/users');
     return { success: true, data: formatResponse(data) as User };
