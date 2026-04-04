@@ -16,6 +16,8 @@ import {
   Building2,
   Calendar,
   ArrowRight,
+  Trophy,
+  Award,
 } from 'lucide-react';
 import Link from 'next/link';
 import { getPublishedCourses, type Course } from '@/actions';
@@ -100,13 +102,14 @@ function CourseCard({ course, index }: { course: Course; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 32 }}
-      animate={{ opacity: 1, y: 0 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
       transition={{ delay: index * 0.1, duration: 0.5 }}
     >
       <Link href={`/courses/${course.slug}`} className="block group">
         <Card className="h-full overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
           {/* Gradient top accent */}
-          <div className={`h-1.5 bg-linear-to-r ${meta.gradient.replace('/10', '').replace('/5', '').replace('to-transparent', 'to-transparent')} ${meta.iconBg}`} />
+          <div className={`h-1.5 ${meta.iconBg}`} />
 
           <CardContent className="p-0">
             <div className={`relative bg-linear-to-br ${meta.gradient} p-6 pb-8`}>
@@ -258,57 +261,147 @@ export default function CoursesPage() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-28">
+      <section className="relative overflow-hidden pt-24 pb-12 lg:pt-32 lg:pb-16">
         <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-background to-background" />
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
 
-        <div className="container relative mx-auto px-4">
-          <motion.div {...fadeInUp} className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-6">
-              <GraduationCap className="w-4 h-4" />
-              Nepal&apos;s #1 Entrance Preparation Platform
-            </div>
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Your pathway to
-              <span className="text-primary"> top IT colleges</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
-              Expert-designed courses for BSc CSIT, BCA, BIT & BIM entrance exams.
-              Comprehensive study materials, live classes, and 10,000+ practice questions.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4 text-emerald-600" />
-                </div>
-                <span><strong className="text-foreground">95%</strong> Success Rate</span>
+        <div className="w-full max-w-[1600px] relative px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left — Text */}
+            <motion.div {...fadeInUp} className="max-w-3xl text-left">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/5 border border-brand-primary/10 text-brand-primary text-sm font-medium mb-6">
+                <GraduationCap className="w-4 h-4" />
+                Nepal&apos;s #1 Entrance Preparation Platform
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Users className="w-4 h-4 text-blue-600" />
+              <h1 className="font-display text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-6 leading-tight">
+                Your pathway to
+                <br />
+                <span className="text-brand-primary"> top IT colleges</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8 leading-relaxed">
+                Expert-designed courses for BSc CSIT, BCA, BIT &amp; BIM entrance exams.
+                Comprehensive study materials, live classes, and 10,000+ practice questions.
+              </p>
+              <div className="flex flex-wrap items-center justify-start gap-6 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <span><strong className="text-foreground">95%</strong> Success Rate</span>
                 </div>
-                <span><strong className="text-foreground">5,000+</strong> Students</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
-                  <Building2 className="w-4 h-4 text-violet-600" />
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <span><strong className="text-foreground">5,000+</strong> Students</span>
                 </div>
-                <span><strong className="text-foreground">320+</strong> Partner Colleges</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
+                    <Building2 className="w-4 h-4 text-violet-600" />
+                  </div>
+                  <span><strong className="text-foreground">320+</strong> Partner Colleges</span>
+                </div>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+
+            {/* Right — Rank & Trends Visual */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, x: 24 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="relative hidden lg:block"
+            >
+              <div className="relative rounded-2xl border border-border/60 bg-card shadow-lg p-6 overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-brand-primary via-brand-primary/70 to-brand-orange" />
+
+                <div className="flex items-center justify-between mb-5 mt-1">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Top Placement Trends</p>
+                    <p className="text-xs text-muted-foreground">2025 College Rankings</p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 uppercase">Live Data</span>
+                </div>
+
+                {/* Ranking List */}
+                <div className="space-y-4">
+                  {[
+                    { college: 'ASCOL (TU)', rank: '#1', rate: 92, color: 'text-brand-primary' },
+                    { college: "St. Xavier's (TU)", rank: '#2', rate: 89, color: 'text-brand-orange' },
+                    { college: 'BernHardt (TU)', rank: '#3', rate: 85, color: 'text-brand-primary' },
+                    { college: 'KEC (KU)', rank: '#4', rate: 82, color: 'text-brand-orange' },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={item.college}
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 + i * 0.1 }}
+                      className="flex items-center justify-between group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className={`text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center bg-muted ${item.color}`}>
+                          {item.rank}
+                        </span>
+                        <span className="text-sm text-foreground/80 group-hover:text-brand-primary transition-colors cursor-default">{item.college}</span>
+                      </div>
+                      <span className="text-xs font-semibold text-foreground">{item.rate}% placement</span>
+                    </motion.div>
+                  ))}
+                </div>
+
+                <div className="mt-6 pt-5 border-t border-border/50">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-1">Success Forecast</p>
+                      <p className="text-sm font-bold text-foreground">Admission Probability</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-brand-primary">88.4%</p>
+                      <p className="text-[10px] text-emerald-600 font-medium">↑ 4.2% from 2023</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating badge - top right */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.0 }}
+                className="absolute -top-3 -right-3 bg-brand-orange text-white px-3.5 py-1.5 rounded-xl shadow-glow-brand text-sm font-semibold flex items-center gap-1.5 z-10"
+              >
+                <Trophy className="w-3.5 h-3.5" />
+                #1 Prep App
+              </motion.div>
+
+              {/* Floating badge - bottom left */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.2 }}
+                className="absolute -bottom-10 -left-8 bg-white border border-border px-4 py-2.5 rounded-xl shadow-medium flex items-center gap-3 z-30"
+              >
+                <div className="w-9 h-9 rounded-full bg-brand-primary/10 flex items-center justify-center">
+                  <Award className="w-5 h-5 text-brand-primary" />
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold text-foreground uppercase tracking-wider">Top Performer</p>
+                  <p className="text-[10px] text-muted-foreground">1,200+ Selected 2024</p>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       {/* Courses Grid */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <motion.div {...fadeInUp} className="text-center mb-12">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <motion.div {...fadeInUp} className="text-left mb-12">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
               Choose Your Program
             </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            <p className="text-muted-foreground text-lg max-w-xl">
               Each course is tailored to the specific entrance exam syllabus with expert guidance
             </p>
           </motion.div>
@@ -357,18 +450,18 @@ export default function CoursesPage() {
       </section>
 
       {/* Quick Comparison Table */}
-      <section className="py-16 lg:py-24 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <motion.div {...fadeInUp} className="text-center mb-12">
+      <section className="py-10 lg:py-16 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <motion.div {...fadeInUp} className="text-left mb-12">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
               Quick Comparison
             </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            <p className="text-muted-foreground text-lg max-w-xl">
               Not sure which program is right for you? Compare at a glance
             </p>
           </motion.div>
 
-          <motion.div {...fadeInUp} className="max-w-4xl mx-auto">
+          <motion.div {...fadeInUp} className="max-w-4xl">
             <Card className="overflow-hidden border-0 shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -405,18 +498,18 @@ export default function CoursesPage() {
       </section>
 
       {/* How it works */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <motion.div {...fadeInUp} className="text-center mb-14">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <motion.div {...fadeInUp} className="text-left mb-14">
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
               How It Works
             </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            <p className="text-muted-foreground text-lg max-w-xl">
               Start preparing in three simple steps
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8">
             {[
               {
                 step: '01',
@@ -436,36 +529,40 @@ export default function CoursesPage() {
                 description: 'Take mock tests, track progress, and walk into the exam with confidence',
                 icon: TrendingUp,
               },
-            ].map((item, i) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.1, duration: 0.5 }}
-                className="relative text-center"
-              >
-                {i < 2 && (
-                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] border-t-2 border-dashed border-border/60" />
-                )}
-                <div className="relative z-10 w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
-                  <item.icon className="w-7 h-7 text-primary" />
-                </div>
-                <span className="text-xs font-bold text-primary/60 uppercase tracking-widest">
-                  Step {item.step}
-                </span>
-                <h3 className="font-display font-bold text-lg text-foreground mt-2 mb-2">{item.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
-              </motion.div>
-            ))}
+            ].map((item, i) => {
+              const StepIcon = item.icon;
+              return (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 + i * 0.1, duration: 0.5 }}
+                  className="relative text-center"
+                >
+                  {i < 2 && (
+                    <div className="hidden md:block absolute top-12 left-[60%] w-[80%] border-t-2 border-dashed border-border/60" />
+                  )}
+                  <div className="relative z-10 w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
+                    <StepIcon className="w-7 h-7 text-primary" />
+                  </div>
+                  <span className="text-xs font-bold text-primary/60 uppercase tracking-widest">
+                    Step {item.step}
+                  </span>
+                  <h3 className="font-display font-bold text-lg text-foreground mt-2 mb-2">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-primary to-primary/80 p-10 md:p-16 text-center">
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+            <div className="absolute inset-0 opacity-50" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }} />
             <div className="relative">
               <Calendar className="w-10 h-10 text-primary-foreground/80 mx-auto mb-4" />
               <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-4">

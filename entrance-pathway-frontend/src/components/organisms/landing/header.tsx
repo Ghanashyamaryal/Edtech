@@ -1,29 +1,30 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui";
-import { Subtitle, Paragraph, Small } from "@/components/atoms";
-import { useAuth, useRole } from "@/context/auth-context";
 import { getPublishedCourses, type Course } from "@/actions";
+import { Paragraph, Small, Subtitle } from "@/components/atoms";
+import { Button } from "@/components/ui";
+import { useAuth, useRole } from "@/context/auth-context";
+import { cn } from "@/lib/utils";
+import * as Avatar from "@radix-ui/react-avatar";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  GraduationCap,
-  Menu,
-  X,
-  ChevronDown,
-  BookOpen,
+  ArrowRight,
   Bell,
+  BookOpen,
   Calendar,
+  ChevronDown,
+  GraduationCap,
   LogOut,
-  User,
+  Menu,
   Settings,
   Shield,
+  User,
+  X
 } from "lucide-react";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import * as Avatar from "@radix-ui/react-avatar";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import * as React from "react";
 
 // Main navigation items for landing pages
 const landingNavItems = [
@@ -33,7 +34,6 @@ const landingNavItems = [
     href: "/courses",
     hasDropdown: true,
   },
-  { name: "Results", href: "/results" },
   { name: "Notes", href: "/notes" },
   { name: "Online Classes", href: "/online-classes" },
   { name: "Mock Tests", href: "/mock-tests" },
@@ -85,10 +85,10 @@ function ExamCountdownTimer() {
   const timeLeft = useExamCountdown(examDate);
 
   return (
-    <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20">
-      <Calendar className="w-4 h-4 text-primary" />
+    <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-primary/5 border border-brand-primary/10">
+      <Calendar className="w-4 h-4 text-brand-primary" />
       <div className="flex items-center gap-1 text-sm">
-        <span className="font-medium text-primary">Exam in:</span>
+        <span className=" text-brand-primary">Exam in:</span>
         <div className="flex items-center gap-1">
           <TimeUnit value={timeLeft.days} label="d" />
           <span className="text-muted-foreground">:</span>
@@ -101,84 +101,7 @@ function ExamCountdownTimer() {
   );
 }
 
-function NotificationsDropdown() {
-  const notifications = [
-    {
-      id: "1",
-      title: "Live Class Starting",
-      message: "Physics class starts in 30 minutes",
-      read: false,
-    },
-    {
-      id: "2",
-      title: "Assignment Submitted",
-      message: "Your Math assignment was successfully submitted",
-      read: false,
-    },
-  ];
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
-  return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative"
-          aria-label="Notifications"
-        >
-          <Bell className="w-5 h-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-medium bg-destructive text-destructive-foreground rounded-full">
-              {unreadCount}
-            </span>
-          )}
-        </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          className="w-80 p-0 bg-popover border border-border rounded-2xl shadow-medium z-60 animate-fade-in"
-          align="end"
-          sideOffset={8}
-        >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <h3 className="font-semibold text-foreground">Notifications</h3>
-            {unreadCount > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {unreadCount} unread
-              </span>
-            )}
-          </div>
-          <div className="max-h-80 overflow-y-auto">
-            {notifications.map((notification) => (
-              <DropdownMenu.Item
-                key={notification.id}
-                className={cn(
-                  "flex flex-col gap-1 px-4 py-3 cursor-pointer outline-none",
-                  "hover:bg-accent focus:bg-accent border-b border-border last:border-0",
-                  !notification.read && "bg-accent/50",
-                )}
-              >
-                <Subtitle as="span" className="text-sm">
-                  {notification.title}
-                </Subtitle>
-                <Small className="text-xs">{notification.message}</Small>
-              </DropdownMenu.Item>
-            ))}
-          </div>
-          <div className="px-4 py-3 border-t border-border">
-            <Link
-              href="/dashboard/notifications"
-              className="text-sm text-primary hover:underline"
-            >
-              View all notifications
-            </Link>
-          </div>
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
-  );
-}
 
 function ProfileDropdown() {
   const { user, signOut } = useAuth();
@@ -248,7 +171,7 @@ function ProfileDropdown() {
             <DropdownMenu.Item asChild>
               <Link
                 href="/admin"
-                className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none hover:bg-accent focus:bg-accent text-primary"
+                className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none hover:bg-accent focus:bg-accent text-brand-primary"
               >
                 <Shield className="w-4 h-4" />
                 <span>Admin Panel</span>
@@ -300,6 +223,9 @@ export function LandingHeader() {
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [activeDropdown, setActiveDropdown] = React.useState<string | null>(
+    null,
+  );
+  const [mobileDropdown, setMobileDropdown] = React.useState<string | null>(
     null,
   );
   const [isMounted, setIsMounted] = React.useState(false);
@@ -363,8 +289,7 @@ export function LandingHeader() {
         isScrolled && "shadow-sm border-b border-border/50",
       )}
     >
-      <nav className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+      <nav className="w-full px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">        <div className="flex items-center justify-between h-16 lg:h-20">
           <Link href="/" className="flex items-center shrink-0 group">
             <div className="flex items-center justify-center h-10 md:h-12 w-28 md:w-36 overflow-hidden transform transition-all duration-500 group-hover:scale-105">
               <img src="/assets/logo.png" alt="ITpro Entrance Logo" className="w-full h-full object-contain object-left drop-shadow-md" />
@@ -387,12 +312,12 @@ export function LandingHeader() {
                   className={cn(
                     "relative flex items-center gap-1 px-4 py-2 text-sm font-medium transition-colors",
                     pathname === item.href
-                      ? "text-primary"
+                      ? "text-brand-primary"
                       : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {pathname === item.href && (
-                    <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-primary rounded-full" />
+                    <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-brand-primary rounded-full" />
                   )}
                   {item.name}
                   {item.hasDropdown && (
@@ -414,39 +339,57 @@ export function LandingHeader() {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 mt-2 w-72 bg-card rounded-2xl border border-border shadow-medium p-2"
+                        className="absolute top-full left-0 mt-2 w-[480px] bg-white rounded-2xl border border-border shadow-medium p-3 z-50"
                       >
-                        {courses.length > 0 ? (
-                          courses.map((course) => (
-                            <Link
-                              key={course.id}
-                              href={`/courses/${course.slug}`}
-                              className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted transition-colors group"
-                            >
-                              <div className="flex-1 min-w-0">
-                                <Subtitle as="p" className="text-base">
-                                  {course.title}
-                                </Subtitle>
-                                <Paragraph className="text-sm truncate">
-                                  {course.fullName ||
-                                    course.description ||
-                                    course.title}
-                                </Paragraph>
-                              </div>
-                            </Link>
-                          ))
-                        ) : (
-                          <div className="p-3 text-center text-muted-foreground text-sm">
-                            Loading courses...
-                          </div>
-                        )}
-                        <div className="border-t border-border mt-2 pt-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          {courses.length > 0 ? (
+                            courses.map((course) => {
+                              const slug = course.slug;
+                              const style = slug === 'bsc-csit' ? 'bg-indigo-500' : 
+                                            slug === 'bit' ? 'bg-violet-500' :
+                                            slug === 'bca' ? 'bg-emerald-500' :
+                                            slug === 'bim' ? 'bg-amber-500' : 'bg-brand-primary';
+                              
+                              return (
+                                <Link
+                                  key={course.id}
+                                  href={`/courses/${slug}`}
+                                  className="flex items-start gap-3 p-3 rounded-xl hover:bg-muted transition-all group"
+                                >
+                                  <div className={cn(
+                                    "w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white shadow-sm transition-transform group-hover:scale-110",
+                                    style
+                                  )}>
+                                    <GraduationCap className="w-5 h-5" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-foreground mb-0.5">
+                                      {course.title}
+                                    </p>
+                                    <p className="text-[11px] text-muted-foreground leading-tight line-clamp-1">
+                                      {course.fullName || "Entrance Preparation"}
+                                    </p>
+                                  </div>
+                                </Link>
+                              );
+                            })
+                          ) : (
+                            <div className="col-span-2 p-4 text-center text-muted-foreground text-sm flex flex-col items-center gap-2">
+                               <div className="w-5 h-5 border-2 border-brand-primary border-t-transparent rounded-full animate-spin" />
+                               Loading courses...
+                            </div>
+                          )}
+                        </div>
+                        <div className="mt-3 pt-2 border-t border-border">
                           <Link
                             href="/courses"
-                            className="flex items-center justify-center gap-2 p-3 rounded-lg text-primary hover:bg-primary/10 transition-colors font-medium"
+                            className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-brand-primary hover:bg-brand-primary/5 transition-all group"
                           >
-                            <BookOpen className="w-4 h-4" />
-                            View All Courses
+                            <span className="flex items-center gap-2">
+                              <BookOpen className="w-4 h-4" />
+                              Explore all programs
+                            </span>
+                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                           </Link>
                         </div>
                       </motion.div>
@@ -462,19 +405,19 @@ export function LandingHeader() {
             {!isMounted || isLoading ? (
               <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
             ) : isAuthenticated ? (
-              <>
-                <NotificationsDropdown />
+              <div className="flex items-center gap-2">
+                {/* <NotificationsDropdown /> */}
                 <ProfileDropdown />
-              </>
+              </div>
             ) : (
               <div className="flex items-center gap-2">
                 <Link href="/auth/login">
-                  <Button variant="outline" className="px-5 font-medium border-primary/30 text-primary hover:bg-primary/5">
+                  <Button variant="outline" className="px-5 font-medium border-brand-primary/30 text-brand-primary hover:bg-brand-primary/5">
                     Log In
                   </Button>
                 </Link>
                 <Link href="/auth/signup">
-                  <Button className="px-5 font-medium">
+                  <Button className="px-5 font-medium bg-brand-primary hover:bg-brand-primary/90 text-white shadow-glow-primary">
                     Get Started
                   </Button>
                 </Link>
@@ -522,30 +465,59 @@ export function LandingHeader() {
                     transition={{ delay: 0.1 + index * 0.05 }}
                   >
                     {item.hasDropdown ? (
-                      <div className="space-y-2">
-                        <Link
-                          href={item.href}
+                      <div className="space-y-1">
+                        <button
+                          onClick={() =>
+                            setMobileDropdown(
+                              mobileDropdown === item.name ? null : item.name,
+                            )
+                          }
                           className={cn(
                             "flex items-center justify-between w-full px-4 py-3 rounded-lg text-lg font-medium",
                             pathname === item.href
-                              ? "text-primary bg-primary/5"
+                              ? "text-brand-primary bg-brand-primary/5"
                               : "text-foreground hover:bg-muted/50",
                           )}
                         >
                           {item.name}
-                        </Link>
-                        <div className="ml-4 space-y-1 border-l-2 border-border pl-4">
-                          {courses.map((course) => (
-                            <Link
-                              key={course.id}
-                              href={`/courses/${course.slug}`}
-                              className="flex items-center gap-3 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                          <ChevronDown
+                            className={cn(
+                              "w-5 h-5 transition-transform duration-200",
+                              mobileDropdown === item.name && "rotate-180",
+                            )}
+                          />
+                        </button>
+                        <AnimatePresence>
+                          {mobileDropdown === item.name && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
                             >
-                              <BookOpen className="w-4 h-4" />
-                              {course.title}
-                            </Link>
-                          ))}
-                        </div>
+                              <div className="ml-4 space-y-1 border-l-2 border-border pl-4 pb-1">
+                                {courses.map((course) => (
+                                  <Link
+                                    key={course.id}
+                                    href={`/courses/${course.slug}`}
+                                    className="flex items-center gap-3 px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+                                  >
+                                    <BookOpen className="w-4 h-4" />
+                                    {course.title}
+                                  </Link>
+                                ))}
+                                <Link
+                                  href="/courses"
+                                  className="flex items-center gap-3 px-4 py-2 rounded-lg text-brand-primary hover:bg-brand-primary/10 font-medium"
+                                >
+                                  <BookOpen className="w-4 h-4" />
+                                  View All Courses
+                                </Link>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     ) : (
                       <Link
@@ -553,7 +525,7 @@ export function LandingHeader() {
                         className={cn(
                           "block px-4 py-3 rounded-lg text-lg font-medium",
                           pathname === item.href
-                            ? "text-primary bg-primary/5"
+                            ? "text-brand-primary bg-brand-primary/5"
                             : "text-foreground hover:bg-muted/50",
                         )}
                       >
@@ -575,8 +547,20 @@ export function LandingHeader() {
                   <div className="w-full h-12 rounded-lg bg-muted animate-pulse" />
                 ) : isAuthenticated ? (
                   <>
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-brand-primary/5 border border-brand-primary/10">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-brand-primary/10">
+                          <Bell className="w-5 h-5 text-brand-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Notifications</p>
+                          <p className="text-xs font-normal text-muted-foreground">Stay updated with your progress</p>
+                        </div>
+                      </div>
+                      {/* <NotificationsDropdown /> */}
+                    </div>
                     <Link href="/dashboard" className="block">
-                      <Button variant="default" className="w-full" size="lg">
+                      <Button className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white" size="lg">
                         Go to Dashboard
                       </Button>
                     </Link>
@@ -590,7 +574,7 @@ export function LandingHeader() {
                       </Button>
                     </Link>
                     <Link href="/auth/signup" className="block">
-                      <Button className="w-full" size="lg">
+                      <Button className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white" size="lg">
                         Get Started Free
                       </Button>
                     </Link>

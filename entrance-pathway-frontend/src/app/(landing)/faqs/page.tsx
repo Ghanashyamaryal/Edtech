@@ -7,6 +7,8 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/atoms";
+import { Button } from "@/components/ui";
+import Link from "next/link";
 
 const faqCategories = [
   {
@@ -95,9 +97,12 @@ export default function FAQsPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-linear-to-br from-accent to-background py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-linear-to-br from-brand-primary/5 to-background pt-24 pb-12 lg:pt-32 lg:pb-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="max-w-3xl mx-auto text-center">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium mb-6">
+              Assistance Center
+            </span>
             <Title className="mb-4">Frequently Asked Questions</Title>
             <Paragraph className="text-lg text-muted-foreground">
               Find answers to common questions about ITpro Entrance.
@@ -107,12 +112,12 @@ export default function FAQsPage() {
       </section>
 
       {/* FAQ Content */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto space-y-12">
+      <section className="py-8 lg:py-12">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="max-w-3xl text-left space-y-12">
             {faqCategories.map((category) => (
               <div key={category.category}>
-                <Subtitle className="mb-6">{category.category}</Subtitle>
+                <Subtitle className="text-left mb-6">{category.category}</Subtitle>
                 <Accordion
                   type="single"
                   collapsible
@@ -140,20 +145,22 @@ export default function FAQsPage() {
       </section>
 
       {/* Contact CTA */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
+      <section className="py-10 lg:py-16 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="max-w-2xl text-left">
             <Subtitle className="mb-4">Still Have Questions?</Subtitle>
-            <Paragraph className="text-muted-foreground mb-6">
-              Can't find the answer you're looking for? Please reach out to our
-              friendly support team.
+            <Paragraph className="text-muted-foreground mb-8">
+              Can&apos;t find the answer you&apos;re looking for? Reach out to our
+              friendly support team and we&apos;ll get back to you shortly.
             </Paragraph>
-            <a
-              href="/contact"
-              className="inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-            >
-              Contact Support
-            </a>
+            <div className="flex flex-wrap gap-4">
+              <Button asChild>
+                <Link href="/contact">Contact Support</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/help">Visit Help Center</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </section>

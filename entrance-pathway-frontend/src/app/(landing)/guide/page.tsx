@@ -98,8 +98,8 @@ export default function GuidePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-linear-to-br from-accent to-background py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-linear-to-br from-brand-primary/5 to-background pt-24 pb-10 lg:pt-32 lg:pb-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="max-w-3xl mx-auto text-center">
             <Title className="mb-4">Student Guide</Title>
             <Paragraph className="text-lg text-muted-foreground">
@@ -111,10 +111,10 @@ export default function GuidePage() {
       </section>
 
       {/* Getting Started Steps */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <Subtitle className="text-center mb-12">Getting Started</Subtitle>
-          <div className="max-w-4xl mx-auto">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <Subtitle className="text-left mb-12">Getting Started</Subtitle>
+          <div className="max-w-4xl text-left">
             <div className="space-y-8">
               {steps.map((step, index) => {
                 const Icon = step.icon;
@@ -167,10 +167,10 @@ export default function GuidePage() {
       </section>
 
       {/* Quick Links */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <Subtitle className="text-center mb-8">Quick Links</Subtitle>
+      <section className="py-10 lg:py-16 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="max-w-3xl text-left">
+            <Subtitle className="mb-8">Quick Links</Subtitle>
             <div className="grid md:grid-cols-2 gap-4">
               {quickLinks.map((link) => (
                 <Link
@@ -188,16 +188,16 @@ export default function GuidePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="max-w-2xl text-left">
             <Subtitle className="mb-4">Ready to Start?</Subtitle>
-            <Paragraph className="text-muted-foreground mb-6">
+            <Paragraph className="text-muted-foreground mb-8">
               Join thousands of students who are already preparing for their
               entrance exams with us.
             </Paragraph>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Button asChild>
+            <div className="flex flex-wrap gap-4">
+              <Button asChild className="shadow-glow-primary">
                 <Link href="/auth/signup">Create Account</Link>
               </Button>
               <Button variant="outline" asChild>

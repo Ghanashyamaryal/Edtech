@@ -68,41 +68,44 @@ export default function SupportPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-linear-to-br from-accent to-background py-20">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
+      <section className="bg-linear-to-br from-brand-primary/5 to-background pt-24 pb-12 lg:pt-32 lg:pb-16">
+        <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="max-w-3xl text-left">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium mb-6">
+              Customer Support
+            </span>
             <Title className="mb-4">Technical Support</Title>
             <Paragraph className="text-lg text-muted-foreground">
-              Experiencing issues? We're here to help you get back on track with
-              your learning.
+              Experiencing issues? We&apos;re here to help you get back on track with
+              your learning. Our team usually responds within 2-4 hours.
             </Paragraph>
           </div>
         </div>
       </section>
 
       {/* Support Channels */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <Subtitle className="text-center mb-8">Contact Options</Subtitle>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <Subtitle className="text-left mb-8">Contact Options</Subtitle>
+          <div className="grid md:grid-cols-3 gap-6">
             {supportChannels.map((channel) => {
               const Icon = channel.icon;
               return (
-                <Card key={channel.title} className="text-center">
+                <Card key={channel.title} className="group hover:shadow-medium transition-all duration-300 border-border/60">
                   <CardContent className="pt-6">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Icon className="w-6 h-6 text-primary" />
+                    <div className="w-12 h-12 bg-brand-primary/10 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                      <Icon className="w-6 h-6 text-brand-primary" />
                     </div>
-                    <Subtitle as="h3" className="mb-2">
+                    <Subtitle as="h3" className="text-left mb-2 text-lg">
                       {channel.title}
                     </Subtitle>
-                    <Paragraph className="text-muted-foreground mb-2">
+                    <Paragraph className="text-left text-muted-foreground text-sm mb-4 leading-relaxed">
                       {channel.description}
                     </Paragraph>
-                    <Paragraph className="text-sm text-primary mb-4">
+                    <Paragraph className="text-left text-xs font-semibold text-brand-primary mb-6">
                       {channel.availability}
                     </Paragraph>
-                    <Button variant="outline" asChild className="w-full">
+                    <Button variant="outline" asChild className="w-full rounded-xl">
                       <a href={channel.href}>{channel.action}</a>
                     </Button>
                   </CardContent>
@@ -114,7 +117,7 @@ export default function SupportPage() {
       </section>
 
       {/* Support Form */}
-      <section className="py-20 bg-muted/30">
+      <section className="py-10 lg:py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <Subtitle className="text-center mb-2">Submit a Support Ticket</Subtitle>
@@ -177,7 +180,7 @@ export default function SupportPage() {
       </section>
 
       {/* Quick Links */}
-      <section className="py-20">
+      <section className="py-10 lg:py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center">
             <Subtitle className="mb-4">Self-Help Resources</Subtitle>

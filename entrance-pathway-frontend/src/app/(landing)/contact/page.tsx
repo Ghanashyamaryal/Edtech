@@ -99,25 +99,29 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-linear-to-br from-accent to-background py-20">
-        <div className="container mx-auto px-4">
+      <section className="bg-linear-to-br from-brand-primary/5 to-background pt-24 pb-12 lg:pt-32 lg:pb-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="max-w-3xl mx-auto text-center">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium mb-6">
+              <Mail className="w-4 h-4" />
+              Get in Touch
+            </span>
             <Title className="mb-4">Contact Us</Title>
             <Paragraph className="text-lg text-muted-foreground">
-              Have questions? We'd love to hear from you. Send us a message and
-              we'll respond as soon as possible.
+              Have questions or need support? We&apos;d love to hear from you. Send us a message and
+              our team will respond as soon as possible.
             </Paragraph>
           </div>
         </div>
       </section>
 
       {/* Contact Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+      <section className="py-10 lg:py-16 bg-background">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="grid lg:grid-cols-2 gap-16">
             {/* Contact Form */}
-            <Card className="rounded-xl shadow-medium">
-              <CardContent className="pt-6">
+            <Card className="rounded-2xl border-border/60 shadow-medium overflow-hidden">
+              <CardContent className="p-8">
                 <Subtitle className="mb-6">Send us a Message</Subtitle>
 
                 {submitted && (
@@ -134,13 +138,16 @@ export default function ContactPage() {
                 )}
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <RHFInput name="name" control={control} label="Your Name" />
-                  <RHFInput
-                    name="email"
-                    control={control}
-                    label="Email Address"
-                    type="email"
-                  />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <RHFInput name="name" control={control} label="Your Name" placeholder="John Doe" />
+                    <RHFInput
+                      name="email"
+                      control={control}
+                      label="Email Address"
+                      type="email"
+                      placeholder="john@example.com"
+                    />
+                  </div>
                   <RHFInput
                     name="subject"
                     control={control}
@@ -151,10 +158,10 @@ export default function ContactPage() {
                     name="message"
                     control={control}
                     label="Message"
-                    placeholder="Your message..."
-                    className="min-h-[120px]"
+                    placeholder="Your message details..."
+                    className="min-h-[150px]"
                   />
-                  <Button type="submit" className="w-full" disabled={submitting}>
+                  <Button type="submit" className="w-full py-6 text-base font-semibold shadow-glow-brand" disabled={submitting}>
                     {submitting ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -187,8 +194,8 @@ export default function ContactPage() {
                     const Icon = ICON_MAP[item.key];
                     const content = (
                       <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
-                          <Icon className="w-6 h-6 text-primary" />
+                        <div className="w-12 h-12 bg-brand-primary/10 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                          <Icon className="w-6 h-6 text-brand-primary" />
                         </div>
                         <div>
                           <Subtitle as="h3" className="text-base mb-1">
@@ -205,12 +212,12 @@ export default function ContactPage() {
                       <a
                         key={item.key}
                         href={item.href}
-                        className="block hover:bg-muted/30 p-4 -m-4 rounded-lg transition-colors"
+                        className="block group hover:bg-muted/30 p-4 -m-4 rounded-lg transition-colors"
                       >
                         {content}
                       </a>
                     ) : (
-                      <div key={item.key} className="p-4 -m-4">
+                      <div key={item.key} className="group p-4 -m-4">
                         {content}
                       </div>
                     );

@@ -54,44 +54,50 @@ export default function HelpPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-linear-to-br from-accent to-background py-12 md:py-20 pt-24 md:pt-28">
-        <div className="container mx-auto px-4">
+      <section className="bg-linear-to-br from-brand-primary/5 to-background pt-24 pb-12 lg:pt-32 lg:pb-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="max-w-3xl mx-auto text-center">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium mb-6">
+              Assistance Center
+            </span>
             <Title className="mb-4">Help Center</Title>
-            <Paragraph className="text-lg text-muted-foreground mb-6">
+            <Paragraph className="text-lg text-muted-foreground mb-8">
               Find answers to your questions and learn how to get the most out
               of ITpro Entrance.
             </Paragraph>
             {/* Search placeholder */}
-            <div className="max-w-md mx-auto bg-background rounded-lg shadow-sm p-2">
+            <div className="max-w-md mx-auto bg-background rounded-2xl border border-border/60 shadow-sm p-1.5 flex items-center group focus-within:border-brand-primary/50 transition-colors">
               <input
                 type="search"
                 placeholder="Search for help..."
-                className="w-full px-4 py-2 bg-transparent border-0 focus:outline-none"
+                className="w-full px-4 py-2.5 bg-transparent border-0 focus:outline-none text-sm"
               />
+              <Button size="sm" className="bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl">
+                Search
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
       {/* Categories */}
-      <section className="py-12 md:py-20">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16 bg-background">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <Subtitle className="text-center mb-8">Browse by Category</Subtitle>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
             {helpCategories.map((category) => {
               const Icon = category.icon;
               return (
                 <Link key={category.title} href={category.href}>
-                  <Card className="h-full hover:shadow-medium transition-shadow cursor-pointer">
-                    <CardHeader>
-                      <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-2">
-                        <Icon className="w-6 h-6 text-primary" />
+                  <Card className="h-full group hover:shadow-medium transition-all duration-300 border-border/60">
+                    <CardHeader className="pb-4">
+                      <div className="w-12 h-12 bg-brand-primary/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <Icon className="w-6 h-6 text-brand-primary" />
                       </div>
-                      <CardTitle className="text-lg">{category.title}</CardTitle>
+                      <CardTitle className="text-lg group-hover:text-brand-primary transition-colors">{category.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <Paragraph className="text-muted-foreground">
+                      <Paragraph className="text-sm text-muted-foreground leading-relaxed">
                         {category.description}
                       </Paragraph>
                     </CardContent>
@@ -104,15 +110,15 @@ export default function HelpPage() {
       </section>
 
       {/* Contact CTA */}
-      <section className="py-12 md:py-20">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="max-w-2xl mx-auto text-center">
             <Subtitle className="mb-4">Still Need Help?</Subtitle>
-            <Paragraph className="text-muted-foreground mb-6">
-              Can't find what you're looking for? Our support team is here to
-              help you.
+            <Paragraph className="text-muted-foreground mb-8">
+              Can&apos;t find what you&apos;re looking for? Our support team is here to
+              help you every step of the way.
             </Paragraph>
-            <div className="flex flex-wrap gap-4 justify-center">
+            <div className="flex flex-wrap justify-center gap-4">
               <Button asChild>
                 <Link href="/contact">Contact Support</Link>
               </Button>

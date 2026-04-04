@@ -113,19 +113,19 @@ function getRankBg(rank: number) {
 
 export default function ResultsPage() {
   return (
-    <div className="min-h-screen pt-20">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 gradient-hero" />
-        <div className="absolute top-20 right-20 w-64 h-64 bg-gold/10 rounded-full blur-3xl" />
+      <section className="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-br from-brand-primary/5 via-background to-background" />
+        <div className="absolute top-20 right-20 w-64 h-64 bg-brand-primary/10 rounded-full blur-3xl opacity-50" />
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center max-w-3xl mx-auto"
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 text-gold text-sm font-medium mb-4">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium mb-6">
               <Trophy className="w-4 h-4" />
               Entrance Exam Results 2025
             </span>
@@ -156,12 +156,12 @@ export default function ResultsPage() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 border-b border-border">
-        <div className="container mx-auto px-4">
+      <section className="py-8 lg:py-12 border-b border-border">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {(() => {
-              const statBgColors = ['bg-primary/10', 'bg-gold/10', 'bg-secondary/10', 'bg-primary/10'];
-              const statTextColors = ['text-primary', 'text-gold', 'text-secondary', 'text-primary'];
+              const statBgColors = ['bg-primary/10', 'bg-brand-orange/10', 'bg-secondary/10', 'bg-primary/10'];
+              const statTextColors = ['text-primary', 'text-brand-orange', 'text-secondary', 'text-primary'];
               return stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
@@ -173,14 +173,14 @@ export default function ResultsPage() {
                   className="text-center"
                 >
                   <div
-                    className={`w-14 h-14 rounded-2xl ${statBgColors[index]} flex items-center justify-center mx-auto mb-3`}
+                    className={`w-14 h-14 rounded-2xl ${statBgColors[index] || 'bg-brand-primary/10'} flex items-center justify-center mb-3`}
                   >
-                    <Icon className={`w-7 h-7 ${statTextColors[index]}`} />
+                    <Icon className={`w-7 h-7 ${statTextColors[index] || 'text-brand-primary'}`} />
                   </div>
-                  <Subtitle as="p" className="font-display text-3xl">
+                  <Subtitle as="p" className="font-display text-3xl text-left">
                     {stat.value}
                   </Subtitle>
-                  <Small className="text-sm">{stat.label}</Small>
+                  <Small className="text-sm text-left">{stat.label}</Small>
                 </motion.div>
               );
             });
@@ -190,8 +190,8 @@ export default function ResultsPage() {
       </section>
 
       {/* Main Content */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
+      <section className="py-10 lg:py-16">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="grid lg:grid-cols-4 gap-8">
             {/* Sidebar Filters */}
             <div className="lg:col-span-1">
@@ -265,7 +265,7 @@ export default function ResultsPage() {
                               </Small>
                             </div>
                             <div className="mt-4 flex items-center justify-center gap-2">
-                              <span className="px-3 py-1 rounded-full bg-gold/20 text-gold text-sm font-medium">
+                              <span className="px-3 py-1 rounded-full bg-brand-orange/20 text-brand-orange text-sm font-medium">
                                 Rank #{performer.rank}
                               </span>
                             </div>
@@ -373,9 +373,9 @@ export default function ResultsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center max-w-2xl mx-auto">
+      <section className="py-10 lg:py-16 bg-muted/30">
+        <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+          <div className="text-left max-w-2xl">
             <Subtitle as="h2" className="font-display text-2xl md:text-3xl mb-4">
               Want to See Your Name Here?
             </Subtitle>
@@ -384,12 +384,19 @@ export default function ResultsPage() {
               comprehensive courses and expert guidance have helped thousands achieve
               their dreams.
             </Paragraph>
-            <Link href="/auth/signup">
-              <Button size="lg" className="gap-2">
-                Start Your Journey
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-            </Link>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/auth/signup">
+                <Button size="lg" className="gap-2 shadow-glow-primary">
+                  Start Your Journey
+                  <ChevronRight className="w-5 h-5" />
+                </Button>
+              </Link>
+              <Link href="/courses">
+                <Button variant="outline" size="lg">
+                  Explore Courses
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
