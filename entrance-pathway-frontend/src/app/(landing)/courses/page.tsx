@@ -1,26 +1,26 @@
 'use client';
 
-import * as React from 'react';
-import { motion } from 'framer-motion';
+import { getPublishedCourses, type Course } from '@/actions';
 import { Button, Card, CardContent } from '@/components/ui';
+import { motion } from 'framer-motion';
 import {
+  ArrowRight,
+  Award,
   BookOpen,
-  Star,
-  Users,
-  Clock,
-  ChevronRight,
-  GraduationCap,
-  CheckCircle2,
-  Sparkles,
-  TrendingUp,
   Building2,
   Calendar,
-  ArrowRight,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  GraduationCap,
+  Sparkles,
+  Star,
+  TrendingUp,
   Trophy,
-  Award,
+  Users,
 } from 'lucide-react';
 import Link from 'next/link';
-import { getPublishedCourses, type Course } from '@/actions';
+import * as React from 'react';
 
 // Static course metadata for rich display
 const courseMetadata: Record<string, {
@@ -39,9 +39,9 @@ const courseMetadata: Record<string, {
     stream: 'Science Only',
     examSubjects: ['Mathematics', 'Physics', 'Chemistry', 'English', 'Computer'],
     highlights: ['Most technical IT program', '133+ affiliated colleges', '100 MCQs in 2 hours'],
-    gradient: 'from-indigo-500/10 via-blue-500/5 to-transparent',
-    iconBg: 'bg-indigo-500',
-    accent: 'text-indigo-600',
+    gradient: 'from-brand-primary/10 via-brand-primary/5 to-transparent',
+    iconBg: 'bg-brand-primary',
+    accent: 'text-brand-primary',
   },
   'bit': {
     university: 'Purbanchal University',
@@ -49,9 +49,9 @@ const courseMetadata: Record<string, {
     stream: 'Any Stream (Math 100 marks)',
     examSubjects: ['Computer', 'English', 'Aptitude', 'Mathematics'],
     highlights: ['Project every semester', 'Highly practical', '21+ affiliated colleges'],
-    gradient: 'from-violet-500/10 via-purple-500/5 to-transparent',
-    iconBg: 'bg-violet-500',
-    accent: 'text-violet-600',
+    gradient: 'from-brand-orange/10 via-brand-orange/5 to-transparent',
+    iconBg: 'bg-brand-orange',
+    accent: 'text-brand-orange',
   },
   'bca': {
     university: 'Tribhuvan University (FoHSS)',
@@ -59,9 +59,9 @@ const courseMetadata: Record<string, {
     stream: 'Any Stream',
     examSubjects: ['English', 'Mathematics', 'Logic', 'General Knowledge'],
     highlights: ['Open to all streams', '127+ affiliated colleges', 'Widest accessibility'],
-    gradient: 'from-emerald-500/10 via-teal-500/5 to-transparent',
-    iconBg: 'bg-emerald-500',
-    accent: 'text-emerald-600',
+    gradient: 'from-blue-500/10 via-blue-500/5 to-transparent',
+    iconBg: 'bg-blue-500',
+    accent: 'text-blue-600',
   },
   'bim': {
     university: 'Tribhuvan University (FoM)',
@@ -69,9 +69,9 @@ const courseMetadata: Record<string, {
     stream: 'Any Stream',
     examSubjects: ['English', 'Mathematics', 'Logical Reasoning', 'General Awareness'],
     highlights: ['IT + Management blend', 'Uses CMAT exam', '40+ affiliated colleges'],
-    gradient: 'from-amber-500/10 via-orange-500/5 to-transparent',
-    iconBg: 'bg-amber-500',
-    accent: 'text-amber-600',
+    gradient: 'from-violet-500/10 via-violet-500/5 to-transparent',
+    iconBg: 'bg-violet-500',
+    accent: 'text-violet-600',
   },
 };
 
@@ -262,9 +262,9 @@ export default function CoursesPage() {
     <div className="min-h-screen">
       {/* Hero */}
       <section className="relative overflow-hidden pt-24 pb-12 lg:pt-32 lg:pb-16">
-        <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-background to-background" />
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3" />
+        <div className="absolute inset-0 bg-linear-to-b from-brand-primary/[0.03] via-transparent to-transparent shadow-glow-primary/5" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-brand-orange/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none" />
 
         <div className="w-full max-w-[1600px] relative px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -285,20 +285,20 @@ export default function CoursesPage() {
               </p>
               <div className="flex flex-wrap items-center justify-start gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-emerald-600" />
+                  <div className="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-brand-primary" />
                   </div>
                   <span><strong className="text-foreground">95%</strong> Success Rate</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Users className="w-4 h-4 text-blue-600" />
+                  <div className="w-8 h-8 rounded-full bg-brand-primary/10 flex items-center justify-center">
+                    <Users className="w-4 h-4 text-brand-primary" />
                   </div>
                   <span><strong className="text-foreground">5,000+</strong> Students</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
-                    <Building2 className="w-4 h-4 text-violet-600" />
+                  <div className="w-8 h-8 rounded-full bg-brand-primary/5 flex items-center justify-center">
+                    <Building2 className="w-4 h-4 text-brand-primary/70" />
                   </div>
                   <span><strong className="text-foreground">320+</strong> Partner Colleges</span>
                 </div>
@@ -397,11 +397,15 @@ export default function CoursesPage() {
       {/* Courses Grid */}
       <section className="py-10 lg:py-16">
         <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
-          <motion.div {...fadeInUp} className="text-left mb-12">
+          <motion.div {...fadeInUp} className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-4">
+              <BookOpen className="w-3.5 h-3.5" />
+              Our Programs
+            </div>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
               Choose Your Program
             </h2>
-            <p className="text-muted-foreground text-lg max-w-xl">
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
               Each course is tailored to the specific entrance exam syllabus with expert guidance
             </p>
           </motion.div>
@@ -452,26 +456,30 @@ export default function CoursesPage() {
       {/* Quick Comparison Table */}
       <section className="py-10 lg:py-16 bg-muted/30">
         <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
-          <motion.div {...fadeInUp} className="text-left mb-12">
+          <motion.div {...fadeInUp} className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/10 text-brand-orange text-xs font-semibold uppercase tracking-wider mb-4">
+              <TrendingUp className="w-3.5 h-3.5" />
+              Compare Courses
+            </div>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
               Quick Comparison
             </h2>
-            <p className="text-muted-foreground text-lg max-w-xl">
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
               Not sure which program is right for you? Compare at a glance
             </p>
           </motion.div>
 
-          <motion.div {...fadeInUp} className="max-w-4xl">
-            <Card className="overflow-hidden border-0 shadow-sm">
+          <motion.div {...fadeInUp} className="max-w-5xl mx-auto">
+            <Card className="overflow-hidden border border-border/50 shadow-xl rounded-2xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-muted/50">
                       <th className="text-left p-4 font-semibold text-muted-foreground min-w-[120px]">Feature</th>
-                      <th className="text-center p-4 font-bold text-indigo-600 min-w-[100px]">BSc CSIT</th>
-                      <th className="text-center p-4 font-bold text-violet-600 min-w-[100px]">BIT</th>
-                      <th className="text-center p-4 font-bold text-emerald-600 min-w-[100px]">BCA</th>
-                      <th className="text-center p-4 font-bold text-amber-600 min-w-[100px]">BIM</th>
+                      <th className="text-center p-4 font-bold text-brand-primary min-w-[100px]">BSc CSIT</th>
+                      <th className="text-center p-4 font-bold text-brand-orange min-w-[100px]">BIT</th>
+                      <th className="text-center p-4 font-bold text-blue-600 min-w-[100px]">BCA</th>
+                      <th className="text-center p-4 font-bold text-violet-600 min-w-[100px]">BIM</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -500,11 +508,15 @@ export default function CoursesPage() {
       {/* How it works */}
       <section className="py-10 lg:py-16">
         <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
-          <motion.div {...fadeInUp} className="text-left mb-14">
+          <motion.div {...fadeInUp} className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-4">
+              <Sparkles className="w-3.5 h-3.5" />
+              Process
+            </div>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-foreground mb-3">
               How It Works
             </h2>
-            <p className="text-muted-foreground text-lg max-w-xl">
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
               Start preparing in three simple steps
             </p>
           </motion.div>
@@ -543,10 +555,10 @@ export default function CoursesPage() {
                   {i < 2 && (
                     <div className="hidden md:block absolute top-12 left-[60%] w-[80%] border-t-2 border-dashed border-border/60" />
                   )}
-                  <div className="relative z-10 w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mx-auto mb-4">
-                    <StepIcon className="w-7 h-7 text-primary" />
+                  <div className="relative z-10 w-16 h-16 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center mx-auto mb-4">
+                    <StepIcon className="w-7 h-7 text-brand-primary" />
                   </div>
-                  <span className="text-xs font-bold text-primary/60 uppercase tracking-widest">
+                  <span className="text-xs font-bold text-brand-primary/60 uppercase tracking-widest">
                     Step {item.step}
                   </span>
                   <h3 className="font-display font-bold text-lg text-foreground mt-2 mb-2">{item.title}</h3>
@@ -558,24 +570,25 @@ export default function CoursesPage() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="py-10 lg:py-16">
         <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
-          <div className="relative overflow-hidden rounded-3xl bg-linear-to-br from-primary to-primary/80 p-10 md:p-16 text-center">
-            <div className="absolute inset-0 opacity-50" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23fff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }} />
-            <div className="relative">
-              <Calendar className="w-10 h-10 text-primary-foreground/80 mx-auto mb-4" />
-              <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
+          <div className="relative overflow-hidden rounded-3xl bg-brand-primary p-10 md:p-16 text-center shadow-glow-primary">
+            {/* Background elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+            
+            <div className="relative max-w-2xl mx-auto">
+              <Calendar className="w-10 h-10 text-white/80 mx-auto mb-4" />
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">
                 Entrance exams are around the corner
               </h2>
-              <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto mb-8">
+              <p className="text-white/80 text-lg max-w-xl mx-auto mb-8">
                 Don&apos;t wait until the last minute. Start your preparation today and join thousands of successful students.
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
                 <Link href="/auth/signup">
-                  <Button size="lg" variant="secondary" className="gap-2 font-semibold">
-                    Start Free Today
-                    <ChevronRight className="w-4 h-4" />
+                  <Button size="lg" className="bg-brand-orange hover:bg-brand-orange/90 text-white gap-2 font-bold px-8 h-14 rounded-xl shadow-glow-brand transition-all hover:scale-105 active:scale-95">
+                    Start Free Trial <ArrowRight className="w-5 h-5" />
                   </Button>
                 </Link>
               </div>

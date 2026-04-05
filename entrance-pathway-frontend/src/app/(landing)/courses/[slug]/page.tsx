@@ -82,8 +82,8 @@ const courseInfo: Record<string, {
     examFormat: '100 MCQs, No negative marking',
     examDuration: '2 Hours',
     totalColleges: '133+ Colleges',
-    gradient: 'from-indigo-600 to-blue-600',
-    iconBg: 'bg-indigo-500',
+    gradient: 'from-brand-primary to-brand-primary/80',
+    iconBg: 'bg-brand-primary',
     entranceSubjects: [
       { name: 'Mathematics', marks: '25', topics: 'Algebra, Trigonometry, Calculus, Coordinate Geometry, Vectors, Probability' },
       { name: 'Physics', marks: '25', topics: 'Mechanics, Heat, Optics, Electricity & Magnetism, Modern Physics' },
@@ -131,8 +131,8 @@ const courseInfo: Record<string, {
     examFormat: '100 MCQs, No negative marking',
     examDuration: '2 Hours',
     totalColleges: '127+ Colleges',
-    gradient: 'from-emerald-600 to-teal-600',
-    iconBg: 'bg-emerald-500',
+    gradient: 'from-blue-600 to-blue-600/80',
+    iconBg: 'bg-blue-500',
     entranceSubjects: [
       { name: 'English', marks: '25', topics: 'Grammar, Vocabulary, Comprehension, Sentence Construction' },
       { name: 'Mathematics', marks: '25', topics: 'Algebra, Sets, Statistics, Trigonometry, Coordinate Geometry' },
@@ -179,7 +179,7 @@ const courseInfo: Record<string, {
     examFormat: '100 MCQs, No negative marking',
     examDuration: '2 Hours',
     totalColleges: '21+ Colleges',
-    gradient: 'from-violet-600 to-purple-600',
+    gradient: 'from-violet-600 to-violet-600/80',
     iconBg: 'bg-violet-500',
     entranceSubjects: [
       { name: 'Basic Computer', marks: '35', topics: 'Computer Fundamentals, Software, Hardware, Internet, Networking' },
@@ -227,8 +227,8 @@ const courseInfo: Record<string, {
     examFormat: '100 MCQs (CMAT), No negative marking',
     examDuration: '90 Minutes',
     totalColleges: '40+ Colleges',
-    gradient: 'from-amber-500 to-orange-500',
-    iconBg: 'bg-amber-500',
+    gradient: 'from-indigo-600 to-indigo-600/80',
+    iconBg: 'bg-indigo-500',
     entranceSubjects: [
       { name: 'Verbal Ability (English)', marks: '25', topics: 'Vocabulary, Grammar, Reading Comprehension, Sentence Correction' },
       { name: 'Quantitative Ability (Math)', marks: '25', topics: 'Arithmetic, Algebra, Geometry, Data Interpretation' },
@@ -357,7 +357,7 @@ function AccordionChapter({ chapter, index, isOpen, onToggle }: {
               )}
               <span className="flex-1 text-foreground/80">{lesson.title}</span>
               {lesson.isFree && (
-                <span className="text-xs font-medium text-emerald-600 bg-emerald-50 rounded-full px-2 py-0.5">Free</span>
+                <span className="text-xs font-medium text-brand-primary bg-brand-primary/10 rounded-full px-2 py-0.5">Free</span>
               )}
               {lesson.duration && (
                 <span className="text-xs text-muted-foreground">{lesson.duration}m</span>
@@ -463,14 +463,14 @@ export default function CourseDetailPage() {
 
                 {/* Stats row */}
                 <div className="flex flex-wrap gap-3">
-                  {course.rating && (
+                  {!!course.rating && (
                     <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/10">
                       <Star className="w-4 h-4 text-amber-300 fill-amber-300" />
                       <span className="text-sm font-semibold text-white">{course.rating.toFixed(1)}</span>
-                      {course.reviewsCount && <span className="text-xs text-white/60">({course.reviewsCount} reviews)</span>}
+                      {!!course.reviewsCount && <span className="text-xs text-white/60">({course.reviewsCount} reviews)</span>}
                     </div>
                   )}
-                  {course.studentCount && (
+                  {!!course.studentCount && (
                     <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 border border-white/10">
                       <Users className="w-4 h-4 text-white/70" />
                       <span className="text-sm text-white">{course.studentCount.toLocaleString()}+ students</span>
@@ -501,7 +501,7 @@ export default function CourseDetailPage() {
                       )}
                     </div>
                     {hasDiscount && (
-                      <span className="text-sm font-semibold text-emerald-600">{discountPercent}% off — Limited offer</span>
+                      <span className="text-sm font-semibold text-brand-primary">{discountPercent}% off — Limited offer</span>
                     )}
                   </div>
 
@@ -612,7 +612,7 @@ export default function CourseDetailPage() {
                   <div className="space-y-3">
                     {meta.whyThisCourse.map((reason, i) => (
                       <div key={i} className="flex items-start gap-3">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-0.5 shrink-0" />
+                        <CheckCircle2 className="w-5 h-5 text-brand-orange mt-0.5 shrink-0" />
                         <p className="text-foreground/80">{reason}</p>
                       </div>
                     ))}
@@ -829,7 +829,7 @@ export default function CourseDetailPage() {
                         <span className="text-sm text-muted-foreground line-through">Rs. {originalPrice.toLocaleString()}</span>
                       )}
                     </div>
-                    {hasDiscount && <span className="text-xs font-semibold text-emerald-600">{discountPercent}% off</span>}
+                    {hasDiscount && <span className="text-xs font-semibold text-brand-primary">{discountPercent}% off</span>}
                   </div>
                   <Button className="w-full mb-2.5" size="lg">Enroll Now</Button>
                   <Button variant="outline" className="w-full" size="lg">Try Free Demo</Button>
@@ -839,7 +839,7 @@ export default function CourseDetailPage() {
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">This course includes</p>
                       {course.features.map((feature, i) => (
                         <div key={i} className="flex items-center gap-2 text-sm">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                          <CheckCircle2 className="w-4 h-4 text-brand-orange shrink-0" />
                           <span className="text-foreground/80">{feature}</span>
                         </div>
                       ))}
@@ -853,22 +853,30 @@ export default function CourseDetailPage() {
       </div>
 
       {/* CTA */}
-      <section className="py-16 lg:py-20 bg-muted/30">
+      <section className="py-16 lg:py-20">
         <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="font-display text-3xl font-bold text-foreground mb-4">
-              Ready to Start Your {course.title} Preparation?
-            </h2>
-            <p className="text-muted-foreground text-lg mb-8">
-              Join thousands of students who have cracked the entrance and secured admissions in top colleges across Nepal.
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Button size="lg" className="gap-2">
-                Enroll Now <ChevronRight className="w-4 h-4" />
-              </Button>
-              <Link href="/courses">
-                <Button variant="outline" size="lg">View All Courses</Button>
-              </Link>
+          <div className="relative overflow-hidden rounded-3xl bg-brand-primary p-10 md:p-16 text-center shadow-glow-primary">
+            {/* Background elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-orange/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-brand-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+            
+            <div className="relative max-w-2xl mx-auto">
+              <h2 className="font-display text-3xl font-bold text-white mb-4">
+                Ready to Start Your {course.title} Preparation?
+              </h2>
+              <p className="text-white/80 text-lg mb-8">
+                Join thousands of students who have cracked the entrance and secured admissions in top colleges across Nepal.
+              </p>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <Button size="lg" className="bg-brand-orange hover:bg-brand-orange/90 text-white gap-2 font-bold px-8 h-14 rounded-xl shadow-glow-brand transition-all hover:scale-105 active:scale-95">
+                  Enroll Now <ChevronRight className="w-4 h-4" />
+                </Button>
+                <Link href="/courses">
+                  <Button size="lg" variant="ghost" className="border border-white/30 text-white hover:bg-white/10 hover:text-white gap-2 px-8 h-14 rounded-xl">
+                    View All Courses
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
