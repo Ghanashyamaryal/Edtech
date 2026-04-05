@@ -15,6 +15,17 @@ import {
   BookMarked,
   Sparkles,
   Lock,
+  Calculator,
+  Atom,
+  FlaskConical,
+  Dna,
+  Languages,
+  Monitor,
+  Brain,
+  Globe,
+  TrendingUp,
+  PenTool,
+  SquareSigma,
 } from 'lucide-react';
 import Link from 'next/link';
 import { getNotes, incrementNoteDownload, type Note } from '@/actions/notes';
@@ -29,28 +40,29 @@ const NOTE_TYPE_LABELS: Record<string, string> = {
 };
 
 // Default icons for subjects without custom icons
-const DEFAULT_SUBJECT_ICONS: Record<string, string> = {
-  'mathematics': '📐',
-  'physics': '⚛️',
-  'chemistry': '🧪',
-  'biology': '🧬',
-  'english': '📝',
-  'computer science': '💻',
-  'computer': '💻',
-  'logical reasoning': '🧠',
-  'general knowledge': '🌍',
-  'gk': '🌍',
-  'nepali': '🇳🇵',
-  'economics': '📊',
-  'accountancy': '📒',
-  'default': '📚',
+const DEFAULT_SUBJECT_ICONS: Record<string, React.ElementType> = {
+  'math': SquareSigma,
+  'physics': Atom,
+  'chemistry': FlaskConical,
+  'biology': Dna,
+  'english': Languages,
+  'computer science': Monitor,
+  'computer': Monitor,
+  'it': Monitor,
+  'logical reasoning': Brain,
+  'general knowledge': Globe,
+  'gk': Globe,
+  'nepali': PenTool,
+  'economics': TrendingUp,
+  'accountancy': Calculator,
+  'default': BookOpen,
 };
 
 function isEmoji(str: string): boolean {
   return /^\p{Emoji}/u.test(str) && str.length <= 4;
 }
 
-function getSubjectIcon(name: string, icon: string | null | undefined): string {
+function getSubjectIcon(name: string, icon: string | null | undefined): React.ElementType | string {
   if (icon && isEmoji(icon)) return icon;
   const normalizedName = name.toLowerCase();
   return DEFAULT_SUBJECT_ICONS[normalizedName] || DEFAULT_SUBJECT_ICONS['default'];
@@ -219,8 +231,14 @@ export default function NotesPage() {
                   <Link href={`/notes/subject/${subject.id}`}>
                     <Card className="h-full hover:shadow-medium hover:border-primary/30 transition-all cursor-pointer group">
                       <CardContent className="pt-6 text-center">
-                        <div className="text-3xl mb-3">
-                          {getSubjectIcon(subject.name, subject.icon)}
+                        <div className="w-12 h-12 rounded-xl bg-brand-primary/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-brand-primary group-hover:text-white transition-all duration-300 shadow-sm">
+                          {(() => {
+                            const Icon = getSubjectIcon(subject.name, subject.icon);
+                            if (typeof Icon === 'string') {
+                              return <span className="text-2xl">{Icon}</span>;
+                            }
+                            return <Icon className="w-6 h-6" />;
+                          })()}
                         </div>
                         <h3 className="font-display font-semibold text-foreground mb-1">
                           {subject.name}
