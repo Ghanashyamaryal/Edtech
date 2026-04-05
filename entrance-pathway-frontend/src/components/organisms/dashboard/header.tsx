@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth, useRole } from "@/context/auth-context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
@@ -285,6 +285,7 @@ function NotificationsDropdown() {
 function ProfileDropdown() {
   const { user, signOut } = useAuth();
   const { isAdmin } = useRole();
+  const router = useRouter();
 
   const displayName = user?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName
@@ -297,6 +298,8 @@ function ProfileDropdown() {
   const handleSignOut = async () => {
     try {
       await signOut();
+      router.push("/");
+      router.refresh();
     } catch (error) {
       console.error("Sign out error:", error);
     }
