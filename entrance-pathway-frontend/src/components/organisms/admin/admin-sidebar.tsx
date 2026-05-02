@@ -87,7 +87,7 @@ export function AdminSidebar({ isOpen, onClose, className }: AdminSidebarProps) 
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 top-16 bg-black/50 z-40 lg:hidden animate-fade-in"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-fade-in"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -96,15 +96,24 @@ export function AdminSidebar({ isOpen, onClose, className }: AdminSidebarProps) 
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-16 left-0 z-40 h-[calc(100vh-4rem)] w-72 bg-card border-r border-border",
+          "fixed top-0 left-0 z-40 h-screen w-72 bg-card border-r border-border",
           "flex flex-col transition-transform duration-300 ease-in-out",
           "lg:translate-x-0 lg:sticky",
           isOpen
-            ? "translate-x-0 shadow-medium"
+            ? "translate-x-0 shadow-strong"
             : "-translate-x-full lg:shadow-none",
           className,
         )}
       >
+        {/* Logo Section (Desktop) */}
+        <div className="hidden lg:flex items-center h-10 lg:h-20 px-6 border-b border-border mb-2">
+          <Link href="/" className="flex items-center group">
+            <div className="flex items-center justify-center h-14 w-44 overflow-hidden transform transition-all duration-500 group-hover:scale-105">
+              <img src="/assets/logo.png" alt="ITpro Entrance Logo" className="w-full h-full object-contain object-left drop-shadow-md" />
+            </div>
+          </Link>
+        </div>
+
         {/* Mobile close button */}
         <div className="flex items-center justify-between h-14 px-5 border-b border-border lg:hidden">
           <span className="font-semibold text-foreground">Admin Menu</span>
@@ -163,13 +172,36 @@ export function AdminSidebar({ isOpen, onClose, className }: AdminSidebarProps) 
         </nav>
 
         {/* Footer - Back to Dashboard */}
-        <div className="p-4 border-t border-border">
-          <Link href="/dashboard">
-            <Button variant="outline" className="w-full gap-2">
-              <ArrowLeft className="w-4 h-4" />
-              Back to Dashboard
-            </Button>
+        <div className="px-3 pb-2">
+          <Link
+            href="/dashboard"
+            onClick={() => {
+              if (window.innerWidth < 1024) onClose();
+            }}
+            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+          >
+            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-primary-foreground">
+              <ArrowLeft className="w-5 h-5" />
+            </div>
+            <span>Back to Dashboard</span>
           </Link>
+        </div>
+
+        {/* Support Footer */}
+        <div className="p-4 border-t border-border">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-secondary text-secondary-foreground">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                Need Help?
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Contact our support team
+              </p>
+            </div>
+          </div>
         </div>
       </aside>
     </>
