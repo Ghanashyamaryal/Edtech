@@ -184,7 +184,6 @@ export function LandingFooter() {
         <div className="container  mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <Small className="text-sm">
-              &copy; {currentYear} ITpro Entrance. All rights reserved.
               &copy; {currentYear} <Link href="https://itpro-entrance.com/">itpro-entrance</Link>. All rights reserved.
             </Small>
             <div className="flex items-center gap-6">
