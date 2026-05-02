@@ -126,6 +126,8 @@ export {
   getCurrentUserProfile,
   updateUserRole,
   updateUserVerification,
+  saveSignupRequest,
+  deleteUserAccount,
   updateProfile,
   getDashboardStats,
   type User,
