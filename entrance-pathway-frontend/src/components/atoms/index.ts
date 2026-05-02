@@ -18,6 +18,8 @@ export { Toaster } from './toaster';
 export { Typography, Title, Subtitle, Paragraph, Small, typographyVariants } from './typography';
 export type { TypographyProps } from './typography';
 export { ProgressBar } from './progress-bar';
+export { Stepper } from './stepper';
+export type { StepperStep, StepperProps } from './stepper';
 export { Textarea } from './textarea';
 export type { TextareaProps } from './textarea';
 export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator } from './select';

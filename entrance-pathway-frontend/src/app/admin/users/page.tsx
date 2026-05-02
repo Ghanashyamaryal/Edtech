@@ -20,8 +20,8 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { DataTable, Column, ConfirmDialog } from "@/components/molecules/admin";
-import { Users, MoreHorizontal, Shield, UserCheck, GraduationCap, CheckCircle, XCircle } from "lucide-react";
-import { getUsers, updateUserRole, updateUserVerification, type User, type UserRole } from "@/actions";
+import { Users, MoreHorizontal, Shield, UserCheck, GraduationCap, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { getUsers, updateUserRole, updateUserVerification, deleteUserAccount, type User, type UserRole } from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminUsersPage() {
@@ -39,6 +39,9 @@ export default function AdminUsersPage() {
   const [showVerifyDialog, setShowVerifyDialog] = React.useState(false);
   const [updatingVerification, setUpdatingVerification] = React.useState(false);
   const [verificationFilter, setVerificationFilter] = React.useState<string>("all");
+  const [selectedDeleteUser, setSelectedDeleteUser] = React.useState<User | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
 
   const loadUsers = React.useCallback(async () => {
     setLoading(true);
@@ -85,6 +88,28 @@ export default function AdminUsersPage() {
       toast({ title: "Error", description: result.error, variant: "destructive" });
     }
     setUpdatingVerification(false);
+  };
+
+  const handleRejectUser = (user: User) => {
+    setSelectedDeleteUser(user);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!selectedDeleteUser) return;
+    setDeleting(true);
+    const result = await deleteUserAccount(selectedDeleteUser.id);
+    if (result.success) {
+      toast({
+        title: "User Rejected",
+        description: `${selectedDeleteUser.fullName}'s account has been removed.`,
+      });
+      setShowDeleteDialog(false);
+      loadUsers();
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setDeleting(false);
   };
 
   const confirmRoleChange = async () => {
@@ -183,6 +208,20 @@ export default function AdminUsersPage() {
       cell: (user) => user.phone || "-",
     },
     {
+      key: "requestedCourse",
+      header: "Requested Course",
+      cell: (user) => (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-sm">{user.requestedCourse?.title || "-"}</span>
+          {user.paymentReference && (
+            <span className="text-xs text-muted-foreground">
+              Ref: {user.paymentReference}
+            </span>
+          )}
+        </div>
+      ),
+    },
+    {
       key: "createdAt",
       header: "Joined",
       cell: (user) => new Date(user.createdAt).toLocaleDateString(),
@@ -208,13 +247,22 @@ export default function AdminUsersPage() {
                 Revoke Verification
               </DropdownMenuItem>
             ) : (
-              <DropdownMenuItem
-                onClick={() => handleVerificationChange(user, true)}
-                className="text-green-600"
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Verify Student
-              </DropdownMenuItem>
+              <>
+                <DropdownMenuItem
+                  onClick={() => handleVerificationChange(user, true)}
+                  className="text-green-600"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Approve & Enroll
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleRejectUser(user)}
+                  className="text-red-600"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Reject (Delete)
+                </DropdownMenuItem>
+              </>
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -320,15 +368,30 @@ export default function AdminUsersPage() {
       <ConfirmDialog
         open={showVerifyDialog}
         onOpenChange={setShowVerifyDialog}
-        title={verifyAction ? "Verify Student" : "Revoke Verification"}
+        title={verifyAction ? "Approve & Enroll" : "Revoke Verification"}
         description={
           verifyAction
-            ? `Are you sure you want to verify ${selectedVerifyUser?.fullName}? They will gain access to the student dashboard.`
+            ? `Approve ${selectedVerifyUser?.fullName}? They will gain dashboard access${
+                selectedVerifyUser?.requestedCourse
+                  ? ` and be auto-enrolled in "${selectedVerifyUser.requestedCourse.title}".`
+                  : "."
+              }`
             : `Are you sure you want to revoke verification for ${selectedVerifyUser?.fullName}? They will lose access to the dashboard.`
         }
-        confirmLabel={verifyAction ? "Verify" : "Revoke"}
+        confirmLabel={verifyAction ? "Approve" : "Revoke"}
         onConfirm={confirmVerificationChange}
         loading={updatingVerification}
+      />
+
+      {/* Reject (Hard Delete) Confirmation Dialog */}
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Reject Application"
+        description={`Permanently delete ${selectedDeleteUser?.fullName}'s account (${selectedDeleteUser?.email})? This cannot be undone.`}
+        confirmLabel="Delete Account"
+        onConfirm={confirmDeleteUser}
+        loading={deleting}
       />
     </div>
   );
