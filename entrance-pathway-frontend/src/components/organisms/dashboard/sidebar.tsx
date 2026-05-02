@@ -1,23 +1,23 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui";
 import { useRole } from "@/context/auth-context";
+import { cn } from "@/lib/utils";
 import {
-  Home,
-  Video,
-  PlayCircle,
-  FileText,
   BarChart3,
   BookOpen,
+  FileText,
+  Home,
   MessageSquare,
+  PlayCircle,
   Settings,
   Shield,
+  Video,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import * as React from "react";
 
 export interface NavItem {
   label: string;
@@ -84,7 +84,7 @@ export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 top-16 lg:top-20 bg-black/50 z-40 lg:hidden animate-fade-in"
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden animate-fade-in"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -93,7 +93,7 @@ export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed top-16 lg:top-20 left-0 z-40 h-[calc(100vh-4rem)] lg:h-[calc(100vh-5rem)] w-72 bg-card border-r border-border",
+          "fixed top-0 left-0 z-40 h-screen w-72 bg-card border-r border-border",
           "flex flex-col transition-transform duration-300 ease-in-out",
           "lg:translate-x-0 lg:sticky",
           isOpen
@@ -102,6 +102,14 @@ export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
           className,
         )}
       >
+        {/* Logo Section (Desktop) */}
+        <div className="hidden lg:flex items-center h-10 lg:h-20 px-6 border-b border-border mb-2">
+          <Link href="/" className="flex items-center group">
+            <div className="flex items-center justify-center h-14 w-44 overflow-hidden transform transition-all duration-500 group-hover:scale-105">
+              <img src="/assets/logo.png" alt="ITpro Entrance Logo" className="w-full h-full object-contain object-left drop-shadow-md" />
+            </div>
+          </Link>
+        </div>
         {/* Mobile close button */}
         <div className="flex items-center justify-between h-14 px-5 border-b border-border lg:hidden">
           <span className="font-semibold text-foreground">Dashboard Menu</span>
@@ -205,3 +213,4 @@ export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
 }
 
 export { navigationItems };
+

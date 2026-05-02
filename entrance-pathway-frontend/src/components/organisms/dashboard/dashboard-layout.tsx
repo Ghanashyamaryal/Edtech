@@ -46,17 +46,15 @@ export function DashboardLayout({ children, className }: DashboardLayoutProps) {
   }, [sidebarOpen]);
 
   return (
-    <div className="min-h-screen bg-muted/30 flex flex-col">
-      {/* Header - full width at top */}
-      <Header onMenuClick={handleMenuClick} />
+    <div className="min-h-screen bg-muted/30 flex">
+      {/* Sidebar - fixed on the left */}
+      <Sidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
 
-      {/* Content area with sidebar */}
-      <div className="flex flex-1">
-        {/* Sidebar */}
-        <Sidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
-
-        {/* Main content area */}
-        <main className={cn("flex-1 p-4 md:p-6 lg:p-8 w-full lg:w-[calc(100%-288px)]", className)}>
+      {/* Right side: Header + Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <Header onMenuClick={handleMenuClick} />
+        
+        <main className={cn("flex-1 p-4 md:p-6 lg:p-8", className)}>
           {children}
         </main>
       </div>
