@@ -38,10 +38,7 @@ export function DetailsStep({ initialValues, onNext }: DetailsStepProps) {
 
   const courseOptions: SelectOption[] = courses.map((c) => ({
     value: c.id,
-    label:
-      c.price === 0
-        ? c.title
-        : `${c.title} — Rs. ${(c.discountedPrice ?? c.price).toLocaleString()}`,
+    label: c.title,
   }));
 
   const submit = (values: SignupDetailsFormData) => {
