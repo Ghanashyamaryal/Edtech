@@ -656,11 +656,16 @@ export async function submitExamAnswer(
     // Get correct answer
     const { data: question } = await supabase
       .from('questions')
-      .select('correct_answer')
+      .select('correct_answer, options')
       .eq('id', questionId)
       .single();
 
-    const isCorrect = question?.correct_answer === selectedAnswer;
+    const options = (question?.options as any[]) || [];
+    const selectedOption = options.find((opt) => opt.id === selectedAnswer);
+
+    // Support both ID-based (new) and Text-based (old) matching for backward compatibility
+    const isCorrect = question?.correct_answer === selectedAnswer || 
+      (selectedOption && question?.correct_answer === selectedOption.text);
 
     // Upsert answer
     const { data: existingAnswer } = await supabase
