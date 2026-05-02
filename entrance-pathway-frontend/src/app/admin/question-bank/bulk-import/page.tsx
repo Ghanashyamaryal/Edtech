@@ -21,8 +21,10 @@ import { ArrowLeft, Loader2, Upload, CheckCircle, AlertCircle, HelpCircle } from
 import Link from "next/link";
 import {
   getSubjects,
+  getTopics,
   bulkCreateQuestions,
   type Subject,
+  type Topic,
   type CreateQuestionInput,
   type QuestionOption,
 } from "@/actions";
@@ -51,6 +53,7 @@ Explanation: Basic addition.`;
 function parseQuestions(
   text: string,
   subjectId: string,
+  topicId: string,
   difficulty: string
 ): { questions: CreateQuestionInput[]; errors: string[] } {
   const questions: CreateQuestionInput[] = [];
@@ -124,6 +127,7 @@ function parseQuestions(
         options,
         difficulty,
         subjectId,
+        topicId: topicId || undefined,
         explanation: explanationText || undefined,
       });
     } catch {
@@ -138,7 +142,9 @@ export default function BulkImportPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [subjects, setSubjects] = React.useState<Subject[]>([]);
+  const [topics, setTopics] = React.useState<Topic[]>([]);
   const [subjectId, setSubjectId] = React.useState("");
+  const [topicId, setTopicId] = React.useState("");
   const [difficulty, setDifficulty] = React.useState("medium");
   const [inputText, setInputText] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -155,6 +161,20 @@ export default function BulkImportPage() {
     load();
   }, []);
 
+  React.useEffect(() => {
+    if (!subjectId) {
+      setTopics([]);
+      setTopicId("");
+      return;
+    }
+    async function loadTopics() {
+      const result = await getTopics(subjectId);
+      if (result.success) setTopics(result.data);
+    }
+    loadTopics();
+    setTopicId("");
+  }, [subjectId]);
+
   const handlePreview = () => {
     if (!subjectId) {
       toast({ title: "Select a subject first", variant: "destructive" });
@@ -164,7 +184,7 @@ export default function BulkImportPage() {
       toast({ title: "Paste your questions first", variant: "destructive" });
       return;
     }
-    const result = parseQuestions(inputText, subjectId, difficulty);
+    const result = parseQuestions(inputText, subjectId, topicId, difficulty);
     setPreview(result);
   };
 
@@ -212,7 +232,7 @@ export default function BulkImportPage() {
           <CardTitle>Settings (applies to all questions)</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Subject *</Label>
               <Select value={subjectId} onValueChange={setSubjectId}>
@@ -223,6 +243,34 @@ export default function BulkImportPage() {
                   {subjects.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
                       {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Topic</Label>
+              <Select
+                value={topicId || "none"}
+                onValueChange={(v) => setTopicId(v === "none" ? "" : v)}
+                disabled={!subjectId || topics.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      !subjectId
+                        ? "Select subject first"
+                        : topics.length === 0
+                        ? "No topics for this subject"
+                        : "Select topic (optional)"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No topic</SelectItem>
+                  {topics.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
