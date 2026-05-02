@@ -39,6 +39,7 @@ export interface ExamInput {
   totalMarks?: number;
   passingMarks?: number;
   courseId?: string;
+  isPublished?: boolean;
 }
 
 // ============ QUERIES ============

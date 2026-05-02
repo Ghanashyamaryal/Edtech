@@ -14,8 +14,8 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { DataTable, Column, StatusBadge, ConfirmDialog } from "@/components/molecules/admin";
-import { ClipboardList, Plus, MoreHorizontal, Pencil, Trash2, ListChecks, BookOpen } from "lucide-react";
-import { getExams, deleteExam, type Exam } from "@/actions";
+import { ClipboardList, Plus, MoreHorizontal, Pencil, Trash2, ListChecks, BookOpen, Eye, EyeOff } from "lucide-react";
+import { getExams, deleteExam, updateExam, type Exam } from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 
 const EXAM_TYPE_LABELS: Record<string, string> = {
@@ -53,6 +53,22 @@ export default function AdminExamsPage() {
   const handleDelete = (exam: Exam) => {
     setSelectedExam(exam);
     setShowDeleteDialog(true);
+  };
+
+  const handleTogglePublish = async (exam: Exam) => {
+    const next = !exam.isPublished;
+    const result = await updateExam(exam.id, { isPublished: next });
+    if (result.success) {
+      toast({
+        title: next ? "Exam published" : "Exam unpublished",
+        description: next
+          ? "Students can now see and take this exam."
+          : "Exam is now hidden from students.",
+      });
+      loadExams();
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
   };
 
   const confirmDelete = async () => {
@@ -173,6 +189,19 @@ export default function AdminExamsPage() {
                 <ListChecks className="w-4 h-4 mr-2" />
                 Manage Questions
               </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleTogglePublish(exam)}>
+              {exam.isPublished ? (
+                <>
+                  <EyeOff className="w-4 h-4 mr-2" />
+                  Unpublish
+                </>
+              ) : (
+                <>
+                  <Eye className="w-4 h-4 mr-2" />
+                  Publish
+                </>
+              )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
