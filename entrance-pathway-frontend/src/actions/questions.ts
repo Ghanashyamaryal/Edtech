@@ -119,7 +119,7 @@ export async function createQuestion(input: CreateQuestionInput): Promise<Action
 
     // Determine correct answer from options
     const correctOption = input.options.find((opt) => opt.isCorrect);
-    const correctAnswer = correctOption?.text || '';
+    const correctAnswer = correctOption?.id || '';
 
     const { data, error } = await supabase
       .from('questions')
@@ -150,7 +150,7 @@ export async function updateQuestion(id: string, input: CreateQuestionInput): Pr
     const supabase = createAdminClient();
 
     const correctOption = input.options.find((opt) => opt.isCorrect);
-    const correctAnswer = correctOption?.text || '';
+    const correctAnswer = correctOption?.id || '';
 
     const { data, error } = await supabase
       .from('questions')
@@ -190,7 +190,7 @@ export async function bulkCreateQuestions(
         question_text: q.questionText,
         question_type: q.questionType,
         options: q.options,
-        correct_answer: correctOption?.text || '',
+        correct_answer: correctOption?.id || '',
         explanation: q.explanation,
         difficulty: q.difficulty,
         subject_id: q.subjectId,
