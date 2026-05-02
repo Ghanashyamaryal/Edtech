@@ -309,25 +309,6 @@ export default function SettingsPage() {
               </Button>
             </div>
 
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <Subtitle as="p" className="text-base">Two-Factor Authentication</Subtitle>
-                <Small className="text-sm">
-                  Add an extra layer of security
-                </Small>
-              </div>
-              <Button variant="outline">Enable</Button>
-            </div>
-
-            <div className="flex items-center justify-between py-2 pt-4 border-t border-border">
-              <div>
-                <Subtitle as="p" className="text-base text-destructive">Delete Account</Subtitle>
-                <Small className="text-sm">
-                  Permanently delete your account and data
-                </Small>
-              </div>
-              <Button variant="destructive">Delete</Button>
-            </div>
           </div>
         </CardContent>
       </Card>
