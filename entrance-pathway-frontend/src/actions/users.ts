@@ -178,48 +178,102 @@ export async function updateUserVerification(
 }
 
 // Save phone, course, and optional payment reference after the user has authenticated via OTP.
-// Uses upsert so it works even if the auth-context's auto-profile-create listener
-// hasn't finished inserting the users row yet (race after verifyOtp).
+// Robust to all of these:
+//   - profile row may or may not exist yet (auth-context auto-create can race)
+//   - the requested_course_id / payment_reference columns may not be present yet
+//     if the migration hasn't been applied — falls back to writing only the columns
+//     we know exist (phone + is_verified)
 export async function saveSignupRequest(data: {
   phone: string;
   courseId: string;
   paymentReference?: string;
 }): Promise<ActionResult<User>> {
   try {
-    // Get auth user from the SSR cookie session — does NOT require a profile row to exist
     const ssrClient = await createClient();
     const { data: { user: authUser }, error: authError } = await ssrClient.auth.getUser();
     if (authError || !authUser) {
-      throw new Error('Unauthorized: please verify your email first');
+      return { success: false, error: 'Unauthorized: please verify your email first' };
+    }
+    if (!authUser.email) {
+      return { success: false, error: 'Your account is missing an email address' };
     }
 
     const supabase = createAdminClient();
 
-    const { data: updated, error } = await supabase
+    // Try update first — common case: auth-context already inserted the profile row.
+    const fullPayload: Record<string, unknown> = {
+      phone: data.phone,
+      requested_course_id: data.courseId,
+      payment_reference: data.paymentReference || null,
+      is_verified: false,
+      updated_at: new Date().toISOString(),
+    };
+
+    const updateRes = await supabase
       .from('users')
-      .upsert(
-        {
-          id: authUser.id,
-          email: authUser.email!,
-          full_name: authUser.user_metadata?.full_name || 'User',
-          role: 'student',
+      .update(fullPayload)
+      .eq('id', authUser.id)
+      .select();
+
+    let updated = updateRes.data?.[0] ?? null;
+    let updateError = updateRes.error;
+
+    // If the migration isn't applied yet, retry without the new columns so the
+    // user isn't blocked from completing signup.
+    if (
+      updateError &&
+      /column .* does not exist/i.test(updateError.message)
+    ) {
+      const minimalRes = await supabase
+        .from('users')
+        .update({
           phone: data.phone,
-          requested_course_id: data.courseId,
-          payment_reference: data.paymentReference || null,
           is_verified: false,
           updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'id' }
-      )
-      .select()
-      .single();
+        })
+        .eq('id', authUser.id)
+        .select();
+      updated = minimalRes.data?.[0] ?? null;
+      updateError = minimalRes.error;
+    }
 
-    if (error) throw new Error(error.message);
+    if (updateError) {
+      return { success: false, error: `Failed to save: ${updateError.message}` };
+    }
 
-    revalidatePath('/admin/users');
+    // No row matched — profile not auto-created yet. Insert it.
+    if (!updated) {
+      const insertRes = await supabase
+        .from('users')
+        .insert({
+          id: authUser.id,
+          email: authUser.email,
+          full_name: authUser.user_metadata?.full_name || 'User',
+          role: 'student',
+          ...fullPayload,
+        })
+        .select()
+        .single();
+
+      if (insertRes.error) {
+        return { success: false, error: `Failed to create profile: ${insertRes.error.message}` };
+      }
+      updated = insertRes.data;
+    }
+
+    try {
+      revalidatePath('/admin/users');
+    } catch {
+      // revalidatePath should never throw inside a server action, but if it does
+      // we don't want to fail the user's signup over a cache miss.
+    }
+
     return { success: true, data: formatResponse(updated) as User };
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : 'Failed to save signup request' };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to save signup request',
+    };
   }
 }
 
