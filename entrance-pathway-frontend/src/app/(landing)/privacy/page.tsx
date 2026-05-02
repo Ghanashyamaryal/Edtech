@@ -19,6 +19,25 @@ const sections = [
 We also automatically collect certain information when you use our platform, including your IP address, browser type, device information, and usage data.`,
   },
   {
+    title: "Google Sign-In and Google User Data",
+    content: `Our platform offers Google Sign-In as an optional authentication method. When you choose to sign in with your Google account, we receive the following information from Google's OAuth service:
+• Your Google account email address
+• Your name (as shown on your Google profile)
+• Your profile picture (if available)
+• A unique Google account identifier
+
+We use this information solely to:
+• Create and authenticate your account on IT Pro Entrance
+• Personalize your learning experience
+• Communicate with you about your account and our services
+
+We do NOT request access to any other Google services such as Gmail, Drive, Calendar, Contacts, or any sensitive scopes. We only request the basic "openid", "email", and "profile" scopes.
+
+Our use and transfer of information received from Google APIs to any other app will adhere to the Google API Services User Data Policy, including the Limited Use requirements.
+
+You can revoke our access to your Google account at any time by visiting https://myaccount.google.com/permissions and removing IT Pro Entrance from the list of connected apps.`,
+  },
+  {
     title: "How We Use Your Information",
     content: `We use the information we collect to:
 • Provide, maintain, and improve our services
@@ -38,6 +57,12 @@ We also automatically collect certain information when you use our platform, inc
   {
     title: "Data Security",
     content: `We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the Internet is 100% secure.`,
+  },
+  {
+    title: "Data Retention",
+    content: `We retain your personal information for as long as your account is active or as needed to provide you with our services. If you delete your account, we will delete your personal information within 30 days, except where we are required to retain it to comply with legal obligations, resolve disputes, or enforce our agreements.
+
+Information received from Google Sign-In is deleted immediately upon account deletion or upon revocation of OAuth access from your Google account settings.`,
   },
   {
     title: "Your Rights",
@@ -78,7 +103,7 @@ export default function PrivacyPage() {
             </span>
             <Title className="mb-4">Privacy Policy</Title>
             <Paragraph className="text-muted-foreground">
-              Last updated: January 2026
+              Last updated: May 2026
             </Paragraph>
           </div>
         </div>
