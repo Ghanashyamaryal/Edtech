@@ -1,4 +1,15 @@
+import type { Metadata } from "next";
 import { Title, Subtitle, Paragraph } from "@/components/atoms";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "Privacy Policy for IT Pro Entrance — how we collect, use, and protect your personal information when you use our platform.",
+  alternates: {
+    canonical: "https://itpro-entrance.com/privacy",
+  },
+  robots: { index: true, follow: true },
+};
 
 const sections = [
   {
