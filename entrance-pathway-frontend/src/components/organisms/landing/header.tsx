@@ -230,7 +230,6 @@ export function LandingHeader() {
   const [mobileDropdown, setMobileDropdown] = React.useState<string | null>(
     null,
   );
-  const [isMounted, setIsMounted] = React.useState(false);
   const [courses, setCourses] = React.useState<Course[]>([]);
 
   // Fetch courses for dropdown
@@ -242,11 +241,6 @@ export function LandingHeader() {
       }
     }
     loadCourses();
-  }, []);
-
-  // Ensure consistent client-side rendering to avoid hydration mismatch
-  React.useEffect(() => {
-    setIsMounted(true);
   }, []);
 
   // Check if we're on dashboard or admin pages (they have their own layouts)
@@ -404,7 +398,7 @@ export function LandingHeader() {
 
           {/* Right side - Auth state dependent */}
           <div className="hidden lg:flex items-center gap-3 shrink-0">
-            {!isMounted || isLoading ? (
+            {isLoading ? (
               <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
             ) : isAuthenticated ? (
               <div className="flex items-center gap-2">
@@ -545,7 +539,7 @@ export function LandingHeader() {
                 transition={{ delay: 0.3 }}
                 className="mt-8 space-y-3"
               >
-                {!isMounted || isLoading ? (
+                {isLoading ? (
                   <div className="w-full h-12 rounded-lg bg-muted animate-pulse" />
                 ) : isAuthenticated ? (
                   <>

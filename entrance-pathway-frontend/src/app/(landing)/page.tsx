@@ -538,7 +538,7 @@ export default function HomePage() {
       {/* ====== TESTIMONIALS ====== */}
       <section className="py-10 lg:py-12">
         <div className="w-full max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
-          <motion.div {...fadeUp} className="text-left mb-10">
+          <motion.div {...fadeUp} className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-primary/10 text-brand-primary text-xs font-semibold uppercase tracking-wider mb-4">
               <Award className="w-3.5 h-3.5" />
               Success Stories
