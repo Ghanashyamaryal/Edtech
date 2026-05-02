@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createAdminClient, requireAdmin, requireAuth } from '@/lib/supabase/server';
+import { createAdminClient, createClient, requireAdmin, requireAuth } from '@/lib/supabase/server';
 import { formatResponse, formatResponseArray, type ActionResult } from './utils';
 import { sendWelcomeEmail } from './email';
 
@@ -177,26 +177,40 @@ export async function updateUserVerification(
   }
 }
 
-// Save phone, course, and optional payment reference after the user has authenticated via OTP
+// Save phone, course, and optional payment reference after the user has authenticated via OTP.
+// Uses upsert so it works even if the auth-context's auto-profile-create listener
+// hasn't finished inserting the users row yet (race after verifyOtp).
 export async function saveSignupRequest(data: {
   phone: string;
   courseId: string;
   paymentReference?: string;
 }): Promise<ActionResult<User>> {
   try {
-    const user = await requireAuth();
+    // Get auth user from the SSR cookie session — does NOT require a profile row to exist
+    const ssrClient = await createClient();
+    const { data: { user: authUser }, error: authError } = await ssrClient.auth.getUser();
+    if (authError || !authUser) {
+      throw new Error('Unauthorized: please verify your email first');
+    }
+
     const supabase = createAdminClient();
 
     const { data: updated, error } = await supabase
       .from('users')
-      .update({
-        phone: data.phone,
-        requested_course_id: data.courseId,
-        payment_reference: data.paymentReference || null,
-        is_verified: false,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', user.id)
+      .upsert(
+        {
+          id: authUser.id,
+          email: authUser.email!,
+          full_name: authUser.user_metadata?.full_name || 'User',
+          role: 'student',
+          phone: data.phone,
+          requested_course_id: data.courseId,
+          payment_reference: data.paymentReference || null,
+          is_verified: false,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      )
       .select()
       .single();
 

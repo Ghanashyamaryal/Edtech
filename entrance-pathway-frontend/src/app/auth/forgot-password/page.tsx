@@ -69,18 +69,20 @@ export default function ForgotPasswordPage() {
     setSubmitting(true);
     setError(null);
     setInfo(null);
-
-    const { error: sendError } = await supabase.auth.resetPasswordForEmail(targetEmail);
-
-    if (sendError) {
-      setError(sendError.message);
-      setSubmitting(false);
+    try {
+      const { error: sendError } = await supabase.auth.resetPasswordForEmail(targetEmail);
+      if (sendError) {
+        setError(sendError.message);
+        return false;
+      }
+      setInfo(`We've sent a 6-digit code to ${targetEmail}.`);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send code. Please try again.');
       return false;
+    } finally {
+      setSubmitting(false);
     }
-
-    setInfo(`We've sent a 6-digit code to ${targetEmail}.`);
-    setSubmitting(false);
-    return true;
   };
 
   const handleEmailSubmit = async (data: ForgotPasswordFormData) => {
@@ -93,47 +95,50 @@ export default function ForgotPasswordPage() {
   const handleOtpSubmit = async (data: SignupOtpFormData) => {
     setSubmitting(true);
     setError(null);
-
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      email,
-      token: data.otp,
-      type: 'recovery',
-    });
-
-    if (verifyError) {
-      setError(verifyError.message);
+    try {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email,
+        token: data.otp,
+        type: 'recovery',
+      });
+      if (verifyError) {
+        setError(verifyError.message);
+        return;
+      }
+      setInfo(null);
+      setStage('password');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to verify code. Please try again.');
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-    setInfo(null);
-    setSubmitting(false);
-    setStage('password');
   };
 
   const handlePasswordSubmit = async (data: ResetPasswordFormData) => {
     setSubmitting(true);
     setError(null);
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: data.password,
+      });
+      if (updateError) {
+        setError(updateError.message);
+        return;
+      }
 
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: data.password,
-    });
+      // Sign out so user must re-authenticate with their new password.
+      // Don't await — we don't want signOut hanging to keep the button stuck.
+      void supabase.auth.signOut();
 
-    if (updateError) {
-      setError(updateError.message);
+      setStage('success');
+      setTimeout(() => {
+        router.push('/auth/login?message=password-reset');
+      }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update password. Please try again.');
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-    // Sign out so user must re-authenticate with their new password
-    await supabase.auth.signOut();
-
-    setStage('success');
-    setSubmitting(false);
-
-    setTimeout(() => {
-      router.push('/auth/login?message=password-reset');
-    }, 2000);
   };
 
   const handleResend = async () => {

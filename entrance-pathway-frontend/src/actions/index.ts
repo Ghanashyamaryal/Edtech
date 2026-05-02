@@ -56,6 +56,7 @@ export {
   unlinkExamFromCourse,
   reorderCourseExams,
   addQuestionToExam,
+  addQuestionsToExam,
   removeQuestionFromExam,
   startExamAttempt,
   submitExamAnswer,

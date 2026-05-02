@@ -5,8 +5,8 @@ import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, Card
 import { Small } from '@/components/atoms';
 import { Clock, LogOut, Mail, MessageCircle, Phone } from 'lucide-react';
 
-const WHATSAPP_NUMBER = '+977-9760120739';
-const WHATSAPP_LINK_NUMBER = '9779760120739';
+const WHATSAPP_NUMBER = '+977-9860120739';
+const WHATSAPP_LINK_NUMBER = '9779860120739';
 
 export default function PendingVerificationPage() {
   const { user, signOut } = useAuth();
@@ -53,7 +53,7 @@ export default function PendingVerificationPage() {
             <Phone className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
             <Small className="text-amber-800">
               No WhatsApp? SMS or call <span className="font-semibold">{WHATSAPP_NUMBER}</span>{' '}
-              and we&apos;ll reach out to you on WhatsApp.
+              and we&apos;ll reach out to you.
             </Small>
           </div>
         </CardContent>

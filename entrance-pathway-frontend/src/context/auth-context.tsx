@@ -224,15 +224,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  // Sign out
+  // Sign out — clears local state immediately, signs out from Supabase, then
+  // defensively wipes any leftover Supabase storage keys. Prevents stale
+  // tokens from sticking in localStorage/sessionStorage if the cookie-clear
+  // round-trip races with navigation.
   const signOut = useCallback(async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      // Optimistic local clear so UI flips to signed-out instantly
+      setUser(null);
+      setSupabaseUser(null);
+      setSession(null);
+
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+
+      if (typeof window !== 'undefined') {
+        const purge = (storage: Storage) => {
+          Object.keys(storage)
+            .filter((k) => k.startsWith('sb-') || k === 'supabase.auth.token')
+            .forEach((k) => storage.removeItem(k));
+        };
+        purge(window.localStorage);
+        purge(window.sessionStorage);
+      }
 
       if (error) {
         return { error: new Error(error.message) };
       }
-
       return { error: null };
     } catch (error) {
       return { error: error as Error };

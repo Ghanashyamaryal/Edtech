@@ -8,13 +8,26 @@ import { RHFInput, RHFSelect, type SelectOption } from "@/components/atoms/rhf-c
 import { signupDetailsSchema, type SignupDetailsFormData } from "@/utils/validation";
 import { getPublishedCourses } from "@/actions";
 
+interface CourseLite {
+  id: string;
+  title: string;
+  price: number;
+  discountedPrice?: number;
+}
+
 interface DetailsStepProps {
   initialValues: SignupDetailsFormData;
-  onNext: (data: SignupDetailsFormData & { courseTitle: string }) => void;
+  onNext: (
+    data: SignupDetailsFormData & {
+      courseTitle: string;
+      coursePrice: number;
+      courseDiscountedPrice?: number;
+    }
+  ) => void;
 }
 
 export function DetailsStep({ initialValues, onNext }: DetailsStepProps) {
-  const [courses, setCourses] = useState<SelectOption[]>([]);
+  const [courses, setCourses] = useState<CourseLite[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(true);
 
   const { control, handleSubmit } = useForm<SignupDetailsFormData>({
@@ -23,10 +36,22 @@ export function DetailsStep({ initialValues, onNext }: DetailsStepProps) {
     mode: 'onTouched',
   });
 
+  const courseOptions: SelectOption[] = courses.map((c) => ({
+    value: c.id,
+    label:
+      c.price === 0
+        ? c.title
+        : `${c.title} — Rs. ${(c.discountedPrice ?? c.price).toLocaleString()}`,
+  }));
+
   const submit = (values: SignupDetailsFormData) => {
-    const courseTitle =
-      courses.find((c) => c.value === values.courseId)?.label || values.courseId;
-    onNext({ ...values, courseTitle });
+    const course = courses.find((c) => c.id === values.courseId);
+    onNext({
+      ...values,
+      courseTitle: course?.title || values.courseId,
+      coursePrice: course?.price ?? 0,
+      courseDiscountedPrice: course?.discountedPrice,
+    });
   };
 
   useEffect(() => {
@@ -35,7 +60,12 @@ export function DetailsStep({ initialValues, onNext }: DetailsStepProps) {
       if (cancelled) return;
       if (result.success) {
         setCourses(
-          result.data.map((c) => ({ value: c.id, label: c.title }))
+          result.data.map((c) => ({
+            id: c.id,
+            title: c.title,
+            price: c.price,
+            discountedPrice: c.discountedPrice,
+          }))
         );
       }
       setCoursesLoading(false);
@@ -95,7 +125,7 @@ export function DetailsStep({ initialValues, onNext }: DetailsStepProps) {
         control={control}
         label="Select Course"
         placeholder={coursesLoading ? "Loading courses..." : "Choose a course"}
-        options={courses}
+        options={courseOptions}
         disabled={coursesLoading}
       />
       <Button type="submit" className="w-full h-11">
