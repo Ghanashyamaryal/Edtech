@@ -1,63 +1,129 @@
 import { z } from 'zod';
 
+// Reusable field rules — keep validation consistent across signup, login, reset, profile.
+const emailRule = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1, 'Email is required')
+  .max(254, 'Email is too long')
+  .email('Please enter a valid email address');
+
+const strongPasswordRule = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .max(72, 'Password must be 72 characters or fewer')
+  .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+  .regex(/[a-z]/, 'Must contain at least one lowercase letter')
+  .regex(/[0-9]/, 'Must contain at least one number')
+  .regex(/[^a-zA-Z0-9]/, 'Must contain at least one special character')
+  .refine((v) => !/\s/.test(v), 'Password cannot contain spaces');
+
+const fullNameRule = z
+  .string()
+  .trim()
+  .min(2, 'Name must be at least 2 characters')
+  .max(100, 'Name is too long')
+  .regex(
+    /^[\p{L}][\p{L}\s.'-]*$/u,
+    "Name can only contain letters, spaces, hyphens, dots, and apostrophes"
+  );
+
+const phoneRule = z
+  .string()
+  .trim()
+  .min(10, 'Phone number must be at least 10 digits')
+  .max(16, 'Phone number is too long')
+  .regex(
+    /^\+?[1-9]\d{9,14}$/,
+    'Enter a valid phone number (e.g. +9779812345678 or 9812345678)'
+  );
+
+const otpRule = z
+  .string()
+  .trim()
+  .length(6, 'Please enter the 6-digit code')
+  .regex(/^\d{6}$/, 'Code must be 6 digits');
+
 // Auth Schemas
 export const loginSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  email: emailRule,
   password: z.string().min(1, 'Password is required'),
 });
 
 export const signupSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+  fullName: fullNameRule,
+  email: emailRule,
+  password: strongPasswordRule,
   confirmPassword: z.string(),
   role: z.enum(['student', 'mentor'], {
     required_error: 'Please select a role',
   }),
-  phone: z.string().optional(),
+  phone: phoneRule.optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
 });
 
+// Multi-step signup schemas
+export const signupDetailsSchema = z.object({
+  fullName: fullNameRule,
+  email: emailRule,
+  password: strongPasswordRule,
+  confirmPassword: z.string().min(1, 'Please confirm your password'),
+  phone: phoneRule,
+  courseId: z.string().uuid('Please select a course').or(z.string().min(1, 'Please select a course')),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+});
+
+export const signupPaymentSchema = z.object({
+  paymentReference: z
+    .string()
+    .trim()
+    .max(100, 'Payment reference is too long')
+    .regex(
+      /^[a-zA-Z0-9\s\-/_.]*$/,
+      'Use letters, numbers, spaces, hyphens, dots, or underscores only'
+    )
+    .optional()
+    .or(z.literal('')),
+});
+
+export const signupOtpSchema = z.object({
+  otp: otpRule,
+});
+
+export type SignupDetailsFormData = z.infer<typeof signupDetailsSchema>;
+export type SignupPaymentFormData = z.infer<typeof signupPaymentSchema>;
+export type SignupOtpFormData = z.infer<typeof signupOtpSchema>;
+
 export const forgotPasswordSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  email: emailRule,
 });
 
 export const resetPasswordSchema = z.object({
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
-  confirmPassword: z.string(),
+  password: strongPasswordRule,
+  confirmPassword: z.string().min(1, 'Please confirm your password'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
 });
 
 export const profileSchema = z.object({
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  phone: z.string().optional(),
+  fullName: fullNameRule,
+  phone: phoneRule.optional().or(z.literal('')),
   avatarUrl: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
 });
 
 export const phoneOtpSchema = z.object({
-  phone: z
-    .string()
-    .min(10, 'Phone number must be at least 10 digits')
-    .regex(/^\+?[1-9]\d{9,14}$/, 'Please enter a valid phone number'),
+  phone: phoneRule,
 });
 
 export const verifyOtpSchema = z.object({
-  phone: z.string(),
-  token: z.string().length(6, 'OTP must be 6 digits'),
+  phone: phoneRule,
+  token: otpRule,
 });
 
 // Course Schemas

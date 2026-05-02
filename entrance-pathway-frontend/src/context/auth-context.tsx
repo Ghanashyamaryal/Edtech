@@ -224,15 +224,47 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  // Sign out
+  // Sign out — clears local state immediately, signs out from Supabase, then
+  // defensively wipes Supabase storage keys AND auth cookies. Without explicit
+  // cookie clearing, the middleware on the next request can still see a valid
+  // access token (Supabase access tokens stay valid ~1h after signOut revokes
+  // the refresh token) and redirect /auth/login -> /dashboard.
   const signOut = useCallback(async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      // Optimistic local clear so UI flips to signed-out instantly
+      setUser(null);
+      setSupabaseUser(null);
+      setSession(null);
+
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+
+      if (typeof window !== 'undefined') {
+        const purge = (storage: Storage) => {
+          Object.keys(storage)
+            .filter((k) => k.startsWith('sb-') || k === 'supabase.auth.token')
+            .forEach((k) => storage.removeItem(k));
+        };
+        purge(window.localStorage);
+        purge(window.sessionStorage);
+
+        // Force-delete sb-* cookies. Supabase's signOut SHOULD do this via the
+        // cookie storage adapter, but path/domain mismatches occasionally leave
+        // them behind, and stale cookies cause the middleware to bounce signed-out
+        // users back into /dashboard.
+        const expire = 'expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        document.cookie.split(';').forEach((c) => {
+          const name = c.trim().split('=')[0];
+          if (!name.startsWith('sb-')) return;
+          // Try every path variant to ensure we hit whatever the cookie was set with
+          document.cookie = `${name}=; ${expire}; path=/`;
+          document.cookie = `${name}=; ${expire}; path=/auth`;
+          document.cookie = `${name}=; ${expire}`;
+        });
+      }
 
       if (error) {
         return { error: new Error(error.message) };
       }
-
       return { error: null };
     } catch (error) {
       return { error: error as Error };

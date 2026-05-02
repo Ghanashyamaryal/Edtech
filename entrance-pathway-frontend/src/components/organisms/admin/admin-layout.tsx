@@ -46,20 +46,17 @@ export function AdminLayout({ children, className }: AdminLayoutProps) {
   }, [sidebarOpen]);
 
   return (
-    <div className="min-h-screen bg-muted/30 flex flex-col">
-      {/* Header */}
-      <AdminHeader onMenuClick={handleMenuClick} />
+    <div className="min-h-screen bg-muted/30 flex">
+      {/* Sidebar - fixed on the left */}
+      <AdminSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
 
-      {/* Content area with sidebar */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <AdminSidebar isOpen={sidebarOpen} onClose={handleSidebarClose} />
+      {/* Right side: Header + Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <AdminHeader onMenuClick={handleMenuClick} />
 
-        {/* Main content area */}
         <main
           className={cn(
-            "flex-1 w-full lg:w-[calc(100%-288px)] overflow-y-auto overflow-x-hidden",
-            "p-4 md:p-6 lg:p-8",
+            "flex-1 p-4 md:p-6 lg:p-8",
             className
           )}
         >

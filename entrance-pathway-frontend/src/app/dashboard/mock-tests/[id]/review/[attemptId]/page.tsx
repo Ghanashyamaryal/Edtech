@@ -109,11 +109,11 @@ export default function ExamReviewPage() {
             <div className="relative">
               <div
                 className={`w-28 h-28 rounded-full flex flex-col items-center justify-center border-4 ${
-                  passed ? 'border-secondary bg-secondary/5' : 'border-destructive bg-destructive/5'
+                  passed ? 'border-success bg-success/5' : 'border-destructive bg-destructive/5'
                 }`}
               >
                 <span className="text-3xl font-bold">{percentage}%</span>
-                <span className={`text-xs font-medium ${passed ? 'text-secondary' : 'text-destructive'}`}>
+                <span className={`text-xs font-medium ${passed ? 'text-success' : 'text-destructive'}`}>
                   {passed ? 'PASSED' : 'FAILED'}
                 </span>
               </div>
@@ -128,7 +128,7 @@ export default function ExamReviewPage() {
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-secondary shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0" />
                   <span>{correctCount} correct</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
@@ -167,7 +167,7 @@ export default function ExamReviewPage() {
                   !wasAnswered
                     ? 'border-l-muted-foreground/30'
                     : wasCorrect
-                    ? 'border-l-secondary'
+                    ? 'border-l-success'
                     : 'border-l-destructive'
                 }`}
               >
@@ -180,7 +180,7 @@ export default function ExamReviewPage() {
                       </span>
                       {wasAnswered ? (
                         wasCorrect ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/10 text-secondary">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success">
                             <CheckCircle2 className="w-3 h-3" />
                             Correct
                           </span>
@@ -215,7 +215,7 @@ export default function ExamReviewPage() {
 
                       let bgClass = 'bg-card border-border';
                       if (isCorrectOption) {
-                        bgClass = 'bg-secondary/5 border-secondary/30';
+                        bgClass = 'bg-success/5 border-success/30';
                       } else if (isUserSelection && !isCorrectOption) {
                         bgClass = 'bg-destructive/5 border-destructive/30';
                       }
@@ -228,7 +228,7 @@ export default function ExamReviewPage() {
                           <span
                             className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
                               isCorrectOption
-                                ? 'bg-secondary text-secondary-foreground'
+                                ? 'bg-success text-success-foreground'
                                 : isUserSelection
                                 ? 'bg-destructive text-destructive-foreground'
                                 : 'bg-muted text-muted-foreground'

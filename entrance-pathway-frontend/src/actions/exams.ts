@@ -576,6 +576,53 @@ export async function addQuestionToExam(
   }
 }
 
+// Bulk add — single round-trip insert. Positions are appended after the
+// current max so existing questions keep their order.
+export async function addQuestionsToExam(
+  examId: string,
+  questionIds: string[],
+  marks: number
+): Promise<ActionResult<{ added: number }>> {
+  try {
+    if (!questionIds.length) {
+      return { success: true, data: { added: 0 } };
+    }
+    const supabase = createAdminClient();
+
+    const { data: existing } = await supabase
+      .from('exam_questions')
+      .select('position, question_id')
+      .eq('exam_id', examId)
+      .order('position', { ascending: false });
+
+    const startPosition = existing?.length ? existing[0].position + 1 : 1;
+    const alreadyAdded = new Set((existing || []).map((e) => e.question_id));
+    const toInsert = questionIds.filter((id) => !alreadyAdded.has(id));
+
+    if (!toInsert.length) {
+      return { success: true, data: { added: 0 } };
+    }
+
+    const rows = toInsert.map((questionId, idx) => ({
+      exam_id: examId,
+      question_id: questionId,
+      marks,
+      position: startPosition + idx,
+    }));
+
+    const { error } = await supabase.from('exam_questions').insert(rows);
+    if (error) throw new Error(error.message);
+
+    revalidatePath(`/admin/exams/${examId}`);
+    return { success: true, data: { added: toInsert.length } };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to add questions to exam',
+    };
+  }
+}
+
 export async function removeQuestionFromExam(examId: string, questionId: string): Promise<ActionResult<boolean>> {
   try {
     const supabase = createAdminClient();
@@ -657,11 +704,16 @@ export async function submitExamAnswer(
     // Get correct answer
     const { data: question } = await supabase
       .from('questions')
-      .select('correct_answer')
+      .select('correct_answer, options')
       .eq('id', questionId)
       .single();
 
-    const isCorrect = question?.correct_answer === selectedAnswer;
+    const options = (question?.options as any[]) || [];
+    const selectedOption = options.find((opt) => opt.id === selectedAnswer);
+
+    // Support both ID-based (new) and Text-based (old) matching for backward compatibility
+    const isCorrect = question?.correct_answer === selectedAnswer || 
+      (selectedOption && question?.correct_answer === selectedOption.text);
 
     // Upsert answer
     const { data: existingAnswer } = await supabase

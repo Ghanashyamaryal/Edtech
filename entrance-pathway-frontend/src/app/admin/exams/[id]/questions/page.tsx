@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui";
+import { Checkbox } from "@/components/atoms";
 import { Title, Paragraph } from "@/components/atoms";
 import { ConfirmDialog } from "@/components/molecules/admin";
 import {
@@ -31,12 +32,13 @@ import {
   Trash2,
   Search,
   HelpCircle,
+  Shuffle,
 } from "lucide-react";
 import {
   getExamWithQuestions,
   getQuestions,
   getSubjects,
-  addQuestionToExam,
+  addQuestionsToExam,
   removeQuestionFromExam,
   type Question,
   type Subject,
@@ -77,8 +79,10 @@ export default function ExamQuestionsPage() {
   const [showAddDialog, setShowAddDialog] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState("");
   const [subjectFilter, setSubjectFilter] = React.useState("all");
-  const [selectedQuestion, setSelectedQuestion] = React.useState<Question | null>(null);
+  const [difficultyFilter, setDifficultyFilter] = React.useState("all");
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
   const [marks, setMarks] = React.useState("1");
+  const [randomCount, setRandomCount] = React.useState("10");
   const [removeTarget, setRemoveTarget] = React.useState<ExamQuestion | null>(null);
 
   // Load exam data
@@ -130,14 +134,21 @@ export default function ExamQuestionsPage() {
     }
   }, [showAddDialog, loadQuestions]);
 
-  const handleAddQuestion = async () => {
-    if (!selectedQuestion) return;
+  const handleAddQuestions = async () => {
+    if (selectedIds.size === 0) return;
     setAdding(true);
-    const result = await addQuestionToExam(examId, selectedQuestion.id, parseInt(marks) || 1);
+    const result = await addQuestionsToExam(
+      examId,
+      Array.from(selectedIds),
+      parseInt(marks) || 1
+    );
     if (result.success) {
-      toast({ title: "Question added to exam" });
+      const n = result.data.added;
+      toast({
+        title: n === 1 ? "1 question added" : `${n} questions added to exam`,
+      });
       setShowAddDialog(false);
-      setSelectedQuestion(null);
+      setSelectedIds(new Set());
       setMarks("1");
       loadExam();
     } else {
@@ -145,6 +156,17 @@ export default function ExamQuestionsPage() {
     }
     setAdding(false);
   };
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
 
   const handleRemoveQuestion = async () => {
     if (!removeTarget) return;
@@ -162,11 +184,46 @@ export default function ExamQuestionsPage() {
 
   const examQuestions: ExamQuestion[] = exam?.questions || [];
 
-  // Filter out questions already in the exam
+  // Filter out questions already in the exam, then apply user filters
   const examQuestionIds = new Set(examQuestions.map((eq) => eq.questionId));
   const availableQuestions = allQuestions
     .filter((q) => !examQuestionIds.has(q.id))
-    .filter((q) => q.questionText.toLowerCase().includes(searchValue.toLowerCase()));
+    .filter((q) => q.questionText.toLowerCase().includes(searchValue.toLowerCase()))
+    .filter((q) => difficultyFilter === "all" || q.difficulty === difficultyFilter);
+
+  const visibleIds = availableQuestions.map((q) => q.id);
+  const allVisibleSelected =
+    visibleIds.length > 0 && visibleIds.every((id) => selectedIds.has(id));
+  const someVisibleSelected =
+    !allVisibleSelected && visibleIds.some((id) => selectedIds.has(id));
+
+  const toggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allVisibleSelected) {
+        visibleIds.forEach((id) => next.delete(id));
+      } else {
+        visibleIds.forEach((id) => next.add(id));
+      }
+      return next;
+    });
+  };
+
+  const pickRandom = () => {
+    const n = Math.max(1, parseInt(randomCount) || 0);
+    const pool = availableQuestions.slice();
+    // Fisher-Yates partial shuffle
+    for (let i = pool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    const picked = pool.slice(0, Math.min(n, pool.length));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      picked.forEach((q) => next.add(q.id));
+      return next;
+    });
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -308,15 +365,24 @@ export default function ExamQuestionsPage() {
         </CardContent>
       </Card>
 
-      {/* Add Question Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+      {/* Add Questions Dialog (multi-select) */}
+      <Dialog
+        open={showAddDialog}
+        onOpenChange={(open) => {
+          setShowAddDialog(open);
+          if (!open) {
+            setSelectedIds(new Set());
+            setSearchValue("");
+          }
+        }}
+      >
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
-            <DialogTitle>Add Question to Exam</DialogTitle>
+            <DialogTitle>Add Questions to Exam</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
+          <div className="space-y-3 flex-1 overflow-hidden flex flex-col">
             {/* Filters */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
@@ -339,10 +405,81 @@ export default function ExamQuestionsPage() {
                   ))}
                 </SelectContent>
               </Select>
+              <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                <SelectTrigger className="w-full sm:w-36">
+                  <SelectValue placeholder="Difficulty" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Levels</SelectItem>
+                  <SelectItem value="easy">Easy</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="hard">Hard</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Selection toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-2 border-y bg-muted/30 rounded">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <Checkbox
+                  checked={
+                    allVisibleSelected
+                      ? true
+                      : someVisibleSelected
+                      ? "indeterminate"
+                      : false
+                  }
+                  onCheckedChange={toggleSelectAllVisible}
+                  disabled={visibleIds.length === 0}
+                />
+                <span className="font-medium">
+                  Select all{" "}
+                  <span className="text-muted-foreground">
+                    ({visibleIds.length} visible)
+                  </span>
+                </span>
+              </label>
+              <div className="flex items-center gap-3 text-sm">
+                <span className="text-muted-foreground">
+                  {selectedIds.size} selected
+                </span>
+                {selectedIds.size > 0 && (
+                  <button
+                    type="button"
+                    onClick={clearSelection}
+                    className="text-primary hover:underline"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Random N picker */}
+            <div className="flex items-center gap-2 text-sm">
+              <Shuffle className="w-4 h-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Add</span>
+              <Input
+                type="number"
+                min="1"
+                value={randomCount}
+                onChange={(e) => setRandomCount(e.target.value)}
+                className="w-20 h-8"
+              />
+              <span className="text-muted-foreground">random from filtered</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={pickRandom}
+                disabled={availableQuestions.length === 0}
+              >
+                Pick
+              </Button>
             </div>
 
             {/* Questions List */}
-            <div className="flex-1 overflow-y-auto space-y-2 min-h-[200px]">
+            <div className="flex-1 overflow-y-auto space-y-2 min-h-50">
               {loadingQuestions ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-6 h-6 animate-spin" />
@@ -352,35 +489,44 @@ export default function ExamQuestionsPage() {
                   No available questions found
                 </p>
               ) : (
-                availableQuestions.map((question) => (
-                  <div
-                    key={question.id}
-                    onClick={() => setSelectedQuestion(question)}
-                    className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                      selectedQuestion?.id === question.id
-                        ? "border-primary bg-primary/5"
-                        : "hover:bg-muted/50"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getDifficultyColor(
-                          question.difficulty
-                        )}`}
-                      >
-                        {question.difficulty}
-                      </span>
-                    </div>
-                    <p className="line-clamp-2 text-sm">{question.questionText}</p>
-                  </div>
-                ))
+                availableQuestions.map((question) => {
+                  const isSelected = selectedIds.has(question.id);
+                  return (
+                    <label
+                      key={question.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        isSelected
+                          ? "border-primary bg-primary/5"
+                          : "hover:bg-muted/50"
+                      }`}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => toggleSelected(question.id)}
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getDifficultyColor(
+                              question.difficulty
+                            )}`}
+                          >
+                            {question.difficulty}
+                          </span>
+                        </div>
+                        <p className="line-clamp-2 text-sm">{question.questionText}</p>
+                      </div>
+                    </label>
+                  );
+                })
               )}
             </div>
 
-            {/* Marks Input */}
-            {selectedQuestion && (
-              <div className="space-y-2 pt-4 border-t">
-                <Label>Marks for this question</Label>
+            {/* Marks Input — applied to every selected question */}
+            {selectedIds.size > 0 && (
+              <div className="space-y-2 pt-3 border-t">
+                <Label>Marks per question (applied to all {selectedIds.size})</Label>
                 <Input
                   type="number"
                   min="1"
@@ -395,9 +541,14 @@ export default function ExamQuestionsPage() {
             <Button variant="outline" onClick={() => setShowAddDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAddQuestion} disabled={!selectedQuestion || adding}>
+            <Button
+              onClick={handleAddQuestions}
+              disabled={selectedIds.size === 0 || adding}
+            >
               {adding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Add Question
+              {selectedIds.size > 0
+                ? `Add ${selectedIds.size} ${selectedIds.size === 1 ? "Question" : "Questions"}`
+                : "Add Questions"}
             </Button>
           </DialogFooter>
         </DialogContent>

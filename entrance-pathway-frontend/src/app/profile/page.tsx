@@ -180,7 +180,8 @@ export default function ProfilePage() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/auth/login');
+    // Hard reload to ensure middleware reads fresh (cleared) cookies
+    window.location.href = '/auth/login';
   };
 
   if (authLoading || !user) {

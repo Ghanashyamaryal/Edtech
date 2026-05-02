@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Small, Subtitle } from "@/components/atoms";
 import { Button } from "@/components/ui";
 import { useAuth, useRole } from "@/context/auth-context";
@@ -103,7 +102,6 @@ function TimeUnit({ value, label }: { value: number; label: string }) {
 function ProfileDropdown() {
   const { user, signOut } = useAuth();
   const { isAdmin } = useRole();
-  const router = useRouter();
 
   const displayName = user?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName
@@ -116,8 +114,8 @@ function ProfileDropdown() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.push("/");
-      router.refresh();
+      // Hard reload to ensure middleware reads fresh (cleared) cookies
+      window.location.href = "/";
     } catch (error) {
       console.error("Sign out error:", error);
     }
@@ -231,17 +229,11 @@ export function Header({ onMenuClick, className }: HeaderProps) {
             <Menu className="w-5 h-5" />
           </Button>
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center shrink-0 group">
-            <div className="flex items-center justify-center h-10 md:h-12 w-28 md:w-36 overflow-hidden transform transition-all duration-500 group-hover:scale-105">
-              <img src="/assets/logo.png" alt="ITpro Entrance Logo" className="w-full h-full object-contain object-left drop-shadow-md" />
-            </div>
-          </Link>
 
           {/* Welcome Message */}
-          <div className="hidden md:flex flex-col ml-25 border-l border-border pl-4">
+          <div className="hidden md:flex flex-col border-border">
             <span className="text-xs font-medium text-muted-foreground leading-none mb-1">
-              Welcome back,
+              Welcome,
             </span>
             <span className="text-sm font-bold text-foreground leading-tight">
               {displayName}
