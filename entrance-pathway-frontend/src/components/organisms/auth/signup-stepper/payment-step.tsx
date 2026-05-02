@@ -8,13 +8,15 @@ import { Paragraph, Small } from "@/components/atoms";
 import { signupPaymentSchema, type SignupPaymentFormData } from "@/utils/validation";
 import { MessageCircle, Phone } from "lucide-react";
 
-const WHATSAPP_NUMBER = "+977-9760120739";
-const WHATSAPP_LINK_NUMBER = "9779760120739";
+const WHATSAPP_NUMBER = "+977-9860120739";
+const WHATSAPP_LINK_NUMBER = "9779860120739";
 
 interface PaymentStepProps {
   initialValues: SignupPaymentFormData;
   fullName: string;
   courseTitle: string;
+  coursePrice: number;
+  courseDiscountedPrice?: number;
   email: string;
   onNext: (data: SignupPaymentFormData) => void;
   onBack: () => void;
@@ -24,6 +26,8 @@ export function PaymentStep({
   initialValues,
   fullName,
   courseTitle,
+  coursePrice,
+  courseDiscountedPrice,
   email,
   onNext,
   onBack,
@@ -34,18 +38,41 @@ export function PaymentStep({
     mode: 'onTouched',
   });
 
+  const effectivePrice = courseDiscountedPrice ?? coursePrice;
+  const isFree = effectivePrice === 0;
+  const formattedPrice = `Rs. ${effectivePrice.toLocaleString()}`;
+  const showStrikethrough =
+    courseDiscountedPrice !== undefined &&
+    courseDiscountedPrice < coursePrice;
+
   const whatsappMessage = encodeURIComponent(
-    `Hi, I've sent the payment for course "${courseTitle}". Name: ${fullName}, Email: ${email}.`
+    `Hi, I've sent the payment of ${formattedPrice} for course "${courseTitle}". Name: ${fullName}, Email: ${email}.`
   );
   const whatsappHref = `https://wa.me/${WHATSAPP_LINK_NUMBER}?text=${whatsappMessage}`;
 
   return (
     <form onSubmit={handleSubmit(onNext)} className="space-y-5">
-      <div className="text-center space-y-1">
+      <div className="text-center space-y-2">
         <Paragraph className="font-semibold text-gray-900">
-          Please send the course fee through this QR
+          {isFree
+            ? `Confirm enrollment for "${courseTitle}"`
+            : `Please pay ${formattedPrice} for "${courseTitle}"`}
         </Paragraph>
-        <Small className="text-gray-500">Scan with any payment app</Small>
+        {!isFree && (
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-2xl font-bold text-primary">
+              {formattedPrice}
+            </span>
+            {showStrikethrough && (
+              <span className="text-sm text-gray-400 line-through">
+                Rs. {coursePrice.toLocaleString()}
+              </span>
+            )}
+          </div>
+        )}
+        <Small className="text-gray-500">
+          {isFree ? "No payment required" : "Scan the QR below with any payment app"}
+        </Small>
       </div>
 
       <div className="flex justify-center">

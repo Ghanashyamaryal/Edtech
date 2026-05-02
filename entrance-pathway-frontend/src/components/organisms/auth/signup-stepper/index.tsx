@@ -27,6 +27,8 @@ const STEPS = [
 
 interface FormState extends SignupDetailsFormData, SignupPaymentFormData {
   courseTitle: string;
+  coursePrice: number;
+  courseDiscountedPrice?: number;
 }
 
 const INITIAL_STATE: FormState = {
@@ -37,6 +39,8 @@ const INITIAL_STATE: FormState = {
   phone: "",
   courseId: "",
   courseTitle: "",
+  coursePrice: 0,
+  courseDiscountedPrice: undefined,
   paymentReference: "",
 };
 
@@ -57,7 +61,11 @@ export function SignupStepper() {
   }, [isAuthenticated, authLoading, router, step]);
 
   const handleDetailsNext = (
-    values: SignupDetailsFormData & { courseTitle: string }
+    values: SignupDetailsFormData & {
+      courseTitle: string;
+      coursePrice: number;
+      courseDiscountedPrice?: number;
+    }
   ) => {
     setData((prev) => ({ ...prev, ...values }));
     setStep(1);
@@ -134,6 +142,8 @@ export function SignupStepper() {
               initialValues={{ paymentReference: data.paymentReference }}
               fullName={data.fullName}
               courseTitle={data.courseTitle}
+              coursePrice={data.coursePrice}
+              courseDiscountedPrice={data.courseDiscountedPrice}
               email={data.email}
               onNext={handlePaymentNext}
               onBack={() => setStep(1)}

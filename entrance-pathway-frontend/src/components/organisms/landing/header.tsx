@@ -23,7 +23,7 @@ import {
   X
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import * as React from "react";
 
 // Main navigation items for landing pages
@@ -106,7 +106,6 @@ function ExamCountdownTimer() {
 function ProfileDropdown() {
   const { user, signOut } = useAuth();
   const { isAdmin } = useRole();
-  const router = useRouter();
 
   const displayName = user?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName
@@ -119,8 +118,8 @@ function ProfileDropdown() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.push("/");
-      router.refresh();
+      // Hard reload to ensure middleware reads fresh (cleared) cookies
+      window.location.href = "/";
     } catch (error) {
       console.error("Sign out error:", error);
     }

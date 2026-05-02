@@ -39,19 +39,24 @@ export function PreviewStep({ data, onSubmitted, onBack }: PreviewStepProps) {
     setSubmitting(true);
     setError(null);
 
-    const result = await saveSignupRequest({
-      phone: data.phone,
-      courseId: data.courseId,
-      paymentReference: data.paymentReference,
-    });
+    try {
+      const result = await saveSignupRequest({
+        phone: data.phone,
+        courseId: data.courseId,
+        paymentReference: data.paymentReference,
+      });
 
-    if (!result.success) {
-      setError(result.error || "Failed to submit. Please try again.");
+      if (!result.success) {
+        setError(result.error || "Failed to submit. Please try again.");
+        return;
+      }
+
+      onSubmitted();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-    onSubmitted();
   };
 
   return (

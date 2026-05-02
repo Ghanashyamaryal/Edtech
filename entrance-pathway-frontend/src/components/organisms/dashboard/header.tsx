@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Small, Subtitle } from "@/components/atoms";
 import { Button } from "@/components/ui";
 import { useAuth, useRole } from "@/context/auth-context";
@@ -103,7 +102,6 @@ function TimeUnit({ value, label }: { value: number; label: string }) {
 function ProfileDropdown() {
   const { user, signOut } = useAuth();
   const { isAdmin } = useRole();
-  const router = useRouter();
 
   const displayName = user?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName
@@ -116,8 +114,8 @@ function ProfileDropdown() {
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.push("/");
-      router.refresh();
+      // Hard reload to ensure middleware reads fresh (cleared) cookies
+      window.location.href = "/";
     } catch (error) {
       console.error("Sign out error:", error);
     }
