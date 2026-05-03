@@ -77,39 +77,48 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => {
     let isMounted = true;
 
-    // Get initial session using getUser() for server-side validation
+    // Fast path: hydrate from cached session immediately so the header flips.
+    // Slow path: validate with getUser() and fetch the profile in the background;
+    // if validation fails, clear state so the UI reverts.
     const initializeAuth = async () => {
       try {
-        const { data: { user: validatedUser }, error } = await supabase.auth.getUser();
+        const { data: { session: cached } } = await supabase.auth.getSession();
+        if (!isMounted) return;
 
+        if (cached?.user) {
+          setSession(cached);
+          setSupabaseUser(cached.user);
+          setIsLoading(false);
+        }
+
+        const { data: { user: validatedUser }, error } = await supabase.auth.getUser();
         if (!isMounted) return;
 
         if (error || !validatedUser) {
-          // No valid session - clear any stale state
           setSession(null);
           setSupabaseUser(null);
           setUser(null);
+          setIsLoading(false);
           return;
         }
 
-        // User is validated, now get the session for token access
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (!cached) {
+          const { data: { session: fresh } } = await supabase.auth.getSession();
+          if (!isMounted) return;
+          setSession(fresh);
+          setSupabaseUser(validatedUser);
+        }
 
-        if (!isMounted) return;
-
-        setSession(currentSession);
-        setSupabaseUser(validatedUser);
         const profile = await fetchUserProfile(validatedUser.id);
         if (isMounted) {
           setUser(profile);
+          setIsLoading(false);
         }
       } catch (error) {
-        // Ignore abort errors - these happen during navigation/unmount
         if (error instanceof Error && error.name === 'AbortError') {
           return;
         }
         console.error('Error initializing auth:', error);
-      } finally {
         if (isMounted) {
           setIsLoading(false);
         }
