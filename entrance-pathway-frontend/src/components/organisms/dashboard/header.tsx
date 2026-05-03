@@ -101,7 +101,7 @@ function TimeUnit({ value, label }: { value: number; label: string }) {
 
 function ProfileDropdown() {
   const { user, signOut } = useAuth();
-  const { isAdmin } = useRole();
+  const { isAdmin, isMentor } = useRole();
 
   const displayName = user?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName
@@ -157,14 +157,14 @@ function ProfileDropdown() {
             </Small>
           </div>
 
-          {isAdmin && (
+          {(isAdmin || isMentor) && (
             <DropdownMenu.Item asChild>
               <Link
                 href="/admin"
                 className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none hover:bg-accent focus:bg-accent text-primary"
               >
                 <Shield className="w-4 h-4" />
-                <span>Admin Panel</span>
+                <span>{isAdmin ? "Admin Panel" : "Mentor Panel"}</span>
               </Link>
             </DropdownMenu.Item>
           )}

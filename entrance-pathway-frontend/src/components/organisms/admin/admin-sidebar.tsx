@@ -123,7 +123,9 @@ export function AdminSidebar({ isOpen, onClose, className }: AdminSidebarProps) 
 
         {/* Mobile close button */}
         <div className="flex items-center justify-between h-14 px-5 border-b border-border lg:hidden">
-          <span className="font-semibold text-foreground">Admin Menu</span>
+          <span className="font-semibold text-foreground">
+            {isAdmin ? "Admin Menu" : "Mentor Menu"}
+          </span>
           <Button
             variant="ghost"
             size="icon"

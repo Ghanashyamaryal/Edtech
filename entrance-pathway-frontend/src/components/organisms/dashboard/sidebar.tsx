@@ -79,7 +79,7 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
   const pathname = usePathname();
-  const { isAdmin } = useRole();
+  const { isAdmin, isMentor } = useRole();
   const { activeCourse, loading: activeCourseLoading } = useActiveCourse();
 
   return (
@@ -207,8 +207,8 @@ export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
           </ul>
         </nav>
 
-        {/* Admin Link */}
-        {isAdmin && (
+        {/* Admin / Mentor Panel Link — same target (/admin), label varies */}
+        {(isAdmin || isMentor) && (
           <div className="px-3 pb-2">
             <Link
               href="/admin"
@@ -220,7 +220,7 @@ export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-primary-foreground">
                 <Shield className="w-5 h-5" />
               </div>
-              <span>Admin Panel</span>
+              <span>{isAdmin ? "Admin Panel" : "Mentor Panel"}</span>
             </Link>
           </div>
         )}

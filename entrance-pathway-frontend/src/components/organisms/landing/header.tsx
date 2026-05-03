@@ -105,7 +105,7 @@ function ExamCountdownTimer() {
 
 function ProfileDropdown() {
   const { user, signOut } = useAuth();
-  const { isAdmin } = useRole();
+  const { isAdmin, isMentor } = useRole();
 
   const displayName = user?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName
@@ -169,14 +169,14 @@ function ProfileDropdown() {
             </Link>
           </DropdownMenu.Item>
 
-          {isAdmin && (
+          {(isAdmin || isMentor) && (
             <DropdownMenu.Item asChild>
               <Link
                 href="/admin"
                 className="flex items-center gap-2 px-3 py-2 text-sm rounded-md cursor-pointer outline-none hover:bg-accent focus:bg-accent text-brand-primary"
               >
                 <Shield className="w-4 h-4" />
-                <span>Admin Panel</span>
+                <span>{isAdmin ? "Admin Panel" : "Mentor Panel"}</span>
               </Link>
             </DropdownMenu.Item>
           )}
@@ -207,13 +207,13 @@ function ProfileDropdown() {
 }
 
 function MobileAdminLink() {
-  const { isAdmin } = useRole();
-  if (!isAdmin) return null;
+  const { isAdmin, isMentor } = useRole();
+  if (!isAdmin && !isMentor) return null;
   return (
     <Link href="/admin" className="block">
       <Button variant="outline" className="w-full gap-2" size="lg">
         <Shield className="w-4 h-4" />
-        Admin Panel
+        {isAdmin ? "Admin Panel" : "Mentor Panel"}
       </Button>
     </Link>
   );
