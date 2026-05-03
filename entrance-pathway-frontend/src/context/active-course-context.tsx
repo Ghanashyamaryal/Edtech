@@ -15,13 +15,17 @@ const ActiveCourseContext = React.createContext<ActiveCourseContextValue>({
 });
 
 export function ActiveCourseProvider({ children }: { children: React.ReactNode }) {
-  const { user, isLoading: authLoading } = useAuth();
+  // Gate on isAuthenticated (set by the fast-path session read) rather than
+  // user.id (the DB profile, which loads later). This avoids a window where
+  // the provider thinks there's no user and locks downstream pages into a
+  // misleading "loading" state.
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [activeCourse, setActiveCourse] = React.useState<ActiveCourse | null>(null);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     if (authLoading) return;
-    if (!user?.id) {
+    if (!isAuthenticated) {
       setActiveCourse(null);
       setLoading(false);
       return;
@@ -38,7 +42,7 @@ export function ActiveCourseProvider({ children }: { children: React.ReactNode }
     return () => {
       cancelled = true;
     };
-  }, [user?.id, authLoading]);
+  }, [isAuthenticated, authLoading]);
 
   return (
     <ActiveCourseContext.Provider value={{ activeCourse, loading }}>

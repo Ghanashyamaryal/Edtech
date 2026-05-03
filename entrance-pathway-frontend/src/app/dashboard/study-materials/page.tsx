@@ -66,12 +66,19 @@ export default function StudyMaterialsPage() {
   }, [activeCourse?.id, activeCourseLoading, selectedSubject, courseSubjectIds]);
 
   useEffect(() => {
-    // Wait until subject IDs are populated before fetching notes (avoids unscoped pull)
-    if (selectedSubject || courseSubjectIds.length > 0) {
-      loadData();
-    } else if (!activeCourseLoading && !activeCourse?.id) {
+    if (activeCourseLoading) return;
+    // No active course OR active course has no linked subjects — render empty.
+    if (!activeCourse?.id) {
+      setNotes([]);
       setLoading(false);
+      return;
     }
+    if (!selectedSubject && courseSubjectIds.length === 0) {
+      setNotes([]);
+      setLoading(false);
+      return;
+    }
+    loadData();
   }, [loadData, selectedSubject, courseSubjectIds, activeCourseLoading, activeCourse?.id]);
 
   const handleDownload = async (note: Note) => {
