@@ -35,6 +35,7 @@ import {
   type Course,
 } from "@/actions";
 import { useToast } from "@/hooks/use-toast";
+import { compressPdf } from "@/utils/pdf-compress";
 
 const noteSchema = z.object({
   title: z.string().min(1, "Title is required").max(255),
@@ -132,10 +133,10 @@ export default function NewNotePage() {
         });
         return;
       }
-      if (file.size > 52428800) {
+      if (file.size > 20 * 1024 * 1024) {
         toast({
           title: "File too large",
-          description: "Maximum file size is 50MB.",
+          description: "Maximum file size is 20MB.",
           variant: "destructive",
         });
         return;
@@ -156,11 +157,25 @@ export default function NewNotePage() {
 
     try {
       setUploading(true);
+      setUploadProgress(15);
+
+      // Compress PDFs in-browser to save storage. No-op for non-PDFs.
+      const fileToUpload = await compressPdf(selectedFile);
+      const savedBytes = selectedFile.size - fileToUpload.size;
+      if (savedBytes > 0) {
+        const savedKb = Math.round(savedBytes / 1024);
+        const pct = Math.round((savedBytes / selectedFile.size) * 100);
+        toast({
+          title: "PDF compressed",
+          description: `Saved ${savedKb} KB (${pct}%) before upload.`,
+        });
+      }
+
       setUploadProgress(30);
 
       // Upload file via server action (bypasses RLS)
       const formData = new FormData();
-      formData.append("file", selectedFile);
+      formData.append("file", fileToUpload);
       formData.append("subjectId", data.subjectId);
       formData.append("noteType", data.noteType);
 

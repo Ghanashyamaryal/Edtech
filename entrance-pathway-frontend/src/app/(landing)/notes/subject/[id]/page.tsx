@@ -15,7 +15,8 @@ import {
   Lock,
   Clock,
 } from 'lucide-react';
-import { getNotesBySubject, incrementNoteDownload, type Note } from '@/actions/notes';
+import { getNotesBySubject, incrementNoteDownload, getNoteDownloadUrl, type Note } from '@/actions/notes';
+import { useToast } from '@/hooks/use-toast';
 import { getSubject, type Subject } from '@/actions/subjects';
 
 const NOTE_TYPE_LABELS: Record<string, string> = {
@@ -51,6 +52,7 @@ function getRelativeTime(dateString: string): string {
 export default function SubjectNotesPage() {
   const params = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const subjectId = params.id as string;
 
   const [subject, setSubject] = React.useState<Subject | null>(null);
@@ -86,8 +88,25 @@ export default function SubjectNotesPage() {
   }, [notFoundFlag]);
 
   const handleDownload = async (note: Note) => {
+    const result = await getNoteDownloadUrl(note.id);
+    if (!result.success) {
+      if (note.isPremium) {
+        toast({
+          title: 'Premium required',
+          description: 'Get premium access to download this note.',
+        });
+        router.push('/pricing');
+        return;
+      }
+      toast({
+        title: 'Download failed',
+        description: result.error || 'Could not get the download link.',
+        variant: 'destructive',
+      });
+      return;
+    }
     await incrementNoteDownload(note.id);
-    window.open(note.fileUrl, '_blank');
+    window.open(result.data.url, '_blank');
     setNotes((prev) =>
       prev.map((n) =>
         n.id === note.id ? { ...n, downloadCount: n.downloadCount + 1 } : n
@@ -196,15 +215,14 @@ export default function SubjectNotesPage() {
                           {note.downloadCount.toLocaleString()} downloads
                         </span>
                         <div className="flex items-center gap-2">
-                          <a
-                            href={note.fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Preview"
+                            onClick={() => handleDownload(note)}
                           >
-                            <Button variant="ghost" size="icon" title="Preview">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </a>
+                            <Eye className="w-4 h-4" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"

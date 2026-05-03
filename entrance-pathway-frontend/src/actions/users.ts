@@ -17,6 +17,8 @@ export interface User {
   phoneVerified?: boolean;
   emailVerified?: boolean;
   isVerified?: boolean;
+  isPremium?: boolean;
+  premiumUntil?: string | null;
   role: UserRole;
   requestedCourseId?: string;
   paymentReference?: string;
@@ -331,6 +333,70 @@ export async function getActiveCourse(): Promise<ActionResult<ActiveCourse | nul
     return { success: true, data: { id: course.id, title: course.title, slug: course.slug } };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to load active course' };
+  }
+}
+
+// Returns whether the current user has active premium access (lifetime or
+// not-yet-expired). Used by note-download gating.
+export async function getCurrentPremiumStatus(): Promise<ActionResult<{
+  isPremium: boolean;
+  premiumUntil: string | null;
+}>> {
+  try {
+    const ssrClient = await createClient();
+    const { data: { user: authUser } } = await ssrClient.auth.getUser();
+    if (!authUser) return { success: true, data: { isPremium: false, premiumUntil: null } };
+
+    const supabase = createAdminClient();
+    const { data: profile } = await supabase
+      .from('users')
+      .select('is_premium, premium_until')
+      .eq('id', authUser.id)
+      .maybeSingle();
+
+    if (!profile) return { success: true, data: { isPremium: false, premiumUntil: null } };
+
+    const premiumUntil = (profile as { premium_until?: string | null }).premium_until ?? null;
+    const isPremium =
+      !!(profile as { is_premium?: boolean }).is_premium &&
+      (!premiumUntil || new Date(premiumUntil) > new Date());
+
+    return { success: true, data: { isPremium, premiumUntil } };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to check premium status' };
+  }
+}
+
+// Admin-only: flip the premium flag. `until` is optional — pass undefined for
+// lifetime access, or an ISO date for time-bounded.
+export async function grantPremium(
+  userId: string,
+  isPremium: boolean,
+  until?: string | null
+): Promise<ActionResult<User>> {
+  try {
+    await requireAdmin();
+    const supabase = createAdminClient();
+
+    const updatePayload: Record<string, unknown> = {
+      is_premium: isPremium,
+      premium_until: isPremium ? (until ?? null) : null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from('users')
+      .update(updatePayload)
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (error) throw new Error(error.message);
+
+    revalidatePath('/admin/users');
+    return { success: true, data: formatResponse(data) as User };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to update premium status' };
   }
 }
 

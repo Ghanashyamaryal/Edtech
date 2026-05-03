@@ -20,8 +20,8 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { DataTable, Column, ConfirmDialog } from "@/components/molecules/admin";
-import { Users, MoreHorizontal, Shield, UserCheck, GraduationCap, CheckCircle, XCircle, Trash2 } from "lucide-react";
-import { getUsers, updateUserRole, updateUserVerification, deleteUserAccount, type User, type UserRole } from "@/actions";
+import { Users, MoreHorizontal, Shield, UserCheck, GraduationCap, CheckCircle, XCircle, Trash2, Crown } from "lucide-react";
+import { getUsers, updateUserRole, updateUserVerification, deleteUserAccount, grantPremium, type User, type UserRole } from "@/actions";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminUsersPage() {
@@ -88,6 +88,20 @@ export default function AdminUsersPage() {
       toast({ title: "Error", description: result.error, variant: "destructive" });
     }
     setUpdatingVerification(false);
+  };
+
+  const handleTogglePremium = async (user: User) => {
+    const grant = !user.isPremium;
+    const result = await grantPremium(user.id, grant);
+    if (result.success) {
+      toast({
+        title: grant ? "Premium granted" : "Premium revoked",
+        description: `${user.fullName} ${grant ? "now has" : "no longer has"} premium access.`,
+      });
+      loadUsers();
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
   };
 
   const handleRejectUser = (user: User) => {
@@ -187,17 +201,25 @@ export default function AdminUsersPage() {
       key: "status",
       header: "Status",
       cell: (user) => (
-        <div className="flex items-center gap-1.5">
-          {user.isVerified ? (
-            <>
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-sm text-green-600 font-medium">Verified</span>
-            </>
-          ) : (
-            <>
-              <XCircle className="w-4 h-4 text-amber-500" />
-              <span className="text-sm text-amber-600 font-medium">Pending</span>
-            </>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1.5">
+            {user.isVerified ? (
+              <>
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <span className="text-sm text-green-600 font-medium">Verified</span>
+              </>
+            ) : (
+              <>
+                <XCircle className="w-4 h-4 text-amber-500" />
+                <span className="text-sm text-amber-600 font-medium">Pending</span>
+              </>
+            )}
+          </div>
+          {user.isPremium && (
+            <div className="flex items-center gap-1.5">
+              <Crown className="w-3.5 h-3.5 text-yellow-500" />
+              <span className="text-xs text-yellow-700 font-medium">Premium</span>
+            </div>
           )}
         </div>
       ),
@@ -264,6 +286,14 @@ export default function AdminUsersPage() {
                 </DropdownMenuItem>
               </>
             )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => handleTogglePremium(user)}
+              className={user.isPremium ? "text-amber-600" : "text-yellow-700"}
+            >
+              <Crown className="w-4 h-4 mr-2" />
+              {user.isPremium ? "Revoke Premium" : "Grant Premium"}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={() => handleRoleChange(user, "student")}

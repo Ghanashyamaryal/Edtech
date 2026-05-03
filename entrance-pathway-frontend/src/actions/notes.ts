@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createAdminClient, requireAuth } from '@/lib/supabase/server';
+import { createAdminClient, createClient, requireAuth } from '@/lib/supabase/server';
 import { formatResponse, formatResponseArray, toSnakeCase, type ActionResult } from './utils';
 
 // Types
@@ -211,6 +211,90 @@ export async function uploadNoteFile(formData: FormData): Promise<ActionResult<{
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Failed to upload file' };
   }
+}
+
+// ============ DOWNLOAD GATING ============
+
+// Gates note downloads behind premium check. Returns a short-lived signed URL
+// the client can hit. Free notes: anyone gets a URL. Premium notes: only the
+// uploader, admins, and users with active premium pass.
+//
+// IMPORTANT: this only stops random link sharing if the `notes` Supabase
+// bucket is set to PRIVATE. On a public bucket, anyone with the file path
+// can still read directly — flip the bucket to private in the Supabase
+// dashboard for real enforcement.
+export async function getNoteDownloadUrl(
+  noteId: string
+): Promise<ActionResult<{ url: string }>> {
+  try {
+    const supabase = createAdminClient();
+
+    const { data: note, error: noteError } = await supabase
+      .from('notes')
+      .select('id, file_url, is_premium')
+      .eq('id', noteId)
+      .single();
+
+    if (noteError || !note) {
+      return { success: false, error: 'Note not found' };
+    }
+
+    // Free note — return as-is.
+    if (!note.is_premium) {
+      return { success: true, data: { url: note.file_url } };
+    }
+
+    // Premium note — require an authenticated user with premium access.
+    const ssrClient = await createClient();
+    const { data: { user: authUser } } = await ssrClient.auth.getUser();
+    if (!authUser) {
+      return { success: false, error: 'Sign in to download premium notes' };
+    }
+
+    const { data: profile } = await supabase
+      .from('users')
+      .select('role, is_premium, premium_until')
+      .eq('id', authUser.id)
+      .maybeSingle();
+
+    if (!profile) {
+      return { success: false, error: 'Premium access required' };
+    }
+
+    const role = (profile as { role?: string }).role;
+    const premiumUntil = (profile as { premium_until?: string | null }).premium_until ?? null;
+    const hasPremium =
+      role === 'admin' ||
+      ((profile as { is_premium?: boolean }).is_premium &&
+        (!premiumUntil || new Date(premiumUntil) > new Date()));
+
+    if (!hasPremium) {
+      return { success: false, error: 'Premium access required' };
+    }
+
+    // If the bucket is private, generate a 5-minute signed URL from the stored
+    // path. Falls back to the recorded file_url if path extraction fails (e.g.
+    // pre-existing rows where we only have the public URL).
+    const path = extractStoragePath(note.file_url);
+    if (path) {
+      const { data: signed, error: signedError } = await supabase.storage
+        .from('notes')
+        .createSignedUrl(path, 60 * 5);
+      if (!signedError && signed?.signedUrl) {
+        return { success: true, data: { url: signed.signedUrl } };
+      }
+    }
+
+    return { success: true, data: { url: note.file_url } };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to get download url' };
+  }
+}
+
+function extractStoragePath(fileUrl: string): string | null {
+  // Public URL shape: https://<proj>.supabase.co/storage/v1/object/public/notes/<path>
+  const match = fileUrl.match(/\/storage\/v1\/object\/public\/notes\/(.+)$/);
+  return match?.[1] ?? null;
 }
 
 // ============ MUTATIONS ============

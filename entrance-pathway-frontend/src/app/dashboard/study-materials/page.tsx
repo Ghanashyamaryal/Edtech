@@ -9,11 +9,15 @@ import {
   Loader2,
   BookOpen,
 } from 'lucide-react';
-import { getNotes, getCourseSubjects, incrementNoteDownload, type Note, type Subject } from '@/actions';
+import { getNotes, getCourseSubjects, incrementNoteDownload, getNoteDownloadUrl, type Note, type Subject } from '@/actions';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 import { useActiveCourse } from '@/context';
 
 export default function StudyMaterialsPage() {
   const { activeCourse, loading: activeCourseLoading } = useActiveCourse();
+  const router = useRouter();
+  const { toast } = useToast();
   const [notes, setNotes] = useState<Note[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [courseSubjectIds, setCourseSubjectIds] = useState<string[]>([]);
@@ -71,9 +75,25 @@ export default function StudyMaterialsPage() {
   }, [loadData, selectedSubject, courseSubjectIds, activeCourseLoading, activeCourse?.id]);
 
   const handleDownload = async (note: Note) => {
+    const result = await getNoteDownloadUrl(note.id);
+    if (!result.success) {
+      if (note.isPremium) {
+        toast({
+          title: 'Premium required',
+          description: 'Get premium access to download this note.',
+        });
+        router.push('/pricing');
+        return;
+      }
+      toast({
+        title: 'Download failed',
+        description: result.error || 'Could not get the download link.',
+        variant: 'destructive',
+      });
+      return;
+    }
     await incrementNoteDownload(note.id);
-    window.open(note.fileUrl, '_blank');
-    // Update local count
+    window.open(result.data.url, '_blank');
     setNotes((prev) =>
       prev.map((n) =>
         n.id === note.id ? { ...n, downloadCount: n.downloadCount + 1 } : n
