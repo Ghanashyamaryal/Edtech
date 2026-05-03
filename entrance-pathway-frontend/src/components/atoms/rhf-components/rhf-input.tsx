@@ -7,6 +7,7 @@ import {
   type FieldPath,
   type FieldValues,
 } from 'react-hook-form';
+import { Eye, EyeOff } from 'lucide-react';
 import { Input, type InputProps } from '../input';
 import { Label } from '../label';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,8 @@ export interface RHFInputProps<
   control: Control<TFieldValues>;
   label?: string;
   helperText?: string;
+  // Adds an eye toggle on password inputs. Defaults to true when type === "password".
+  showPasswordToggle?: boolean;
 }
 
 function RHFInput<
@@ -30,8 +33,15 @@ function RHFInput<
   label,
   helperText,
   className,
+  type,
+  showPasswordToggle,
   ...props
 }: RHFInputProps<TFieldValues, TName>) {
+  const isPassword = type === 'password';
+  const enableToggle = showPasswordToggle ?? isPassword;
+  const [visible, setVisible] = React.useState(false);
+  const effectiveType = enableToggle && visible ? 'text' : type;
+
   return (
     <Controller
       name={name}
@@ -39,15 +49,30 @@ function RHFInput<
       render={({ field, fieldState: { error } }) => (
         <div className="space-y-2">
           {label && <Label htmlFor={name}>{label}</Label>}
-          <Input
-            {...field}
-            {...props}
-            id={name}
-            className={cn(
-              error && 'border-destructive focus-visible:ring-destructive',
-              className
+          <div className="relative">
+            <Input
+              {...field}
+              {...props}
+              id={name}
+              type={effectiveType}
+              className={cn(
+                enableToggle && 'pr-10',
+                error && 'border-destructive focus-visible:ring-destructive',
+                className
+              )}
+            />
+            {enableToggle && (
+              <button
+                type="button"
+                onClick={() => setVisible((v) => !v)}
+                tabIndex={-1}
+                aria-label={visible ? 'Hide password' : 'Show password'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {visible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             )}
-          />
+          </div>
           {error && (
             <p className="text-sm text-destructive">{error.message}</p>
           )}

@@ -48,6 +48,25 @@ export interface UpdateLiveClassInput {
   recordingUrl?: string;
 }
 
+// Computes the effective status from time. Stored 'cancelled' wins (admin
+// override). Otherwise:
+//   now < scheduled_at                                  → 'scheduled'
+//   scheduled_at <= now < scheduled_at + duration       → 'live'
+//   now >= scheduled_at + duration                       → 'completed'
+function computeStatus(input: {
+  status: LiveClass['status'];
+  scheduledAt: string;
+  durationMinutes: number;
+}): LiveClass['status'] {
+  if (input.status === 'cancelled') return 'cancelled';
+  const now = Date.now();
+  const start = new Date(input.scheduledAt).getTime();
+  const end = start + (input.durationMinutes || 0) * 60 * 1000;
+  if (now >= end) return 'completed';
+  if (now >= start) return 'live';
+  return 'scheduled';
+}
+
 // ============ QUERIES ============
 
 export async function getLiveClasses(options?: {
@@ -76,11 +95,15 @@ export async function getLiveClasses(options?: {
 
     if (error) throw new Error(error.message);
 
-    const classes = (data || []).map((c: any) => ({
-      ...formatResponse(c),
-      instructor: c.users ? { id: c.users.id, fullName: c.users.full_name } : null,
-      course: c.courses || null,
-    }));
+    const classes = (data || []).map((c: any) => {
+      const formatted = formatResponse(c) as LiveClass;
+      return {
+        ...formatted,
+        status: computeStatus(formatted),
+        instructor: c.users ? { id: c.users.id, fullName: c.users.full_name } : null,
+        course: c.courses || null,
+      };
+    });
 
     return { success: true, data: classes as LiveClass[] };
   } catch (error) {
@@ -107,8 +130,10 @@ export async function getLiveClass(id: string): Promise<ActionResult<LiveClass>>
       throw new Error(error.message);
     }
 
+    const formatted = formatResponse(data) as LiveClass;
     const liveClass = {
-      ...formatResponse(data),
+      ...formatted,
+      status: computeStatus(formatted),
       instructor: data.users ? { id: data.users.id, fullName: data.users.full_name } : null,
       course: data.courses || null,
     };
@@ -123,6 +148,8 @@ export async function getUpcomingLiveClasses(options?: { courseId?: string }): P
   try {
     const supabase = createAdminClient();
 
+    // Pull non-cancelled classes whose scheduled_at is in the future, then
+    // compute the status. By definition future-scheduled rows are 'scheduled'.
     let query = supabase
       .from('live_classes')
       .select(`
@@ -130,7 +157,7 @@ export async function getUpcomingLiveClasses(options?: { courseId?: string }): P
         users:instructor_id (id, full_name),
         courses:course_id (id, title)
       `)
-      .in('status', ['scheduled', 'live'])
+      .neq('status', 'cancelled')
       .gte('scheduled_at', new Date().toISOString())
       .order('scheduled_at', { ascending: true })
       .limit(10);
@@ -141,11 +168,17 @@ export async function getUpcomingLiveClasses(options?: { courseId?: string }): P
 
     if (error) throw new Error(error.message);
 
-    const classes = (data || []).map((c: any) => ({
-      ...formatResponse(c),
-      instructor: c.users ? { id: c.users.id, fullName: c.users.full_name } : null,
-      course: c.courses || null,
-    }));
+    const classes = (data || [])
+      .map((c: any) => {
+        const formatted = formatResponse(c) as LiveClass;
+        return {
+          ...formatted,
+          status: computeStatus(formatted),
+          instructor: c.users ? { id: c.users.id, fullName: c.users.full_name } : null,
+          course: c.courses || null,
+        };
+      })
+      .filter((c) => c.status === 'scheduled');
 
     return { success: true, data: classes as LiveClass[] };
   } catch (error) {
@@ -157,6 +190,13 @@ export async function getLiveNowClasses(options?: { courseId?: string }): Promis
   try {
     const supabase = createAdminClient();
 
+    // A class is live-now if it has started but its end time hasn't passed.
+    // Pull anything that started within the past 12 hours (covers any plausible
+    // class duration) and compute status; only keep those whose computed
+    // status is 'live'.
+    const now = new Date();
+    const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString();
+
     let query = supabase
       .from('live_classes')
       .select(`
@@ -164,7 +204,9 @@ export async function getLiveNowClasses(options?: { courseId?: string }): Promis
         users:instructor_id (id, full_name),
         courses:course_id (id, title)
       `)
-      .eq('status', 'live')
+      .neq('status', 'cancelled')
+      .gte('scheduled_at', twelveHoursAgo)
+      .lte('scheduled_at', now.toISOString())
       .order('scheduled_at', { ascending: true });
 
     if (options?.courseId) query = query.eq('course_id', options.courseId);
@@ -173,11 +215,17 @@ export async function getLiveNowClasses(options?: { courseId?: string }): Promis
 
     if (error) throw new Error(error.message);
 
-    const classes = (data || []).map((c: any) => ({
-      ...formatResponse(c),
-      instructor: c.users ? { id: c.users.id, fullName: c.users.full_name } : null,
-      course: c.courses || null,
-    }));
+    const classes = (data || [])
+      .map((c: any) => {
+        const formatted = formatResponse(c) as LiveClass;
+        return {
+          ...formatted,
+          status: computeStatus(formatted),
+          instructor: c.users ? { id: c.users.id, fullName: c.users.full_name } : null,
+          course: c.courses || null,
+        };
+      })
+      .filter((c) => c.status === 'live');
 
     return { success: true, data: classes as LiveClass[] };
   } catch (error) {
