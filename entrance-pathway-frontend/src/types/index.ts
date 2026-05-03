@@ -9,6 +9,8 @@ export interface User {
   phone_verified?: boolean;
   email_verified?: boolean;
   is_verified?: boolean;
+  is_premium?: boolean;
+  premium_until?: string | null;
   role: UserRole;
   created_at: string;
   updated_at: string;

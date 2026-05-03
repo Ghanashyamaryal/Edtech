@@ -28,8 +28,10 @@ import {
   SquareSigma,
 } from 'lucide-react';
 import Link from 'next/link';
-import { getNotes, incrementNoteDownload, type Note } from '@/actions/notes';
+import { getNotes, incrementNoteDownload, getNoteDownloadUrl, type Note } from '@/actions/notes';
 import { getSubjects, type Subject } from '@/actions/subjects';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 const NOTE_TYPE_LABELS: Record<string, string> = {
   notes: 'Notes',
@@ -96,6 +98,8 @@ export default function NotesPage() {
   const [allNotes, setAllNotes] = React.useState<Note[]>([]);
   const [loadingSubjects, setLoadingSubjects] = React.useState(true);
   const [loadingNotes, setLoadingNotes] = React.useState(true);
+  const router = useRouter();
+  const { toast } = useToast();
 
   // Load subjects and notes
   React.useEffect(() => {
@@ -133,13 +137,28 @@ export default function NotesPage() {
     .slice(0, 4);
 
   const handleDownload = async (note: Note) => {
+    const result = await getNoteDownloadUrl(note.id);
+    if (!result.success) {
+      if (note.isPremium) {
+        toast({
+          title: 'Premium required',
+          description: 'Get premium access to download this note.',
+        });
+        router.push('/pricing');
+        return;
+      }
+      toast({
+        title: 'Download failed',
+        description: result.error || 'Could not get the download link.',
+        variant: 'destructive',
+      });
+      return;
+    }
     await incrementNoteDownload(note.id);
-    // Open file in new tab
-    window.open(note.fileUrl, '_blank');
-    // Refresh notes
-    const result = await getNotes({ isPublished: true, limit: 20 });
-    if (result.success) {
-      setAllNotes(result.data);
+    window.open(result.data.url, '_blank');
+    const refreshed = await getNotes({ isPublished: true, limit: 20 });
+    if (refreshed.success) {
+      setAllNotes(refreshed.data);
     }
   };
 
@@ -360,11 +379,14 @@ export default function NotesPage() {
                           {note.downloadCount.toLocaleString()} downloads
                         </span>
                         <div className="flex items-center gap-2">
-                          <a href={note.fileUrl} target="_blank" rel="noopener noreferrer">
-                            <Button variant="ghost" size="icon" title="Preview">
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                          </a>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Preview"
+                            onClick={() => handleDownload(note)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
