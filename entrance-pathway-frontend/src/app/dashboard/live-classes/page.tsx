@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Video, Calendar, Clock, Users, Play, Loader2, AlertCircle } from 'lucide-react';
 import { getLiveNowClasses, getUpcomingLiveClasses, type LiveClass } from '@/actions';
+import { useActiveCourse } from '@/context';
 
 function formatDate(dateString: string): string {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -31,16 +32,24 @@ function formatDuration(minutes: number): string {
 }
 
 export default function LiveClassesPage() {
+  const { activeCourse, loading: activeCourseLoading } = useActiveCourse();
   const [liveClasses, setLiveClasses] = React.useState<LiveClass[]>([]);
   const [upcomingClasses, setUpcomingClasses] = React.useState<LiveClass[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
+    if (activeCourseLoading) return;
+    if (!activeCourse?.id) {
+      setLiveClasses([]);
+      setUpcomingClasses([]);
+      setLoading(false);
+      return;
+    }
     async function loadClasses() {
       setLoading(true);
       const [liveResult, upcomingResult] = await Promise.all([
-        getLiveNowClasses(),
-        getUpcomingLiveClasses(),
+        getLiveNowClasses({ courseId: activeCourse!.id }),
+        getUpcomingLiveClasses({ courseId: activeCourse!.id }),
       ]);
 
       if (liveResult.success) setLiveClasses(liveResult.data);
@@ -48,7 +57,7 @@ export default function LiveClassesPage() {
       setLoading(false);
     }
     loadClasses();
-  }, []);
+  }, [activeCourse?.id, activeCourseLoading]);
 
   if (loading) {
     return (

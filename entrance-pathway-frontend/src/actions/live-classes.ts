@@ -119,11 +119,11 @@ export async function getLiveClass(id: string): Promise<ActionResult<LiveClass>>
   }
 }
 
-export async function getUpcomingLiveClasses(): Promise<ActionResult<LiveClass[]>> {
+export async function getUpcomingLiveClasses(options?: { courseId?: string }): Promise<ActionResult<LiveClass[]>> {
   try {
     const supabase = createAdminClient();
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('live_classes')
       .select(`
         *,
@@ -134,6 +134,10 @@ export async function getUpcomingLiveClasses(): Promise<ActionResult<LiveClass[]
       .gte('scheduled_at', new Date().toISOString())
       .order('scheduled_at', { ascending: true })
       .limit(10);
+
+    if (options?.courseId) query = query.eq('course_id', options.courseId);
+
+    const { data, error } = await query;
 
     if (error) throw new Error(error.message);
 
@@ -149,11 +153,11 @@ export async function getUpcomingLiveClasses(): Promise<ActionResult<LiveClass[]
   }
 }
 
-export async function getLiveNowClasses(): Promise<ActionResult<LiveClass[]>> {
+export async function getLiveNowClasses(options?: { courseId?: string }): Promise<ActionResult<LiveClass[]>> {
   try {
     const supabase = createAdminClient();
 
-    const { data, error } = await supabase
+    let query = supabase
       .from('live_classes')
       .select(`
         *,
@@ -162,6 +166,10 @@ export async function getLiveNowClasses(): Promise<ActionResult<LiveClass[]>> {
       `)
       .eq('status', 'live')
       .order('scheduled_at', { ascending: true });
+
+    if (options?.courseId) query = query.eq('course_id', options.courseId);
+
+    const { data, error } = await query;
 
     if (error) throw new Error(error.message);
 

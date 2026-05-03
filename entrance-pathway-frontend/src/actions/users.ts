@@ -277,6 +277,63 @@ export async function saveSignupRequest(data: {
   }
 }
 
+export interface ActiveCourse {
+  id: string;
+  title: string;
+  slug: string;
+}
+
+// Returns the course the current user is "studying" — drives all dashboard scoping.
+// Prefers the verified enrollment (created when admin verifies the user); falls back
+// to the requested_course_id captured at signup so partially-onboarded users still
+// see something coherent.
+export async function getActiveCourse(): Promise<ActionResult<ActiveCourse | null>> {
+  try {
+    const ssrClient = await createClient();
+    const { data: { user: authUser }, error: authError } = await ssrClient.auth.getUser();
+    if (authError || !authUser) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const supabase = createAdminClient();
+
+    const { data: enrollment } = await supabase
+      .from('enrollments')
+      .select('course:courses(id, title, slug)')
+      .eq('user_id', authUser.id)
+      .limit(1)
+      .maybeSingle();
+
+    const enrolled = (enrollment as { course?: { id: string; title: string; slug: string } } | null)?.course;
+    if (enrolled?.id) {
+      return { success: true, data: { id: enrolled.id, title: enrolled.title, slug: enrolled.slug } };
+    }
+
+    const { data: profile } = await supabase
+      .from('users')
+      .select('requested_course_id')
+      .eq('id', authUser.id)
+      .maybeSingle();
+
+    const requestedId = (profile as { requested_course_id?: string } | null)?.requested_course_id;
+    if (!requestedId) {
+      return { success: true, data: null };
+    }
+
+    const { data: course } = await supabase
+      .from('courses')
+      .select('id, title, slug')
+      .eq('id', requestedId)
+      .maybeSingle();
+
+    if (!course) return { success: true, data: null };
+
+    return { success: true, data: { id: course.id, title: course.title, slug: course.slug } };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to load active course' };
+  }
+}
+
 // Hard-delete a user (admin reject). Removes from auth and the users row cascades.
 export async function deleteUserAccount(userId: string): Promise<ActionResult<null>> {
   try {

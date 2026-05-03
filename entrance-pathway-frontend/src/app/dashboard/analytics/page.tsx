@@ -15,8 +15,9 @@ import {
   XCircle,
   Loader2,
 } from 'lucide-react';
-import { getUserExamAttempts, getEnrolledCourses, type ExamAttempt } from '@/actions';
+import { getUserExamAttempts, getEnrolledCourses, getPublishedExams, type ExamAttempt } from '@/actions';
 import { useAuth } from '@/context/auth-context';
+import { useActiveCourse } from '@/context';
 
 function getRelativeTime(dateString: string): string {
   const date = new Date(dateString);
@@ -33,28 +34,38 @@ function getRelativeTime(dateString: string): string {
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
+  const { activeCourse, loading: activeCourseLoading } = useActiveCourse();
   const [examAttempts, setExamAttempts] = React.useState<ExamAttempt[]>([]);
   const [enrolledCourses, setEnrolledCourses] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
+    if (activeCourseLoading) return;
     async function loadData() {
       if (!user?.id) {
         setLoading(false);
         return;
       }
 
-      const [attemptsResult, coursesResult] = await Promise.all([
+      const [attemptsResult, coursesResult, courseExamsResult] = await Promise.all([
         getUserExamAttempts(user.id),
         getEnrolledCourses(user.id),
+        activeCourse?.id ? getPublishedExams({ courseId: activeCourse.id }) : Promise.resolve(null),
       ]);
 
-      if (attemptsResult.success) setExamAttempts(attemptsResult.data);
+      if (attemptsResult.success) {
+        let attempts = attemptsResult.data;
+        if (courseExamsResult?.success) {
+          const examIds = new Set(courseExamsResult.data.map((e) => e.id));
+          attempts = attempts.filter((a) => examIds.has(a.exam.id));
+        }
+        setExamAttempts(attempts);
+      }
       if (coursesResult.success) setEnrolledCourses(coursesResult.data);
       setLoading(false);
     }
     loadData();
-  }, [user?.id]);
+  }, [user?.id, activeCourse?.id, activeCourseLoading]);
 
   // Completed attempts only
   const completedAttempts = examAttempts.filter((a) => a.completedAt);

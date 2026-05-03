@@ -5,12 +5,13 @@ import { Card, CardContent, Button, Input } from '@/components/ui';
 import { PlayCircle, Clock, Search, Loader2, Video, Eye, X } from 'lucide-react';
 import {
   getPublishedLectures,
-  getSubjects,
+  getCourseSubjects,
   incrementLectureView,
   type RecordedLecture,
   type Subject,
 } from '@/actions';
 import { extractYouTubeId, getYouTubeThumbnail } from '@/utils/youtube';
+import { useActiveCourse } from '@/context';
 
 function getRelativeTime(dateString: string): string {
   const date = new Date(dateString);
@@ -36,6 +37,7 @@ function formatDuration(minutes?: number): string {
 }
 
 export default function RecordedLecturesPage() {
+  const { activeCourse, loading: activeCourseLoading } = useActiveCourse();
   const [lectures, setLectures] = React.useState<RecordedLecture[]>([]);
   const [subjects, setSubjects] = React.useState<Subject[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -45,24 +47,39 @@ export default function RecordedLecturesPage() {
 
   // Load data
   React.useEffect(() => {
+    if (activeCourseLoading) return;
+    if (!activeCourse?.id) {
+      setLectures([]);
+      setSubjects([]);
+      setLoading(false);
+      return;
+    }
     async function loadData() {
       setLoading(true);
-      const [lecturesResult, subjectsResult] = await Promise.all([
-        getPublishedLectures(),
-        getSubjects(),
+      const [lecturesResult, courseSubjectsResult] = await Promise.all([
+        getPublishedLectures({ courseId: activeCourse!.id }),
+        getCourseSubjects(activeCourse!.id),
       ]);
 
       if (lecturesResult.success) setLectures(lecturesResult.data);
-      if (subjectsResult.success) setSubjects(subjectsResult.data);
+      if (courseSubjectsResult.success) {
+        setSubjects(
+          courseSubjectsResult.data
+            .map((cs) => cs.subject)
+            .filter((s): s is Subject => Boolean(s))
+        );
+      }
       setLoading(false);
     }
     loadData();
-  }, []);
+  }, [activeCourse?.id, activeCourseLoading]);
 
-  // Reload on filter change
+  // Reload on filter change (debounced)
   React.useEffect(() => {
+    if (activeCourseLoading || !activeCourse?.id) return;
     async function filterLectures() {
       const result = await getPublishedLectures({
+        courseId: activeCourse!.id,
         subjectId: selectedSubject || undefined,
         search: search || undefined,
       });
@@ -71,7 +88,7 @@ export default function RecordedLecturesPage() {
 
     const debounce = setTimeout(filterLectures, 300);
     return () => clearTimeout(debounce);
-  }, [search, selectedSubject]);
+  }, [search, selectedSubject, activeCourse?.id, activeCourseLoading]);
 
   function handlePlayLecture(lecture: RecordedLecture) {
     setPlayingLecture(lecture);

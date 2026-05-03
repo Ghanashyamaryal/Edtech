@@ -127,6 +127,7 @@ export async function getRecordedLecture(id: string): Promise<ActionResult<Recor
 
 export async function getPublishedLectures(options?: {
   subjectId?: string;
+  courseId?: string;
   search?: string;
   limit?: number;
   offset?: number;

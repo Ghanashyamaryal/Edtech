@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { getEnrolledCourses, getUserExamAttempts, type ExamAttempt } from '@/actions';
+import { getEnrolledCourses, getUserExamAttempts, getPublishedExams, type ExamAttempt } from '@/actions';
+import { useActiveCourse } from '@/context';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '@/components/ui';
 import { Title, Subtitle, Paragraph, Small } from '@/components/atoms';
 import Link from 'next/link';
@@ -19,12 +20,14 @@ import {
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const { activeCourse, loading: activeCourseLoading } = useActiveCourse();
   const [enrolledCourses, setEnrolledCourses] = useState<any[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(true);
   const [examAttempts, setExamAttempts] = useState<ExamAttempt[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
+    if (activeCourseLoading) return;
     async function loadData() {
       if (!user?.id) {
         setCoursesLoading(false);
@@ -32,23 +35,29 @@ export default function DashboardPage() {
         return;
       }
 
-      const [coursesResult, attemptsResult] = await Promise.all([
+      const [coursesResult, attemptsResult, courseExamsResult] = await Promise.all([
         getEnrolledCourses(user.id),
         getUserExamAttempts(user.id),
+        activeCourse?.id ? getPublishedExams({ courseId: activeCourse.id }) : Promise.resolve(null),
       ]);
 
       if (coursesResult.success) {
         setEnrolledCourses(coursesResult.data);
       }
       if (attemptsResult.success) {
-        setExamAttempts(attemptsResult.data);
+        let attempts = attemptsResult.data;
+        if (courseExamsResult?.success) {
+          const examIds = new Set(courseExamsResult.data.map((e) => e.id));
+          attempts = attempts.filter((a) => examIds.has(a.exam.id));
+        }
+        setExamAttempts(attempts);
       }
 
       setCoursesLoading(false);
       setStatsLoading(false);
     }
     loadData();
-  }, [user?.id]);
+  }, [user?.id, activeCourse?.id, activeCourseLoading]);
 
   if (authLoading) {
     return (

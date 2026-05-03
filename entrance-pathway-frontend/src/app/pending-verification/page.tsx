@@ -1,20 +1,16 @@
 'use client';
 
+import Link from 'next/link';
 import { useAuth } from '@/context/auth-context';
 import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui';
 import { Small } from '@/components/atoms';
-import { Clock, LogOut, Mail, MessageCircle, Phone } from 'lucide-react';
+import { Clock, Home, Mail, MessageCircle, Phone } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '+977-9860120739';
 const WHATSAPP_LINK_NUMBER = '9779860120739';
 
 export default function PendingVerificationPage() {
-  const { user, signOut } = useAuth();
-
-  const handleSignOut = async () => {
-    await signOut();
-    window.location.href = '/';
-  };
+  const { user } = useAuth();
 
   const whatsappMessage = encodeURIComponent(
     `Hi, I'm following up on my account verification. Email: ${user?.email || ''}.`
@@ -58,14 +54,12 @@ export default function PendingVerificationPage() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleSignOut}
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <Link href="/" className="w-full">
+            <Button variant="outline" className="w-full">
+              <Home className="w-4 h-4 mr-2" />
+              Go to Home
+            </Button>
+          </Link>
         </CardFooter>
       </Card>
     </div>

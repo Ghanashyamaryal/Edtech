@@ -131,8 +131,10 @@ export {
   deleteUserAccount,
   updateProfile,
   getDashboardStats,
+  getActiveCourse,
   type User,
   type UserRole,
+  type ActiveCourse,
 } from './users';
 
 // Live Classes

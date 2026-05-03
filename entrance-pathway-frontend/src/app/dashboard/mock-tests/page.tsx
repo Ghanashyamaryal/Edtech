@@ -22,6 +22,7 @@ import {
   type ExamAttempt,
 } from '@/actions';
 import { useAuth } from '@/context/auth-context';
+import { useActiveCourse } from '@/context';
 
 // Exam type config
 const examTypeConfig: Record<string, { label: string; icon: any; color: string }> = {
@@ -61,23 +62,30 @@ function getRelativeTime(dateString: string): string {
 
 export default function MockTestsPage() {
   const { user } = useAuth();
+  const { activeCourse, loading: activeCourseLoading } = useActiveCourse();
   const [availableExams, setAvailableExams] = React.useState<Exam[]>([]);
   const [examAttempts, setExamAttempts] = React.useState<ExamAttempt[]>([]);
   const [loadingExams, setLoadingExams] = React.useState(true);
   const [loadingAttempts, setLoadingAttempts] = React.useState(true);
 
-  // Load available exams
+  // Load available exams scoped to the active course
   React.useEffect(() => {
+    if (activeCourseLoading) return;
+    if (!activeCourse?.id) {
+      setAvailableExams([]);
+      setLoadingExams(false);
+      return;
+    }
     async function loadExams() {
       setLoadingExams(true);
-      const result = await getPublishedExams();
+      const result = await getPublishedExams({ courseId: activeCourse!.id });
       if (result.success) {
         setAvailableExams(result.data);
       }
       setLoadingExams(false);
     }
     loadExams();
-  }, []);
+  }, [activeCourse?.id, activeCourseLoading]);
 
   // Load user's exam attempts
   React.useEffect(() => {

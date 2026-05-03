@@ -61,6 +61,7 @@ export interface UpdateNoteInput {
 
 export async function getNotes(options?: {
   subjectId?: string;
+  subjectIds?: string[];
   topicId?: string;
   noteType?: string;
   isPublished?: boolean;
@@ -70,7 +71,11 @@ export async function getNotes(options?: {
 }): Promise<ActionResult<Note[]>> {
   try {
     const supabase = createAdminClient();
-    const { subjectId, topicId, noteType, isPublished, isPremium, limit = 20, offset = 0 } = options || {};
+    const { subjectId, subjectIds, topicId, noteType, isPublished, isPremium, limit = 20, offset = 0 } = options || {};
+
+    if (subjectIds && subjectIds.length === 0) {
+      return { success: true, data: [] };
+    }
 
     let query = supabase
       .from('notes')
@@ -84,6 +89,7 @@ export async function getNotes(options?: {
       .range(offset, offset + limit - 1);
 
     if (subjectId) query = query.eq('subject_id', subjectId);
+    if (subjectIds && subjectIds.length > 0) query = query.in('subject_id', subjectIds);
     if (topicId) query = query.eq('topic_id', topicId);
     if (noteType) query = query.eq('note_type', noteType);
     if (isPublished !== undefined) query = query.eq('is_published', isPublished);

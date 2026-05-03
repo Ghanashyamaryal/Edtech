@@ -433,15 +433,33 @@ export async function reorderCourseExams(courseId: string, examIds: string[]): P
 
 // ============ PUBLIC/USER QUERIES ============
 
-export async function getPublishedExams(): Promise<ActionResult<Exam[]>> {
+export async function getPublishedExams(options?: { courseId?: string }): Promise<ActionResult<Exam[]>> {
   try {
     const supabase = createAdminClient();
 
-    const { data, error } = await supabase
+    let allowedExamIds: Set<string> | null = null;
+    if (options?.courseId) {
+      const { data: links } = await supabase
+        .from('course_exams')
+        .select('exam_id')
+        .eq('course_id', options.courseId);
+      allowedExamIds = new Set((links || []).map((l) => l.exam_id));
+      if (allowedExamIds.size === 0) {
+        return { success: true, data: [] };
+      }
+    }
+
+    let query = supabase
       .from('exams')
       .select('*')
       .eq('is_published', true)
       .order('created_at', { ascending: false });
+
+    if (allowedExamIds) {
+      query = query.in('id', Array.from(allowedExamIds));
+    }
+
+    const { data, error } = await query;
 
     if (error) throw new Error(error.message);
 

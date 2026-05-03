@@ -9,34 +9,66 @@ import {
   Loader2,
   BookOpen,
 } from 'lucide-react';
-import { getNotes, getSubjects, incrementNoteDownload, type Note, type Subject } from '@/actions';
+import { getNotes, getCourseSubjects, incrementNoteDownload, type Note, type Subject } from '@/actions';
+import { useActiveCourse } from '@/context';
 
 export default function StudyMaterialsPage() {
+  const { activeCourse, loading: activeCourseLoading } = useActiveCourse();
   const [notes, setNotes] = useState<Note[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [courseSubjectIds, setCourseSubjectIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
 
+  // Load the course's subjects once
+  useEffect(() => {
+    if (activeCourseLoading) return;
+    if (!activeCourse?.id) {
+      setSubjects([]);
+      setCourseSubjectIds([]);
+      return;
+    }
+    async function loadSubjects() {
+      const result = await getCourseSubjects(activeCourse!.id);
+      if (result.success) {
+        const subjectList = result.data
+          .map((cs) => cs.subject)
+          .filter((s): s is Subject => Boolean(s));
+        setSubjects(subjectList);
+        setCourseSubjectIds(subjectList.map((s) => s.id));
+      }
+    }
+    loadSubjects();
+  }, [activeCourse?.id, activeCourseLoading]);
+
   const loadData = useCallback(async () => {
+    if (activeCourseLoading) return;
+    if (!activeCourse?.id) {
+      setNotes([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    const [notesResult, subjectsResult] = await Promise.all([
-      getNotes({
-        isPublished: true,
-        subjectId: selectedSubject || undefined,
-        limit: 50,
-      }),
-      getSubjects(),
-    ]);
+    const notesResult = await getNotes({
+      isPublished: true,
+      subjectId: selectedSubject || undefined,
+      subjectIds: selectedSubject ? undefined : courseSubjectIds,
+      limit: 50,
+    });
 
     if (notesResult.success) setNotes(notesResult.data);
-    if (subjectsResult.success) setSubjects(subjectsResult.data);
     setLoading(false);
-  }, [selectedSubject]);
+  }, [activeCourse?.id, activeCourseLoading, selectedSubject, courseSubjectIds]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    // Wait until subject IDs are populated before fetching notes (avoids unscoped pull)
+    if (selectedSubject || courseSubjectIds.length > 0) {
+      loadData();
+    } else if (!activeCourseLoading && !activeCourse?.id) {
+      setLoading(false);
+    }
+  }, [loadData, selectedSubject, courseSubjectIds, activeCourseLoading, activeCourse?.id]);
 
   const handleDownload = async (note: Note) => {
     await incrementNoteDownload(note.id);

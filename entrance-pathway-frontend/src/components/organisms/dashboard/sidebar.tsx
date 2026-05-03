@@ -2,11 +2,13 @@
 
 import { Button } from "@/components/ui";
 import { useRole } from "@/context/auth-context";
+import { useActiveCourse } from "@/context";
 import { cn } from "@/lib/utils";
 import {
   BarChart3,
   BookOpen,
   FileText,
+  GraduationCap,
   Home,
   MessageSquare,
   PlayCircle,
@@ -78,6 +80,7 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
   const pathname = usePathname();
   const { isAdmin } = useRole();
+  const { activeCourse, loading: activeCourseLoading } = useActiveCourse();
 
   return (
     <>
@@ -121,6 +124,37 @@ export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
           >
             <X className="w-5 h-5" />
           </Button>
+        </div>
+
+        {/* Active Course Pill */}
+        <div className="px-4 mb-2">
+          {activeCourseLoading ? (
+            <div className="h-12 rounded-xl bg-muted animate-pulse" />
+          ) : activeCourse ? (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/5 border border-primary/15">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-primary-foreground shrink-0">
+                <GraduationCap className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Your course
+                </p>
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {activeCourse.title}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-100 text-amber-700 shrink-0">
+                <GraduationCap className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-amber-900">No course yet</p>
+                <p className="text-xs text-amber-800">Contact support to enroll</p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
@@ -193,7 +227,7 @@ export function Sidebar({ isOpen, onClose, className }: SidebarProps) {
 
         {/* Footer */}
         <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-linear-to-r from-primary/10 to-secondary/10 border border-primary/20">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-secondary text-secondary-foreground">
               <BookOpen className="w-5 h-5" />
             </div>
