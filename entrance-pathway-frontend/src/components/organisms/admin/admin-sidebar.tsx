@@ -18,11 +18,13 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui";
+import { useRole } from "@/context/auth-context";
 
 export interface AdminNavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  adminOnly?: boolean;
 }
 
 const adminNavigationItems: AdminNavItem[] = [
@@ -35,6 +37,7 @@ const adminNavigationItems: AdminNavItem[] = [
     label: "Users",
     href: "/admin/users",
     icon: Users,
+    adminOnly: true,
   },
   {
     label: "Courses",
@@ -81,6 +84,10 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ isOpen, onClose, className }: AdminSidebarProps) {
   const pathname = usePathname();
+  const { isAdmin } = useRole();
+  const visibleNavItems = adminNavigationItems.filter(
+    (item) => !item.adminOnly || isAdmin
+  );
 
   return (
     <>
@@ -130,7 +137,7 @@ export function AdminSidebar({ isOpen, onClose, className }: AdminSidebarProps) 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4 px-3">
           <ul className="space-y-1">
-            {adminNavigationItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/admin" && pathname.startsWith(item.href));
@@ -189,7 +196,7 @@ export function AdminSidebar({ isOpen, onClose, className }: AdminSidebarProps) 
 
         {/* Support Footer */}
         <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-linear-to-r from-primary/10 to-secondary/10 border border-primary/20">
             <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-secondary text-secondary-foreground">
               <BookOpen className="w-5 h-5" />
             </div>

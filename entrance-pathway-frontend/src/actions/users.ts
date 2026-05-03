@@ -36,6 +36,7 @@ export async function getUsers(options?: {
   offset?: number;
 }): Promise<ActionResult<User[]>> {
   try {
+    await requireAdmin();
     const supabase = createAdminClient();
 
     const { role, limit = 50, offset = 0 } = options || {};
@@ -115,6 +116,7 @@ export async function getCurrentUserProfile(): Promise<ActionResult<User>> {
 
 export async function updateUserRole(userId: string, role: UserRole): Promise<ActionResult<User>> {
   try {
+    await requireAdmin();
     const supabase = createAdminClient();
 
     const { data, error } = await supabase
@@ -138,6 +140,7 @@ export async function updateUserVerification(
   isVerified: boolean
 ): Promise<ActionResult<User>> {
   try {
+    await requireAdmin();
     const supabase = createAdminClient();
 
     const { data, error } = await supabase

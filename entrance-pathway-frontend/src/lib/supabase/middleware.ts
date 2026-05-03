@@ -24,8 +24,10 @@ const routeConfigs: RouteConfig[] = [
   // Pending verification (auth required, but no verification check)
   { path: '/pending-verification', requireAuth: true },
 
-  // Admin routes (admin only)
-  { path: '/admin', requireAuth: true, allowedRoles: ['admin'] },
+  // Admin user management — admin-only
+  { path: '/admin/users', requireAuth: true, allowedRoles: ['admin'] },
+  // Rest of /admin — mentors can access content management; users page above is excluded
+  { path: '/admin', requireAuth: true, allowedRoles: ['admin', 'mentor'] },
   { path: '/mentor', requireAuth: true, allowedRoles: ['mentor', 'admin'] },
   { path: '/instructor', requireAuth: true, allowedRoles: ['mentor', 'admin'] },
 ];
