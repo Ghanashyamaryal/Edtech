@@ -400,6 +400,58 @@ export async function grantPremium(
   }
 }
 
+// Admin-only: change which course a user is associated with. Updates both the
+// requested_course_id (so unverified students see the right preference) and
+// the active enrollment row if one exists. Resets enrollment progress to 0
+// because the underlying course content has changed.
+export async function adminUpdateUserCourse(
+  userId: string,
+  courseId: string
+): Promise<ActionResult<User>> {
+  try {
+    await requireAdmin();
+    const supabase = createAdminClient();
+
+    const { data: course, error: courseError } = await supabase
+      .from('courses')
+      .select('id')
+      .eq('id', courseId)
+      .maybeSingle();
+    if (courseError || !course) {
+      return { success: false, error: 'Course not found' };
+    }
+
+    const { data: updated, error: updateError } = await supabase
+      .from('users')
+      .update({
+        requested_course_id: courseId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (updateError) throw new Error(updateError.message);
+
+    // Replace the user's enrollment(s) with one for the new course. Verified
+    // users keep dashboard access; unverified users have no enrollment to
+    // delete, so the second step is a no-op for them.
+    if (updated?.is_verified) {
+      await supabase.from('enrollments').delete().eq('user_id', userId);
+      await supabase.from('enrollments').insert({
+        user_id: userId,
+        course_id: courseId,
+        progress: 0,
+      });
+    }
+
+    revalidatePath('/admin/users');
+    return { success: true, data: formatResponse(updated) as User };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to update user course' };
+  }
+}
+
 // Hard-delete a user (admin reject). Removes from auth and the users row cascades.
 export async function deleteUserAccount(userId: string): Promise<ActionResult<null>> {
   try {

@@ -135,6 +135,7 @@ export {
   getActiveCourse,
   getCurrentPremiumStatus,
   grantPremium,
+  adminUpdateUserCourse,
   type User,
   type UserRole,
   type ActiveCourse,

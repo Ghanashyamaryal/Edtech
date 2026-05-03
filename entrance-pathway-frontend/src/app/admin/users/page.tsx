@@ -20,8 +20,9 @@ import {
 } from "@/components/ui";
 import { Title, Paragraph } from "@/components/atoms";
 import { DataTable, Column, ConfirmDialog } from "@/components/molecules/admin";
-import { Users, MoreHorizontal, Shield, UserCheck, GraduationCap, CheckCircle, XCircle, Trash2, Crown } from "lucide-react";
-import { getUsers, updateUserRole, updateUserVerification, deleteUserAccount, grantPremium, type User, type UserRole } from "@/actions";
+import { Users, MoreHorizontal, Shield, UserCheck, GraduationCap, CheckCircle, XCircle, Trash2, Crown, BookOpen, Loader2 } from "lucide-react";
+import { getUsers, updateUserRole, updateUserVerification, deleteUserAccount, grantPremium, adminUpdateUserCourse, getCourses, type User, type UserRole, type Course } from "@/actions";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, Label } from "@/components/ui";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminUsersPage() {
@@ -42,6 +43,11 @@ export default function AdminUsersPage() {
   const [selectedDeleteUser, setSelectedDeleteUser] = React.useState<User | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
+  const [courses, setCourses] = React.useState<Course[]>([]);
+  const [selectedCourseUser, setSelectedCourseUser] = React.useState<User | null>(null);
+  const [pickedCourseId, setPickedCourseId] = React.useState<string>("");
+  const [showCourseDialog, setShowCourseDialog] = React.useState(false);
+  const [updatingCourse, setUpdatingCourse] = React.useState(false);
 
   const loadUsers = React.useCallback(async () => {
     setLoading(true);
@@ -60,6 +66,15 @@ export default function AdminUsersPage() {
   React.useEffect(() => {
     loadUsers();
   }, [loadUsers]);
+
+  // Load courses once for the change-course dialog
+  React.useEffect(() => {
+    async function loadCourses() {
+      const result = await getCourses({ limit: 100 });
+      if (result.success) setCourses(result.data);
+    }
+    loadCourses();
+  }, []);
 
   const handleRoleChange = (user: User, role: string) => {
     setSelectedUser(user);
@@ -88,6 +103,30 @@ export default function AdminUsersPage() {
       toast({ title: "Error", description: result.error, variant: "destructive" });
     }
     setUpdatingVerification(false);
+  };
+
+  const handleChangeCourse = (user: User) => {
+    setSelectedCourseUser(user);
+    setPickedCourseId(user.requestedCourseId || "");
+    setShowCourseDialog(true);
+  };
+
+  const confirmChangeCourse = async () => {
+    if (!selectedCourseUser || !pickedCourseId) return;
+    setUpdatingCourse(true);
+    const result = await adminUpdateUserCourse(selectedCourseUser.id, pickedCourseId);
+    if (result.success) {
+      const newTitle = courses.find((c) => c.id === pickedCourseId)?.title || "the new course";
+      toast({
+        title: "Course updated",
+        description: `${selectedCourseUser.fullName} is now on ${newTitle}.`,
+      });
+      setShowCourseDialog(false);
+      loadUsers();
+    } else {
+      toast({ title: "Error", description: result.error, variant: "destructive" });
+    }
+    setUpdatingCourse(false);
   };
 
   const handleTogglePremium = async (user: User) => {
@@ -287,6 +326,10 @@ export default function AdminUsersPage() {
               </>
             )}
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => handleChangeCourse(user)}>
+              <BookOpen className="w-4 h-4 mr-2" />
+              Change Course
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => handleTogglePremium(user)}
               className={user.isPremium ? "text-amber-600" : "text-yellow-700"}
@@ -423,6 +466,53 @@ export default function AdminUsersPage() {
         onConfirm={confirmDeleteUser}
         loading={deleting}
       />
+
+      {/* Change Course Dialog */}
+      <AlertDialog open={showCourseDialog} onOpenChange={setShowCourseDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change course</AlertDialogTitle>
+            <AlertDialogDescription>
+              Move {selectedCourseUser?.fullName} to a different course.
+              {selectedCourseUser?.isVerified
+                ? " Their existing enrollment will be replaced and progress reset to 0."
+                : " They are not yet verified, so only their requested course will change."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2 space-y-2">
+            <Label htmlFor="course-select">Course</Label>
+            <Select value={pickedCourseId} onValueChange={setPickedCourseId}>
+              <SelectTrigger id="course-select">
+                <SelectValue placeholder="Pick a course..." />
+              </SelectTrigger>
+              <SelectContent>
+                {courses.map((course) => (
+                  <SelectItem key={course.id} value={course.id}>
+                    {course.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={updatingCourse}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                confirmChangeCourse();
+              }}
+              disabled={
+                updatingCourse ||
+                !pickedCourseId ||
+                pickedCourseId === selectedCourseUser?.requestedCourseId
+              }
+            >
+              {updatingCourse && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Update Course
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
